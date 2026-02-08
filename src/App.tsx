@@ -7,8 +7,8 @@ import Layout from './components/Layout.tsx'
 import Home from './pages/Home.tsx'
 import Services from './pages/Services.tsx'
 import ServiceDetail from './pages/ServiceDetail.tsx'
-import CaseStudies from './pages/CaseStudies.tsx'
 import About from './pages/About.tsx'
+import Method from './pages/Method.tsx'
 import Projects from './pages/Projects.tsx'
 import Contact from './pages/Contact.tsx'
 import './App.css'
@@ -47,7 +47,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/:slug" element={<ServiceDetail />} />
-              <Route path="/case-studies" element={<CaseStudies />} />
+              <Route path="/method" element={<Method />} />
               <Route path="/about" element={<About />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/contact" element={<Contact />} />
