@@ -1,0 +1,103 @@
+:root {
+  --bg: #0b0b0c;
+  --fg: #f4f1ea;
+  --card-bg: #121316;
+  --card-hover: #191b20;
+  --accent-line: rgba(244, 241, 234, 0.12);
+  --muted: rgba(244, 241, 234, 0.6);
+  --expo: cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+[data-theme='light'] {
+  --bg: #f6f4ee;
+  --fg: #1c1b18;
+  --card-bg: #ffffff;
+  --card-hover: #f0eee8;
+  --accent-line: rgba(28, 27, 24, 0.12);
+  --muted: rgba(28, 27, 24, 0.55);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  /* This transition handles the "fade" feel for all elements */
+  transition: background-color 0.8s var(--expo), color 0.8s var(--expo);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+/* Luxury Bento Hover Effects */
+.bento-item {
+  border: 1px solid var(--accent-line);
+  transition: all 0.6s var(--expo);
+  cursor: pointer;
+}
+
+.bento-item:hover {
+  background-color: var(--card-hover);
+  transform: translateY(-3px);
+}
+
+/* Sticky Card Refinement */
+.funnel-card {
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease-out;
+}
+
+/* Prevent text jitter during GSAP pin */
+.hero-word {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* App.css additions */
+
+:root {
+  --bg: #080808;
+  --fg: #F0EDE9;
+  --card-bg: #111111;
+  --accent-line: rgba(240, 237, 233, 0.1);
+  --muted: rgba(240, 237, 233, 0.5);
+}
+
+[data-theme='light'] {
+  --bg: #F0EDE9;
+  --fg: #080808;
+  --card-bg: #ffffff;
+  --accent-line: rgba(8, 8, 8, 0.1);
+  --muted: rgba(8, 8, 8, 0.5);
+}
+
+/* Mobile-first fluid typography */
+h1 { font-size: clamp(3.5rem, 15vw, 12rem); }
+h4 { font-size: clamp(2.5rem, 10vw, 8rem); }
+
+/* Optimize mobile performance for GSAP */
+.funnel-card {
+  will-change: transform, opacity;
+  /* Prevent cards from being too tall on small mobile screens */
+  max-height: 80vh; 
+}
+
+/* Smooth theme transition for all elements */
+* {
+  transition: background-color 0.5s ease, border-color 0.5s ease;
+}
+
+/* Glass effect for mobile nav to keep content visible underneath */
+nav {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+@media (max-width: 768px) {
+  .bento-grid {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .funnel-card {
+    padding: 1.5rem !important;
+    border-radius: 24px !important;
+  }
+}
