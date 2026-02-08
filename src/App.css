@@ -20,74 +20,167 @@
 body {
   background-color: var(--bg);
   color: var(--fg);
-  /* This transition handles the "fade" feel for all elements */
   transition: background-color 0.8s var(--expo), color 0.8s var(--expo);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Space Grotesk', sans-serif;
   margin: 0;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.06), transparent 40%),
+    radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.04), transparent 35%),
+    radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.03), transparent 45%);
 }
 
-/* Luxury Bento Hover Effects */
+[data-theme='light'] body {
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(28, 27, 24, 0.08), transparent 40%),
+    radial-gradient(circle at 88% 12%, rgba(28, 27, 24, 0.05), transparent 35%),
+    radial-gradient(circle at 20% 80%, rgba(28, 27, 24, 0.04), transparent 45%);
+}
+
 .bento-item {
   border: 1px solid var(--accent-line);
-  transition: all 0.6s var(--expo);
+  transition: transform 0.5s var(--expo), box-shadow 0.5s var(--expo), border-color 0.5s var(--expo), background-color 0.5s var(--expo);
   cursor: pointer;
+  box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.6);
 }
 
 .bento-item:hover {
   background-color: var(--card-hover);
-  transform: translateY(-3px);
+  transform: translateY(-4px);
+  border-color: rgba(244, 241, 234, 0.24);
+  box-shadow: 0 28px 70px -40px rgba(0, 0, 0, 0.7);
 }
 
-/* Sticky Card Refinement */
+[data-theme='light'] .bento-item:hover {
+  border-color: rgba(28, 27, 24, 0.24);
+}
+
+.form-input {
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid var(--accent-line);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--fg);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme='light'] .form-input {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.form-input::placeholder {
+  color: var(--muted);
+}
+
+.form-input:focus {
+  border-color: rgba(244, 241, 234, 0.35);
+  box-shadow: 0 0 0 1px rgba(244, 241, 234, 0.2);
+}
+
+[data-theme='light'] .form-input:focus {
+  border-color: rgba(28, 27, 24, 0.35);
+  box-shadow: 0 0 0 1px rgba(28, 27, 24, 0.2);
+}
+
+.primary-button {
+  padding: 0.95rem 2.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-line);
+  background: var(--fg);
+  color: var(--bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, filter 0.3s ease;
+}
+
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.5);
+  filter: brightness(0.98);
+}
+
 .funnel-card {
-  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.2);
+  box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease-out;
+  will-change: transform, opacity;
+  max-height: 80vh;
 }
 
-/* Prevent text jitter during GSAP pin */
 .hero-word {
   display: inline-block;
   will-change: transform;
 }
 
-/* App.css additions */
-
-:root {
-  --bg: #080808;
-  --fg: #F0EDE9;
-  --card-bg: #111111;
-  --accent-line: rgba(240, 237, 233, 0.1);
-  --muted: rgba(240, 237, 233, 0.5);
+h1 {
+  font-size: clamp(3.5rem, 15vw, 12rem);
 }
 
-[data-theme='light'] {
-  --bg: #F0EDE9;
-  --fg: #080808;
-  --card-bg: #ffffff;
-  --accent-line: rgba(8, 8, 8, 0.1);
-  --muted: rgba(8, 8, 8, 0.5);
+h4 {
+  font-size: clamp(2.5rem, 10vw, 8rem);
 }
 
-/* Mobile-first fluid typography */
-h1 { font-size: clamp(3.5rem, 15vw, 12rem); }
-h4 { font-size: clamp(2.5rem, 10vw, 8rem); }
-
-/* Optimize mobile performance for GSAP */
-.funnel-card {
-  will-change: transform, opacity;
-  /* Prevent cards from being too tall on small mobile screens */
-  max-height: 80vh; 
-}
-
-/* Smooth theme transition for all elements */
-* {
-  transition: background-color 0.5s ease, border-color 0.5s ease;
-}
-
-/* Glass effect for mobile nav to keep content visible underneath */
 nav {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
+}
+
+.nav-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-link {
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--fg);
+}
+
+.lang-toggle {
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  overflow: hidden;
+  display: inline-flex;
+}
+
+.lang-toggle button {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.lang-toggle button.active {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+.footer-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 4.5rem 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2.5rem;
 }
 
 @media (max-width: 768px) {
@@ -95,7 +188,7 @@ nav {
     padding-left: 1rem;
     padding-right: 1rem;
   }
-  
+
   .funnel-card {
     padding: 1.5rem !important;
     border-radius: 24px !important;
