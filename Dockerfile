@@ -10,8 +10,11 @@ FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=4173
+ENV HOME=/home/app
 WORKDIR /app
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup -S app && adduser -S app -G app && \
+	mkdir -p /home/app/.cache/node/corepack && \
+	chown -R app:app /home/app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && corepack prepare pnpm@latest --activate
 RUN pnpm install --frozen-lockfile
