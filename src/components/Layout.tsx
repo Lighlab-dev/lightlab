@@ -82,8 +82,15 @@ function Layout() {
 
     const startRect = introLogo.getBoundingClientRect()
     const endRect = navLogo.getBoundingClientRect()
-    const deltaX = endRect.left - startRect.left
-    const deltaY = endRect.top - startRect.top
+    
+    // Calculate center-to-center movement
+    const startCenterX = startRect.left + startRect.width / 2
+    const startCenterY = startRect.top + startRect.height / 2
+    const endCenterX = endRect.left + endRect.width / 2
+    const endCenterY = endRect.top + endRect.height / 2
+    
+    const deltaX = endCenterX - startCenterX
+    const deltaY = endCenterY - startCenterY
     const scale = endRect.width / startRect.width
 
     gsap.set(navLogo, { opacity: 0 })
@@ -102,7 +109,7 @@ function Layout() {
       scale: 1,
       opacity: 1,
       clipPath: 'inset(0 100% 0 0)',
-      transformOrigin: 'top left',
+      transformOrigin: 'center center',
     })
       .to(introLogo, { duration: 0.7, clipPath: 'inset(0 0% 0 0)', ease: 'power2.out' }, 0)
       .to(introLogo, { duration: 0.9, x: deltaX, y: deltaY, scale, ease: 'power3.inOut' }, 0.8)
