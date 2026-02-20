@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Outlet, Link, useLocation } from "react-router-dom";
+import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -8,7 +8,13 @@ import { useLanguage } from "../i18n";
 
 gsap.registerPlugin(ScrollTrigger);
 
-function Layout() {
+type LayoutProps = {
+  themeMode: "light" | "dark";
+  onToggleTheme: () => void;
+};
+
+function Layout({ themeMode, onToggleTheme }: LayoutProps) {
+  const logoSrc = themeMode === "dark" ? "/lightlab-lightlogo.svg" : "/logo.svg";
   const mainRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const navLogoRef = useRef<HTMLImageElement>(null);
@@ -19,6 +25,21 @@ function Layout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
   const { language, setLanguage, copy } = useLanguage();
+  const isRtl = language === "ar";
+
+  const handleLanguageChange = (value: string) => {
+    if (value === "fr" || value === "en" || value === "ar") {
+      setLanguage(value);
+    }
+  };
+
+  const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
+    `relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:bg-current after:origin-left after:transition-transform transition-opacity ${
+      isActive ? "after:scale-x-100 opacity-100" : "after:scale-x-0 hover:after:scale-x-100"
+    }`;
+
+  const mobileNavClass = ({ isActive }: { isActive: boolean }) =>
+    `transition-opacity ${isActive ? "opacity-100 underline underline-offset-8" : "hover:opacity-60"}`;
 
   useLayoutEffect(() => {
     const lenis = new Lenis({
@@ -167,15 +188,15 @@ function Layout() {
   }, []);
 
   return (
-    <div data-theme="light" className="transition-colors duration-700">
+    <div className={`transition-colors duration-700 ${isRtl ? "rtl-adapt" : ""}`}>
       {showIntro && (
         <div
           ref={introOverlayRef}
-          className="fixed inset-0 z-200 bg-[#f8f7f2] flex items-center justify-center"
+          className="fixed inset-0 z-200 theme-hero-overlay flex items-center justify-center"
         >
           <img
             ref={introLogoRef}
-            src="/logo.svg"
+            src={logoSrc}
             alt="Lightlab"
             className="h-32 sm:h-36 w-auto"
           />
@@ -190,54 +211,62 @@ function Layout() {
           <Link to="/" className="flex items-center">
             <img
               ref={navLogoRef}
-              src="/logo.svg"
+              src={logoSrc}
               alt="Lightlab"
               className="h-5 sm:h-6 w-auto"
             />
           </Link>
           <div className="hidden lg:flex items-center gap-8  text-[10px] uppercase tracking-[0.2em] font-bold">
-            <Link
+            <NavLink
               to="/services"
-              className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:scale-x-0 after:bg-current after:origin-left after:transition-transform hover:after:scale-x-100 transition-opacity"
+              className={desktopNavClass}
             >
               {copy.nav.services}
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/projects"
-              className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:scale-x-0 after:bg-current after:origin-left after:transition-transform hover:after:scale-x-100 transition-opacity"
+              className={desktopNavClass}
             >
               {copy.nav.projects}
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/method"
-              className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:scale-x-0 after:bg-current after:origin-left after:transition-transform hover:after:scale-x-100 transition-opacity"
+              className={desktopNavClass}
             >
               {copy.nav.method}
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/about"
-              className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:scale-x-0 after:bg-current after:origin-left after:transition-transform hover:after:scale-x-100 transition-opacity"
+              className={desktopNavClass}
             >
               {copy.nav.about}
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/contact"
-              className="relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:scale-x-0 after:bg-current after:origin-left after:transition-transform hover:after:scale-x-100 transition-opacity"
+              className={desktopNavClass}
             >
               {copy.nav.contact}
-            </Link>
+            </NavLink>
           </div>
           <div className="flex items-center gap-4 sm:gap-6">
+            <button
+              type="button"
+              className="theme-toggle"
+              aria-pressed={themeMode === "dark"}
+              onClick={onToggleTheme}
+            >
+              {themeMode === "dark" ? "Light" : "Dark"}
+            </button>
             <Link
               to="/contact"
-              className="hidden lg:block border border-current px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black hover:text-white transition-colors"
+              className="hidden lg:block theme-outline px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors"
             >
               {copy.nav.cta}
             </Link>
             <button
               type="button"
-              className="lg:hidden inline-flex items-center px-5 justify-center py-2 rounded-full border border-current text-[10px] uppercase tracking-widest"
-              aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+              className="lg:hidden inline-flex items-center px-5 justify-center py-2 rounded-none border border-current text-[10px] uppercase tracking-widest"
+              aria-label={menuOpen ? copy.nav.menuClose : copy.nav.menuOpen}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
             >
@@ -248,66 +277,57 @@ function Layout() {
       </nav>
 
       <div
-        className={`fixed inset-0 z-90 bg-[rgba(248,247,242,0.96)] transition-opacity duration-300 lg:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-90 theme-menu-overlay transition-opacity duration-300 lg:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       >
-        <div className="pt-24 px-8 flex flex-col gap-6 text-[14px] uppercase tracking-[0.2em] font-bold">
-          <Link to="/services" className="hover:opacity-60 transition-opacity">
+        <div className={`pt-24 px-8 flex flex-col gap-6 text-[14px] uppercase tracking-[0.2em] font-bold ${isRtl ? "text-right" : "text-left"}`}>
+          <NavLink to="/services" className={mobileNavClass}>
             {copy.nav.services}
-          </Link>
-          <Link to="/projects" className="hover:opacity-60 transition-opacity">
+          </NavLink>
+          <NavLink to="/projects" className={mobileNavClass}>
             {copy.nav.projects}
-          </Link>
-          <Link to="/method" className="hover:opacity-60 transition-opacity">
+          </NavLink>
+          <NavLink to="/method" className={mobileNavClass}>
             {copy.nav.method}
-          </Link>
-          <Link to="/about" className="hover:opacity-60 transition-opacity">
+          </NavLink>
+          <NavLink to="/about" className={mobileNavClass}>
             {copy.nav.about}
-          </Link>
-          <Link to="/contact" className="hover:opacity-60 transition-opacity">
+          </NavLink>
+          <NavLink to="/contact" className={mobileNavClass}>
             {copy.nav.contact}
-          </Link>
+          </NavLink>
           <Link
             to="/contact"
-            className="mt-2 inline-flex border border-current px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-white transition-all w-fit"
+            className="mt-2 inline-flex theme-outline px-6 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all w-fit"
           >
             {copy.nav.cta}
           </Link>
         </div>
       </div>
 
-      <div className="fixed bottom-6 left-6 z-110">
-        <div className="flex items-center gap-1 rounded-full bg-white/90 backdrop-blur border border-black/10 shadow-lg p-1">
-          <button
-            type="button"
-            className={`${
-              language === "fr"
-                ? "bg-black text-white shadow-sm"
-                : "bg-transparent text-black/70 hover:bg-black/5"
-            } rounded-full p-2 transition-all`}
-            onClick={() => setLanguage("fr")}
-            aria-label="Francais"
+      <div className={`fixed bottom-6 z-110 ${isRtl ? "right-6" : "left-6"}`}>
+        <div className="relative">
+          <select
+            aria-label="Select language"
+            value={language}
+            onChange={(event) => handleLanguageChange(event.target.value)}
+            className={`theme-surface backdrop-blur border border-black/10 dark:border-white/12 rounded-none appearance-none text-[11px] font-bold tracking-[0.12em] ${isRtl ? "pl-10 pr-4 text-right" : "pr-10 pl-4 text-left"} py-2.5 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black/30 dark:focus:border-white/25`}
           >
-            <img src="/flags/fr.svg" alt="FR" className="h-5 w-5" />
-          </button>
-          <span className="h-4 w-px bg-black/10" />
-          <button
-            type="button"
-            className={`${
-              language === "en"
-                ? "bg-black text-white shadow-sm"
-                : "bg-transparent text-black/70 hover:bg-black/5"
-            } rounded-full p-2 transition-all`}
-            onClick={() => setLanguage("en")}
-            aria-label="English"
+            <option value="fr">FR · Français</option>
+            <option value="en">EN · English</option>
+            <option value="ar">AR · العربية</option>
+          </select>
+          <span
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-[10px] opacity-60 ${isRtl ? "left-4" : "right-4"}`}
+            aria-hidden="true"
           >
-            <img src="/flags/gb.svg" alt="EN" className="h-5 w-5" />
-          </button>
+            ▾
+          </span>
         </div>
       </div>
 
       <button
         type="button"
-        className={`fixed bottom-6 right-6 z-110 inline-flex items-center justify-center h-10 w-10 rounded-full border border-black/10 bg-white/90 backdrop-blur shadow-lg transition-all ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
+        className={`fixed bottom-6 z-110 inline-flex items-center justify-center h-10 w-10 rounded-none theme-surface backdrop-blur border border-black/10 dark:border-white/12 transition-all ${isRtl ? "left-6" : "right-6"} ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
         aria-label="Back to top"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
@@ -318,13 +338,13 @@ function Layout() {
         <Outlet />
       </main>
 
-      <footer className="bg-primary/5 py-24 px-8 md:px-16 lg:px-24">
+      <footer className="py-24 px-8 md:px-16 lg:px-24 border-t border-black/8 dark:border-white/10 bg-white/[0.12] dark:bg-white/[0.01]">
         <div className="max-w-360 mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
             <div className="lg:col-span-5">
               <div className="mb-8">
                 <img
-                  src="/logo.svg"
+                  src={logoSrc}
                   alt="Lightlab"
                   className="h-9 sm:h-10 w-auto"
                 />
@@ -364,7 +384,7 @@ function Layout() {
                 <p className="text-sm opacity-40">{copy.footer.location}</p>
               </div>
               <Link
-                className="bg-primary text-white px-8 py-4 rounded-full font-bold uppercase tracking-widest text-[10px] hover:scale-105 transition-transform"
+                className="theme-solid px-8 py-4 rounded-none font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] transition-transform"
                 to="/contact"
               >
                 {copy.footer.cta}

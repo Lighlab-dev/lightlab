@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -14,18 +14,30 @@ import Contact from './pages/Contact.tsx'
 import './App.css'
 
 function App() {
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
+    const stored = localStorage.getItem('theme')
+    return stored === 'dark' || stored === 'light' ? stored : 'light'
+  })
+
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', 'light')
+    const root = document.documentElement
+    root.setAttribute('data-theme', themeMode)
+    root.classList.toggle('dark', themeMode === 'dark')
+    localStorage.setItem('theme', themeMode)
+  }, [themeMode])
+
+  const handleToggleTheme = useCallback(() => {
+    setThemeMode((mode) => (mode === 'dark' ? 'light' : 'dark'))
   }, [])
 
   const muiTheme = useMemo(() => createTheme({
     palette: {
-      mode: 'light',
+      mode: themeMode,
       background: {
-        default: '#f6f4ee',
+        default: themeMode === 'dark' ? '#070603' : '#f6f4ee',
       },
       text: {
-        primary: '#1c1b18',
+        primary: themeMode === 'dark' ? '#f1efe7' : '#1c1b18',
       },
     },
     typography: {
@@ -35,7 +47,7 @@ function App() {
       h3: { fontFamily: '"Playfair Display", serif' },
       h4: { fontFamily: '"Playfair Display", serif' },
     },
-  }), [])
+  }), [themeMode])
 
   return (
     <LanguageProvider>
@@ -43,13 +55,20 @@ function App() {
         <CssBaseline />
         <BrowserRouter>
           <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Home />} />
+            <Route
+              element={(
+                <Layout
+                  themeMode={themeMode}
+                  onToggleTheme={handleToggleTheme}
+                />
+              )}
+            >
+              <Route path="/" element={<Home themeMode={themeMode} />} />
               <Route path="/services" element={<Services />} />
               <Route path="/services/:slug" element={<ServiceDetail />} />
-              <Route path="/method" element={<Method />} />
+              <Route path="/method" element={<Method themeMode={themeMode} />} />
               <Route path="/about" element={<About />} />
-              <Route path="/projects" element={<Projects />} />
+              <Route path="/projects" element={<Projects themeMode={themeMode} />} />
               <Route path="/contact" element={<Contact />} />
             </Route>
           </Routes>
