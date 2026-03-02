@@ -26,6 +26,8 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
   const location = useLocation();
   const { language, setLanguage, copy } = useLanguage();
   const isRtl = language === "ar";
+  // True while the viewport is inside the hero section (home page only)
+  const [isHeroSection, setIsHeroSection] = useState(location.pathname === '/');
 
   const handleLanguageChange = (value: string) => {
     if (value === "fr" || value === "en" || value === "ar") {
@@ -169,6 +171,9 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       } else {
         nav.classList.remove("navbar-scrolled");
       }
+
+      // Track whether we are still inside the hero section
+      setIsHeroSection(location.pathname === '/' && window.scrollY < 2);
     };
 
     // Run immediately (handles menu open / close)
@@ -178,7 +183,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     window.addEventListener("scroll", updateNavbar);
 
     return () => window.removeEventListener("scroll", updateNavbar);
-  }, [menuOpen]);
+  }, [menuOpen, location.pathname]);
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 420);
@@ -211,15 +216,15 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       <nav
         ref={navRef}
         id="main-nav"
-        className="fixed top-0 w-full z-100 transition-all duration-300"
+        className={`fixed top-0 w-full z-100 transition-all duration-300 ${isHeroSection ? 'nav-over-hero' : ''}`}
       >
         <div className="max-w-360 mx-auto px-6 md:px-16 py-5 sm:py-6 flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <img
               ref={navLogoRef}
-              src={logoSrc}
+              src={isHeroSection ? '/lightlab-lightlogo.svg' : logoSrc}
               alt="Lightlab"
-              className="h-5 sm:h-6 w-auto"
+              className="h-5 sm:h-6 w-auto transition-opacity duration-300"
             />
           </Link>
           <div className="hidden lg:flex items-center gap-8  text-[10px] uppercase tracking-[0.2em] font-bold">

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useMemo, memo, useState, useCallback, createContext, useContext, type MouseEvent } from 'react'
+﻿import { useLayoutEffect, useRef, useMemo, memo, useState, createContext, useContext } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLanguage } from '../i18n'
@@ -14,712 +14,580 @@ import {
 
 gsap.registerPlugin(ScrollTrigger)
 
-// Theme Context for dark/light mode
 type Theme = 'dark' | 'light'
-
 type Copy = ReturnType<typeof useLanguage>['copy']
 
-interface ThemeContextValue {
-  theme: Theme
-}
-
+interface ThemeContextValue { theme: Theme }
 const ThemeContext = createContext<ThemeContextValue>({ theme: 'dark' })
 
-interface HomeProps {
-  themeMode: Theme
+interface HomeProps { themeMode: Theme }
+
+// Light mode palette (used as plain strings for clarity)
+// bg:       #eeeae0  (warm parchment)
+// card:     #ffffff  (pure white elevated)
+// ink:      #18160f  (warm near-black)
+// stone:    #56514a  (secondary body)
+// muted:    #8c8780  (labels, captions)
+// border:   #d9d5ca  (visible warm separator)
+// faint:    #ece8dd  (subtle card bg)
+
+const LT = {
+  bg:       'bg-[#eeeae0]',
+  text:     'text-[#18160f]',
+  stone:    'text-[#56514a]',
+  muted:    'text-[#8c8780]',
+  border:   'border-[#d9d5ca]',
+  divideX:  'divide-[#d9d5ca]',
+  cardBg:   'bg-white',
+  faint:    'bg-[#e8e4d9]',
+  watermark:'text-[#d0ccbf]',
 }
 
-// Premium image URLs - curated for both dark and light modes
+const DK = {
+  bg:       'bg-[#080807]',
+  text:     'text-white',
+  stone:    'text-white/50',
+  muted:    'text-white/25',
+  border:   'border-white/[0.07]',
+  divideX:  'divide-white/[0.06]',
+  cardBg:   'bg-white/[0.03]',
+  faint:    'bg-white/[0.015]',
+  watermark:'text-white/[0.025]',
+}
+
+//  Image constants 
 const IMAGES = {
-  hero: {
-    primary: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?w=1200&q=85', // White concrete architecture
-    secondary: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&q=85' // Abstract 3D shapes
-  },
+  hero: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=90',
   services: [
-    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=85', // Minimal office
-    'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&q=85', // Product design
-    'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=85' // Brand identity
+    'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=800&q=85',
+    'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=85',
+    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=85',
   ],
   method: [
-    'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=85', // Strategy
-    'https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=85', // Design process
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=85' // Development
+    'https://images.unsplash.com/photo-1551434678-e076c223a692?w=700&q=80',
+    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=700&q=80',
+    'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=700&q=80',
   ],
-  cta: 'https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1000&q=85' // Abstract gradient
 }
 
-// Luxury card with glassmorphism
-interface LuxuryCardItem {
-  title: string
-  copy: string
-}
+//  Service Row (accordion) 
+interface ServiceRowItem { title: string; copy: string; result?: string }
+interface ServiceRowProps { item: ServiceRowItem; index: number; copy: Copy; isArabic: boolean }
 
-interface LuxuryCardProps {
-  item: LuxuryCardItem
-  index: number
-  variant?: 'default' | 'featured'
-  copy: Copy
-  isArabic: boolean
-}
-
-const LuxuryCard = memo(({ item, index, variant = 'default', copy, isArabic }: LuxuryCardProps) => {
-  const cardRef = useRef<HTMLDivElement | null>(null)
-  const [tilt, setTilt] = useState({ x: 0, y: 0 })
-  const [isHovered, setIsHovered] = useState(false)
+const ServiceRow = memo(({ item, index, copy, isArabic }: ServiceRowProps) => {
+  const [open, setOpen] = useState(false)
   const { theme } = useContext(ThemeContext)
   const isDark = theme === 'dark'
-
-  const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    const card = cardRef.current
-    if (!card) return
-    
-    const rect = card.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / rect.width - 0.5
-    const y = (e.clientY - rect.top) / rect.height - 0.5
-    
-    setTilt({ x: y * -8, y: x * 8 })
-  }, [])
-
-  const isFeatured = variant === 'featured'
-
-  return (
-    <div
-      ref={cardRef}
-      className={`group relative ${isFeatured ? 'lg:col-span-2 lg:row-span-2' : ''}`}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setTilt({ x: 0, y: 0 }); setIsHovered(false) }}
-      style={{
-        perspective: '1000px',
-        transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-        transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}
-    >
-      <div className={`
-        relative h-full overflow-hidden rounded-lg
-        transition-all duration-700
-        ${isFeatured ? 'min-h-[540px] p-10 lg:p-14' : 'aspect-[4/5] p-8'}
-        ${isDark 
-          ? 'bg-white/[0.03] border border-white/[0.08] hover:border-white/20 hover:shadow-[0_0_60px_rgba(255,255,255,0.08)]' 
-          : 'bg-black/[0.02] border border-black/[0.08] hover:border-black/20 hover:shadow-[0_0_60px_rgba(0,0,0,0.08)]'
-        }
-        ${isHovered ? 'backdrop-blur-xl' : 'backdrop-blur-md'}
-      `}>
-        {/* Animated gradient background */}
-        <div className={`
-          absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700
-          ${isDark 
-            ? 'bg-gradient-to-br from-white/[0.05] via-transparent to-white/[0.02]' 
-            : 'bg-gradient-to-br from-black/[0.03] via-transparent to-black/[0.01]'
-          }
-        `} />
-        
-        {/* Corner decorations */}
-        <div className={`absolute top-0 left-0 w-12 h-px ${isDark ? 'bg-gradient-to-r from-white/30' : 'bg-gradient-to-r from-black/30'}`} />
-        <div className={`absolute top-0 left-0 w-px h-12 ${isDark ? 'bg-gradient-to-b from-white/30' : 'bg-gradient-to-b from-black/30'}`} />
-        <div className={`absolute bottom-0 right-0 w-12 h-px ${isDark ? 'bg-gradient-to-l from-white/30' : 'bg-gradient-to-l from-black/30'}`} />
-        <div className={`absolute bottom-0 right-0 w-px h-12 ${isDark ? 'bg-gradient-to-t from-white/30' : 'bg-gradient-to-t from-black/30'}`} />
-
-        <div className="relative z-10 h-full flex flex-col justify-between">
-          {isFeatured ? (
-            <>
-              <div>
-                <div className={`flex items-center gap-4 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                  <span className={`text-[10px] font-medium tracking-[0.3em] uppercase ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-                    {copy.ui.chapter} 0{index + 1}
-                  </span>
-                  <div className={`flex-1 h-px ${isDark ? 'bg-gradient-to-r from-white/20' : 'bg-gradient-to-r from-black/20'}`} />
-                </div>
-                <h3 className={`
-                  text-4xl md:text-5xl lg:text-6xl font-display font-light leading-[1.05] mb-6
-                  ${isDark ? 'text-white/90 group-hover:text-white' : 'text-black/90 group-hover:text-black'}
-                  transition-colors duration-500
-                  ${isArabic ? 'text-right' : 'italic'}
-                `}>
-                  {item.title}
-                </h3>
-              </div>
-              <p className={`
-                text-sm leading-relaxed max-w-md font-light
-                ${isDark ? 'text-white/40 group-hover:text-white/60' : 'text-black/50 group-hover:text-black/70'}
-                transition-colors duration-500
-                ${isArabic ? 'text-right' : ''}
-              `}>
-                {item.copy}
-              </p>
-            </>
-          ) : (
-            <>
-              <div className={`flex justify-between items-start ${isArabic ? 'flex-row-reverse' : ''}`}>
-                <span className={`text-[10px] font-medium tracking-[0.3em] uppercase ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-                  {copy.ui.chapter} 0{index + 1}
-                </span>
-                <div className={`
-                  w-2 h-2 rounded-full border transition-all duration-500
-                  ${isDark ? 'border-white/20' : 'border-black/20'}
-                  ${isHovered ? (isDark ? 'bg-white/40' : 'bg-black/40') + ' scale-150' : 'bg-transparent'}
-                `} />
-              </div>
-              
-              <div className={isArabic ? 'text-right' : ''}>
-                <h3 className={`
-                  text-2xl md:text-3xl font-display font-light mb-4 leading-tight
-                  ${isDark ? 'text-white/90 group-hover:text-white' : 'text-black/90 group-hover:text-black'}
-                  transition-colors duration-500
-                `}>
-                  {item.title}
-                </h3>
-                <p className={`
-                  text-[13px] leading-relaxed line-clamp-3 font-light
-                  ${isDark ? 'text-white/40 group-hover:text-white/50' : 'text-black/50 group-hover:text-black/60'}
-                  transition-colors duration-500
-                `}>
-                  {item.copy}
-                </p>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Large watermark number */}
-        <div className={`
-          absolute -bottom-6 ${isArabic ? '-left-6' : '-right-6'}
-          text-[140px] font-display font-bold select-none pointer-events-none
-          transition-all duration-700 group-hover:scale-110
-          ${isDark ? 'text-white/[0.02] group-hover:text-white/[0.04]' : 'text-black/[0.02] group-hover:text-black/[0.04]'}
-        `}>
-          0{index + 1}
-        </div>
-      </div>
-    </div>
-  )
-})
-
-// Service showcase with 3D perspective
-interface ServiceShowcaseItem {
-  title: string
-  copy: string
-  result?: string
-}
-
-interface ServiceShowcaseProps {
-  item: ServiceShowcaseItem
-  index: number
-  copy: Copy
-  isReversed: boolean
-}
-
-const ServiceShowcase = memo(({ item, index, copy, isReversed }: ServiceShowcaseProps) => {
-  const sectionRef = useRef<HTMLDivElement | null>(null)
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
-  const { theme } = useContext(ThemeContext)
-  const isDark = theme === 'dark'
+  const rowRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-
-    gsap.fromTo(section.querySelectorAll('.reveal-service'),
-      { y: 80, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 1,
-        stagger: 0.15,
-        ease: ANIMATION.ease.luxury,
-        scrollTrigger: {
-          trigger: section,
-          start: 'top 75%',
-          once: true
-        }
-      }
+    const el = rowRef.current
+    if (!el) return
+    gsap.fromTo(el,
+      { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, duration: 0.9, ease: ANIMATION.ease.luxury,
+        scrollTrigger: { trigger: el, start: 'top 82%', once: true } }
     )
   }, [])
 
-  const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setMousePos({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height
-    })
-  }, [])
-
   return (
-    <div 
-      ref={sectionRef}
-      className={`grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20 items-center py-28 ${isReversed ? 'lg:flex-row-reverse' : ''}`}
-      onMouseMove={handleMouseMove}
+    <div
+      ref={rowRef}
+      className={`group cursor-pointer transition-colors duration-300 border-b
+        ${isDark
+          ? 'border-white/[0.07] hover:border-white/20'
+          : 'border-[#d9d5ca] hover:border-[#56514a]'}`}
+      onClick={() => setOpen(v => !v)}
     >
-      {/* Content */}
-      <div className={`lg:col-span-5 ${isReversed ? 'lg:col-start-8' : 'lg:col-start-1'} reveal-service`}>
-        <div className="relative">
-          <span className={`text-[11px] font-medium tracking-[0.4em] uppercase block mb-6 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-            {copy.home.serviceLabel} 0{index + 1}
+      {/* Header */}
+      <div className={`flex items-center justify-between py-8 md:py-10 gap-6 ${isArabic ? 'flex-row-reverse' : ''}`}>
+        <div className={`flex items-center gap-6 md:gap-10 min-w-0 ${isArabic ? 'flex-row-reverse' : ''}`}>
+          <span className={`text-[10px] font-mono tracking-[0.35em] tabular-nums shrink-0
+            ${isDark ? 'text-white/25' : 'text-[#8c8780]'}`}>
+            0{index + 1}
           </span>
-          
-          <h3 className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-[1.05] mb-8 ${isDark ? 'text-white/90' : 'text-black/90'}`}>
+          <h3 className={`text-2xl md:text-3xl lg:text-4xl font-display font-light leading-none truncate transition-colors duration-300
+            ${isDark ? 'text-white/85 group-hover:text-white' : 'text-[#18160f] group-hover:text-black'}`}>
             {item.title}
           </h3>
-          
-          <p className={`text-base leading-relaxed mb-10 max-w-md font-light ${isDark ? 'text-white/40' : 'text-black/50'}`}>
-            {item.copy}
-          </p>
+        </div>
 
+        <div className={`flex items-center gap-4 shrink-0 ${isArabic ? 'flex-row-reverse' : ''}`}>
           {item.result && (
-            <div className={`mb-10 p-4 border-l-2 ${isDark ? 'border-white/20 bg-white/[0.02]' : 'border-black/20 bg-black/[0.02]'}`}>
-              <span className={`text-[10px] uppercase tracking-widest block mb-1 ${isDark ? 'text-white/30' : 'text-black/40'}`}>{copy.ui.projectedImpact}</span>
-              <span className="text-2xl font-display font-light italic">{item.result}</span>
-            </div>
-          )}
-
-          <MagneticButton 
-            href="#contact"
-            variant="outline"
-            isDark={isDark}
-            className="group inline-flex items-center gap-4 px-6 py-3 rounded-full text-xs font-medium tracking-[0.2em] uppercase"
-          >
-            <span className="relative overflow-hidden h-4">
-              <span className="block transition-transform duration-300 group-hover:-translate-y-full">
-                {copy.home.servicesCta}
-              </span>
-              <span className="absolute top-full left-0 block transition-transform duration-300 group-hover:-translate-y-full">
-                {copy.home.servicesCta}
-              </span>
+            <span className={`hidden md:block text-[10px] font-semibold tracking-[0.25em] uppercase px-4 py-1.5 rounded-full border
+              ${isDark ? 'border-white/10 text-white/35' : 'border-[#d9d5ca] text-[#56514a] bg-white'}`}>
+              {item.result}
             </span>
-            <div className={`w-8 h-px transform origin-left transition-transform duration-300 group-hover:scale-x-150 ${isDark ? 'bg-current' : 'bg-current'}`} />
-          </MagneticButton>
+          )}
+          <div className={`w-9 h-9 rounded-full border flex items-center justify-center transition-all duration-500
+            ${open ? 'rotate-45' : 'rotate-0'}
+            ${isDark ? 'border-white/15 group-hover:border-white/30' : 'border-[#d9d5ca] bg-white group-hover:border-[#18160f]'}`}>
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <line x1="5.5" y1="0" x2="5.5" y2="11" strokeWidth="1"
+                stroke={isDark ? 'rgba(255,255,255,0.6)' : '#56514a'}/>
+              <line x1="0" y1="5.5" x2="11" y2="5.5" strokeWidth="1"
+                stroke={isDark ? 'rgba(255,255,255,0.6)' : '#56514a'}/>
+            </svg>
+          </div>
         </div>
       </div>
 
-      {/* Image with 3D tilt */}
-      <div className={`lg:col-span-6 ${isReversed ? 'lg:col-start-1 lg:row-start-1' : 'lg:col-start-7'} reveal-service`}>
-        <div 
-          className="relative group cursor-pointer"
-          style={{
-            transform: `perspective(1000px) rotateY(${(mousePos.x - 0.5) * 5}deg) rotateX(${(0.5 - mousePos.y) * 5}deg)`,
-            transition: 'transform 0.3s ease-out'
-          }}
-        >
-          <div className="relative overflow-hidden rounded-lg shadow-2xl">
-            <CinematicImage
-              src={IMAGES.services[index]}
-              alt={item.title}
-              className="aspect-[4/3] w-full"
-            />
-            
-            {/* Floating label */}
-            <div className={`absolute bottom-6 left-6 px-4 py-2 rounded-full backdrop-blur-md border ${isDark ? 'bg-black/40 border-white/10' : 'bg-white/40 border-black/10'}`}>
-              <span className={`text-[10px] font-medium tracking-widest uppercase ${isDark ? 'text-white/70' : 'text-black/70'}`}>
-                {copy.home.viewProjectLabel}
-              </span>
+      {/* Accordion panel */}
+      <div className={`grid transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden
+        ${open ? 'grid-rows-[1fr] pb-12' : 'grid-rows-[0fr]'}`}>
+        <div className="overflow-hidden min-h-0">
+          <div className={`grid grid-cols-1 md:grid-cols-2 gap-10 pt-2 ${isArabic ? 'text-right' : ''}`}>
+            <div>
+              <p className={`text-base leading-relaxed font-light mb-8 max-w-md
+                ${isDark ? 'text-white/50' : 'text-[#56514a]'}`}>
+                {item.copy}
+              </p>
+              <MagneticButton href="#contact" variant="outline" isDark={isDark}
+                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.2em] uppercase">
+                {copy.home.servicesCta}
+                <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
+                  <path d="M1 4h12M8 1l3 3-3 3" strokeWidth="1.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </MagneticButton>
+            </div>
+            <div className={`aspect-[16/9] overflow-hidden rounded-xl shadow-sm
+              ${isDark ? 'bg-white/5' : 'bg-[#e8e4d9]'}`}>
+              <CinematicImage src={IMAGES.services[index]} alt={item.title} className="w-full h-full"/>
             </div>
           </div>
-          
-          {/* Decorative frame */}
-          <div className={`absolute -inset-4 border rounded-lg pointer-events-none transition-colors duration-500 ${isDark ? 'border-white/5 group-hover:border-white/10' : 'border-black/5 group-hover:border-black/10'}`} />
         </div>
       </div>
     </div>
   )
 })
 
+//  Process step card 
+interface ProcessStepProps { title: string; copy: string; number: string; isDark: boolean; isArabic: boolean }
+
+const ProcessStep = memo(({ title, copy, number, isDark, isArabic }: ProcessStepProps) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    gsap.fromTo(el, { opacity: 0, y: 50 },
+      { opacity: 1, y: 0, duration: 1, ease: ANIMATION.ease.luxury,
+        scrollTrigger: { trigger: el, start: 'top 80%', once: true } })
+  }, [])
+
+  return (
+    <div ref={ref} className={`group relative pt-10 border-t
+      ${isDark ? 'border-white/[0.07]' : 'border-[#d9d5ca]'}
+      ${isArabic ? 'text-right' : ''}`}>
+      <span className={`block text-[10px] font-mono tracking-[0.4em] uppercase mb-6
+        ${isDark ? 'text-white/25' : 'text-[#8c8780]'}`}>{number}</span>
+      <h4 className={`text-xl md:text-2xl font-display font-light mb-4 transition-colors duration-300
+        ${isDark ? 'text-white/85 group-hover:text-white' : 'text-[#18160f] group-hover:text-black'}`}>{title}</h4>
+      <p className={`text-sm leading-relaxed font-light
+        ${isDark ? 'text-white/40' : 'text-[#56514a]'}`}>{copy}</p>
+      <div className={`absolute -top-3 ${isArabic ? 'left-0' : 'right-0'} text-[90px] font-display font-bold leading-none select-none pointer-events-none
+        ${isDark ? 'text-white/[0.025]' : 'text-[#d0ccbf]'}`}>
+        {number.split('/')[0].trim()}
+      </div>
+    </div>
+  )
+})
+
+//  Stat Card 
+interface StatCardProps { label: string; value: string; isDark: boolean; delay: number }
+
+const StatCard = memo(({ label, value, isDark, delay }: StatCardProps) => (
+  <TextReveal delay={delay}>
+    <div className={`text-center px-8 py-6 group rounded-2xl transition-all duration-300
+      ${isDark ? 'hover:bg-white/[0.03]' : 'bg-white shadow-sm hover:shadow-md border border-[#e8e4d9]'}`}>
+      <div className={`text-[10px] uppercase tracking-[0.4em] font-bold mb-4
+        ${isDark ? 'text-white/28' : 'text-[#8c8780]'}`}>{label}</div>
+      <div className={`text-6xl md:text-7xl font-display font-light transition-transform duration-500 group-hover:scale-105
+        ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}>{value}</div>
+    </div>
+  </TextReveal>
+))
+
+//  Testimonial Card 
+interface TestimonialCardProps { quote: string; name: string; role: string; isDark: boolean; isArabic: boolean }
+
+const TestimonialCard = memo(({ quote, name, role, isDark, isArabic }: TestimonialCardProps) => {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    gsap.fromTo(el, { opacity: 0, y: 40 },
+      { opacity: 1, y: 0, duration: 1, ease: ANIMATION.ease.luxury,
+        scrollTrigger: { trigger: el, start: 'top 82%', once: true } })
+  }, [])
+
+  return (
+    <div ref={ref} className={`p-8 md:p-10 rounded-2xl border transition-all duration-500
+      ${isDark
+        ? 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04]'
+        : 'border-[#e8e4d9] bg-white shadow-sm hover:shadow-md'}
+      ${isArabic ? 'text-right' : ''}`}>
+      <div className={`text-5xl font-display leading-none mb-6
+        ${isDark ? 'text-white/12' : 'text-[#d0ccbf]'}`}>&ldquo;</div>
+      <p className={`text-base md:text-lg font-light leading-relaxed mb-8
+        ${isDark ? 'text-white/65' : 'text-[#18160f]'}`}>{quote}</p>
+      <div className={`flex items-center gap-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
+        <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-xs font-bold
+          ${isDark ? 'border-white/18 bg-white/5 text-white/50' : 'border-[#d9d5ca] bg-[#eeeae0] text-[#56514a]'}`}>{name[0]}</div>
+        <div>
+          <div className={`text-sm font-semibold tracking-wide
+            ${isDark ? 'text-white/75' : 'text-[#18160f]'}`}>{name}</div>
+          <div className={`text-[11px] font-light
+            ${isDark ? 'text-white/30' : 'text-[#8c8780]'}`}>{role}</div>
+        </div>
+      </div>
+    </div>
+  )
+})
+
+//  Home 
 function Home({ themeMode }: HomeProps) {
-  const wrapperRef = useRef<HTMLDivElement | null>(null)
-  const heroRef = useRef<HTMLElement | null>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLElement>(null)
   const { copy, language } = useLanguage()
   const isArabic = useMemo(() => language === 'ar', [language])
   const [scrollProgress, setScrollProgress] = useState(0)
 
-  // Scroll progress
   useLayoutEffect(() => {
     const handleScroll = () => {
-      const scrollTop = window.scrollY
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight
-      setScrollProgress(scrollTop / docHeight)
+      const total = document.documentElement.scrollHeight - window.innerHeight
+      setScrollProgress(total > 0 ? window.scrollY / total : 0)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useLayoutEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
-
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
-      // Hero entrance
-      const heroTl = gsap.timeline({ delay: 0.5 })
-      
-      heroTl.from('.hero-tag', {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: ANIMATION.ease.luxury
-      })
-      .from('.hero-line', {
-        y: '100%',
-        duration: 1.2,
-        stagger: 0.12,
-        ease: ANIMATION.ease.luxury
-      }, '-=0.4')
-      .from('.hero-sub', {
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: ANIMATION.ease.smooth
-      }, '-=0.6')
-      .from('.hero-img', {
-        scale: 1.3,
-        opacity: 0,
-        duration: 1.6,
-        stagger: 0.2,
-        ease: ANIMATION.ease.luxury
-      }, '-=1')
+      const tl = gsap.timeline({ delay: 0.3 })
+      tl.from('.hero-eyebrow', { y: 20, opacity: 0, duration: 0.7, ease: ANIMATION.ease.luxury })
+        .from('.hero-line', { y: '105%', duration: 1.1, stagger: 0.1, ease: ANIMATION.ease.luxury }, '-=0.3')
+        .from('.hero-body', { y: 30, opacity: 0, duration: 0.8, ease: ANIMATION.ease.smooth }, '-=0.5')
+        .from('.hero-cta', { y: 20, opacity: 0, duration: 0.7, ease: ANIMATION.ease.smooth }, '-=0.4')
+        .from('.hero-image-wrap', { scale: 1.08, opacity: 0, duration: 1.4, ease: ANIMATION.ease.luxury }, '-=1.2')
 
-      // Parallax
-      gsap.to('.hero-img-1', {
-        yPercent: 15,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1
-        }
+      gsap.to('.hero-image-wrap', {
+        yPercent: 12, ease: 'none',
+        scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: 1.5 }
       })
-
-      gsap.to('.hero-img-2', {
-        yPercent: 8,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1
-        }
-      })
-
     }, wrapperRef)
-
     return () => ctx.revert()
   }, [])
 
   const isDark = themeMode === 'dark'
-  const textDirection = useMemo(() => ({
-    base: isArabic ? 'text-right' : 'text-left',
-    flex: isArabic ? 'flex-row-reverse' : 'flex-row'
+  const P = isDark ? DK : LT
+
+  const dir = useMemo(() => ({
+    text: isArabic ? 'text-right' : 'text-left',
+    flex: isArabic ? 'flex-row-reverse' : 'flex-row',
   }), [isArabic])
+
+  const testimonials: Array<{ quote: string; name: string; role: string }> =
+    (copy.home as Record<string, unknown>).testimonials as Array<{ quote: string; name: string; role: string }> ?? []
 
   return (
     <ThemeContext.Provider value={{ theme: themeMode }}>
-      <div 
-        ref={wrapperRef} 
-        className={`relative min-h-screen overflow-x-hidden transition-colors duration-700 ${isDark ? 'bg-[#050505] text-white' : 'bg-[#fafafa] text-black'}`}
+      <div
+        ref={wrapperRef}
+        className={`relative min-h-screen overflow-x-hidden transition-colors duration-700 ${P.bg} ${P.text}`}
       >
-        {/* Progress bar */}
-        <div 
-          className={`fixed top-0 left-0 h-[2px] z-[100] transition-colors duration-700 ${isDark ? 'bg-white/40' : 'bg-black/40'}`} 
-          style={{ width: `${scrollProgress * 100}%` }} 
+        {/* Scroll progress */}
+        <div
+          className={`fixed top-0 left-0 h-[1.5px] z-[100] transition-none
+            ${isDark ? 'bg-white/50' : 'bg-[#18160f]'}`}
+          style={{ width: `${scrollProgress * 100}%` }}
         />
-        
+
         <NoiseTexture />
         <AmbientGlow isDark={isDark} />
 
-        <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-20 relative z-10">
-          
-          {/* Navigation spacer */}
-          <div className="h-28" />
+        {/*  HERO  */}
+        <section ref={heroRef} className="relative min-h-screen flex flex-col">
+          {/* Full-bleed background image */}
+          <div className="hero-image-wrap absolute inset-0 overflow-hidden will-change-transform">
+            <CinematicImage src={IMAGES.hero} alt="Lightlab studio hero" className="w-full h-full" priority />
+            {/* Always dark overlay — hero is a cinematic image section in both themes */}
+            <div className={`absolute inset-0 bg-gradient-to-b
+              ${isDark
+                ? 'from-[#080807]/60 via-[#080807]/40 to-[#080807]'
+                : 'from-black/55 via-black/35 to-black/80'}`} />
+          </div>
 
-          {/* Hero Section */}
-          <section ref={heroRef} className="min-h-[85vh] flex flex-col justify-center relative mb-32">
-            <div className="grid grid-cols-12 gap-6 items-end">
-              
-              {/* Typography */}
-              <div className={`col-span-12 lg:col-span-7 ${textDirection.base}`}>
-                <div className="hero-tag mb-10 overflow-hidden">
-                  <span className={`inline-block text-[11px] font-medium tracking-[0.4em] uppercase ${isDark ? 'text-white/40' : 'text-black/40'}`}>
-                    {copy.home.heroTag}
-                  </span>
-                </div>
+          {/* Hero content */}
+          <div className="relative z-10 flex flex-col justify-end min-h-screen max-w-[1700px] mx-auto w-full px-6 md:px-12 lg:px-20 pb-24 pt-44">
+            <div className={`max-w-5xl ${dir.text}`}>
 
-                <h1 className="font-display text-[clamp(3.5rem,11vw,10rem)] leading-[0.9] font-light tracking-tight mb-16">
-                  {isArabic ? (
-                    <div className="hero-line overflow-hidden">
-                      <span className="block">{copy.home.heroTitle1} {copy.home.heroTitle2}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="hero-line overflow-hidden">
-                        <span className="block">{copy.home.heroTitle1}</span>
-                      </div>
-                      <div className="hero-line overflow-hidden">
-                        <span className={`block italic ${isDark ? 'text-white/50' : 'text-black/40'}`}>{copy.home.heroTitle2}</span>
-                      </div>
-                    </>
-                  )}
-                </h1>
-
-                <div className={`hero-sub flex flex-col md:flex-row ${textDirection.flex} gap-10 md:gap-20`}>
-                  <p className={`text-sm uppercase tracking-widest font-medium max-w-[220px] ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-                    {copy.home.heroMeta}
-                  </p>
-                  <p className={`text-lg md:text-xl leading-relaxed max-w-xl font-light ${isDark ? 'text-white/50' : 'text-black/50'}`}>
-                    {copy.home.heroCopy}
-                  </p>
-                </div>
+              {/* Eyebrow — always white, hero is always over a dark image */}
+              <div className="hero-eyebrow mb-10">
+                <span className="inline-flex items-center gap-3 text-[11px] font-semibold tracking-[0.4em] uppercase text-white/45">
+                  <span className="w-8 h-px bg-white/30" />
+                  {copy.home.heroTag}
+                </span>
               </div>
 
-              {/* Images */}
-              <div className="col-span-12 lg:col-span-5 relative h-[500px] lg:h-[650px] mt-16 lg:mt-0">
-                <div className="hero-img hero-img-1 absolute top-0 right-0 w-[65%] aspect-[3/4] z-10 shadow-2xl rounded-lg overflow-hidden">
-                  <CinematicImage
-                    src={IMAGES.hero.primary}
-                    alt="Hero primary"
-                    className="w-full h-full"
-                    priority
-                  />
+              {/* Headline — always white over image */}
+              <h1 className="font-display font-light tracking-tight leading-[0.88] text-[clamp(4.5rem,11vw,11rem)] mb-12 text-white">
+                <div className="overflow-hidden">
+                  <span className="hero-line block">{copy.home.heroTitle1}</span>
                 </div>
-                <div className="hero-img hero-img-2 absolute bottom-12 left-0 w-[55%] aspect-square z-20 shadow-2xl rounded-lg overflow-hidden">
-                  <CinematicImage
-                    src={IMAGES.hero.secondary}
-                    alt="Hero secondary"
-                    className="w-full h-full"
-                    priority
-                  />
+                <div className="overflow-hidden">
+                  <span className="hero-line block italic text-white/45">{copy.home.heroTitle2}</span>
                 </div>
-                
-                {/* Decorative circle */}
-                <div className={`absolute top-1/2 left-1/2 w-40 h-40 border rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none ${isDark ? 'border-white/10' : 'border-black/10'}`} />
+              </h1>
+
+              {/* Body copy — always white over image */}
+              <p className="hero-body text-base md:text-lg font-light leading-relaxed max-w-lg mb-12 text-white/55">
+                {copy.home.heroCopy}
+              </p>
+
+              {/* CTAs — always dark-variant since hero is always over a dark image */}
+              <div className={`hero-cta flex flex-wrap gap-4 ${isArabic ? 'justify-end' : ''}`}>
+                <MagneticButton href="#contact" isDark={true} variant="primary"
+                  className="inline-flex items-center gap-3 px-9 py-4 rounded-full text-[12px] font-bold tracking-[0.22em] uppercase">
+                  {copy.home.ctaButton}
+                </MagneticButton>
+                <MagneticButton href="/services" isDark={true} variant="outline"
+                  className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-[12px] font-semibold tracking-[0.2em] uppercase">
+                  {copy.nav?.services ?? 'Services'}
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
+                    <path d="M1 4h12M8 1l3 3-3 3" strokeWidth="1.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </MagneticButton>
               </div>
             </div>
 
-            {/* Scroll indicator */}
-            <div className={`absolute bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 ${isDark ? 'opacity-30' : 'opacity-40'}`}>
-              <span className="text-[10px] uppercase tracking-[0.3em] font-medium">{copy.home.scrollLabel}</span>
-              <div className={`w-px h-16 bg-gradient-to-b ${isDark ? 'from-white/40' : 'from-black/40'} to-transparent`} />
+            {/* Scroll hint — always white over image */}
+            <div className={`absolute bottom-10 ${isArabic ? 'left-20' : 'right-20'} flex flex-col items-center gap-2 text-white opacity-30`}>
+              <span className="text-[9px] font-bold tracking-[0.45em] uppercase">{copy.home.scrollLabel}</span>
+              <div className="w-px h-14 bg-gradient-to-b from-white/60 to-transparent" />
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Marquee */}
-          <div className={`py-16 border-y overflow-hidden ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-            <div className="flex gap-16 animate-marquee whitespace-nowrap">
-              {[...Array(4)].map((_, i) => (
-                <span key={i} className={`text-6xl md:text-8xl font-display font-light uppercase tracking-tight ${isDark ? 'text-white/[0.03]' : 'text-black/[0.12]'}`}>
-                  {copy.home.heroTitle1} — {copy.home.heroTitle2} —
+        <div className="max-w-[1700px] mx-auto px-6 md:px-12 lg:px-20 relative z-10">
+
+          {/*  TICKER  */}
+          <div className={`py-6 border-y overflow-hidden ${P.border}`}>
+            <div className="flex gap-12 animate-marquee whitespace-nowrap">
+              {[...Array(8)].map((_, i) => (
+                <span key={i} className={`text-[10px] font-bold tracking-[0.45em] uppercase shrink-0 ${P.muted}`}>
+                  AI Automation &nbsp;&nbsp; Engineering &nbsp;&nbsp; Media Buying &nbsp;&nbsp; Revenue Scaling &nbsp;&nbsp;
                 </span>
               ))}
             </div>
           </div>
 
-          {/* Performance Stats */}
-          <section className="py-24 border-b border-white/5">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {/*  IMPACT STATS  */}
+          <section className={`py-24 border-b ${P.border}`}>
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6`}>
               {copy.home.impactStats.map((stat, i) => (
-                <div key={i} className="text-center group">
-                  <div className={`text-[10px] uppercase tracking-[0.3em] mb-4 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-                    {stat.label}
-                  </div>
-                  <div className={`text-5xl md:text-6xl font-display font-light transition-transform duration-500 group-hover:scale-110 ${isDark ? 'text-white/90' : 'text-black/90'}`}>
-                    {stat.value}
-                  </div>
-                </div>
+                <StatCard key={i} label={stat.label} value={stat.value} isDark={isDark} delay={i * 0.1} />
               ))}
             </div>
           </section>
 
-          {/* Expertise */}
-          <section className="py-32">
-            <div className={`mb-24 ${textDirection.base}`}>
+          {/*  ABOUT  */}
+          <section className={`py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-end border-b ${P.border} ${dir.text}`}>
+            <div>
               <TextReveal>
-                <span className={`text-[11px] font-medium tracking-[0.4em] uppercase block mb-8 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
+                <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-8 ${P.muted}`}>
                   {copy.home.expertiseLabel}
                 </span>
               </TextReveal>
-              <SplitText 
+              <SplitText
                 text={copy.home.expertiseTitle}
-                className={`text-5xl md:text-7xl lg:text-8xl font-display font-light mb-8 ${isDark ? 'text-white/90' : 'text-black/90'}`}
+                className={`text-5xl md:text-6xl lg:text-7xl font-display font-light leading-none
+                  ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
                 type="words"
               />
-              <TextReveal delay={0.2}>
-                <p className={`text-base max-w-2xl leading-relaxed font-light ${isDark ? 'text-white/40' : 'text-black/50'}`}>
-                  {copy.home.expertiseCopy}
-                </p>
-              </TextReveal>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              {copy.home.bentoCards.map((item, index) => (
-                <LuxuryCard 
-                  key={item.title} 
-                  item={item} 
-                  index={index} 
-                  copy={copy}
-                  isArabic={isArabic}
-                  variant={index === 0 ? 'featured' : 'default'}
-                />
-              ))}
-            </div>
+            <TextReveal delay={0.15}>
+              <p className={`text-base md:text-lg leading-relaxed font-light max-w-lg ${P.stone}`}>
+                {copy.home.expertiseCopy}
+              </p>
+            </TextReveal>
           </section>
 
-          {/* Philosophy */}
-          <section className={`-mx-6 md:-mx-12 lg:-mx-20 py-32 relative overflow-hidden ${isDark ? 'bg-white/[0.01]' : 'bg-black/[0.01]'}`}>
-            <div className="px-6 md:px-12 lg:px-20 relative z-10">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-20">
-                {copy.home.clarity.map((item, index) => (
-                  <div key={item.title} className={`group ${textDirection.base}`}>
-                    <div className="mb-10 overflow-hidden">
-                      <span className={`block text-[140px] font-display font-bold leading-none transition-colors duration-700 ${isDark ? 'text-white/[0.02] group-hover:text-white/[0.05]' : 'text-black/[0.02] group-hover:text-black/[0.05]'}`}>
+          {/*  CLARITY / PHILOSOPHY  */}
+          <section className="py-32">
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 ${dir.text}`}>
+              {copy.home.clarity.map((item, index) => (
+                <div key={item.title} className="group">
+                  <TextReveal delay={index * 0.12}>
+                    <div className={`relative p-8 rounded-2xl border transition-all duration-500
+                      ${isDark
+                        ? 'border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.02]'
+                        : 'bg-white border-[#e8e4d9] shadow-sm hover:shadow-md'}`}>
+                      <span className={`absolute top-6 ${isArabic ? 'left-8' : 'right-8'} text-[72px] font-display font-bold leading-none select-none pointer-events-none
+                        ${isDark ? 'text-white/[0.03]' : 'text-[#ece8dd]'}`}>
                         0{index + 1}
                       </span>
+                      <span className={`block text-[10px] font-bold tracking-[0.4em] uppercase mb-6 ${P.muted}`}>{item.title}</span>
+                      <h4 className={`text-2xl md:text-3xl font-display font-light leading-snug mb-4 transition-colors duration-300
+                        ${isDark ? 'text-white/85 group-hover:text-white' : 'text-[#18160f]'}`}>{item.lead}</h4>
+                      <p className={`text-sm leading-relaxed font-light ${P.stone}`}>{item.copy}</p>
                     </div>
-                    <h4 className={`text-sm font-medium tracking-[0.3em] uppercase mb-8 transition-colors ${isDark ? 'text-white/30 group-hover:text-white/50' : 'text-black/40 group-hover:text-black/60'}`}>
-                      {item.title}
-                    </h4>
-                    <p className={`text-2xl md:text-3xl font-display font-light leading-tight mb-6 ${isDark ? 'text-white/80' : 'text-black/80'}`}>
-                      {item.lead}
-                    </p>
-                    <p className={`text-sm leading-relaxed font-light ${isDark ? 'text-white/40' : 'text-black/50'}`}>
-                      {item.copy}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          {/* Services */}
-          <section className="py-32">
-            <div className={`mb-20 ${textDirection.base}`}>
-              <TextReveal>
-                <span className={`text-[11px] font-medium tracking-[0.4em] uppercase block mb-8 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-                  {copy.home.coreLabel}
-                </span>
-              </TextReveal>
-              <SplitText 
-                text={`${copy.home.servicesTitleLine1} ${copy.home.servicesTitleLine2}`}
-                className={`text-5xl md:text-7xl lg:text-9xl font-display font-light leading-[0.9] ${isDark ? 'text-white/90' : 'text-black/90'}`}
-                type="words"
-              />
-            </div>
-
-            <div className={`divide-y ${isDark ? 'divide-white/5' : 'divide-black/5'}`}>
-              {copy.home.serviceTracks.map((item, index) => (
-                <ServiceShowcase 
-                  key={item.title}
-                  item={item}
-                  index={index}
-                  copy={copy}
-                  isReversed={index % 2 === 1}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* Method */}
-          <section className={`py-32 border-t ${isDark ? 'border-white/5' : 'border-black/5'}`}>
-            <div className={`mb-24 ${textDirection.base}`}>
-              <TextReveal>
-                <span className={`text-[11px] font-medium tracking-[0.4em] uppercase block mb-8 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-                  {copy.home.methodTitle}
-                </span>
-              </TextReveal>
-              <h2 className={`text-5xl md:text-6xl lg:text-7xl font-display font-light mb-10 leading-tight ${isDark ? 'text-white/90' : 'text-black/90'}`}>
-                {copy.home.methodSteps.join(' · ')}
-              </h2>
-              <TextReveal delay={0.1}>
-                <p className={`text-base max-w-2xl leading-relaxed font-light ${isDark ? 'text-white/40' : 'text-black/50'}`}>
-                  {copy.home.methodCopy}
-                </p>
-              </TextReveal>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {copy.home.methodCards.map((item, index) => (
-                <div key={item.title} className="group">
-                  <div className={`aspect-[4/5] overflow-hidden rounded-lg mb-8 relative ${isDark ? 'bg-white/5' : 'bg-black/5'}`}>
-                    <CinematicImage
-                      src={IMAGES.method[index]}
-                      alt={item.title}
-                      className="w-full h-full"
-                    />
-                    <div className={`absolute inset-0 bg-gradient-to-t opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isDark ? 'from-black/60' : 'from-white/60'}`} />
-                    
-                    <div className={`absolute top-6 left-6 px-3 py-1.5 rounded-full backdrop-blur-md border ${isDark ? 'bg-black/30 border-white/10' : 'bg-white/30 border-black/10'}`}>
-                      <span className={`text-[10px] font-medium tracking-widest uppercase ${isDark ? 'text-white/70' : 'text-black/70'}`}>
-                        {copy.home.stepLabel} 0{index + 1}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className={textDirection.base}>
-                    <h3 className={`text-2xl font-display font-light mb-3 transition-colors ${isDark ? 'text-white/90 group-hover:text-white' : 'text-black/90 group-hover:text-black'}`}>
-                      {item.title}
-                    </h3>
-                    <p className={`text-sm leading-relaxed font-light ${isDark ? 'text-white/40' : 'text-black/50'}`}>
-                      {item.copy}
-                    </p>
-                  </div>
+                  </TextReveal>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Contact */}
-          <section className="py-40 relative scroll-mt-40" id="contact">
-            <div className={`absolute inset-0 bg-gradient-to-b from-transparent ${isDark ? 'via-white/[0.01]' : 'via-black/[0.01]'} to-transparent pointer-events-none`} />
-            
-            <div className={`relative z-10 max-w-4xl mx-auto text-center ${textDirection.base}`}>
+          {/*  SERVICES  */}
+          <section className={`pt-4 pb-10 border-t ${P.border}`}>
+            <div className={`flex items-end justify-between gap-8 mb-6 ${isArabic ? 'flex-row-reverse' : ''}`}>
+              <div className={dir.text}>
+                <TextReveal>
+                  <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-6 ${P.muted}`}>{copy.home.coreLabel}</span>
+                </TextReveal>
+                <SplitText
+                  text={`${copy.home.servicesTitleLine1} ${copy.home.servicesTitleLine2}`}
+                  className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-tight
+                    ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
+                  type="words"
+                />
+              </div>
+            </div>
+            <div className={`border-t ${P.border}`}>
+              {copy.home.serviceTracks.map((item, index) => (
+                <ServiceRow key={item.title} item={item} index={index} copy={copy} isArabic={isArabic} />
+              ))}
+            </div>
+          </section>
+
+          {/*  METHOD  */}
+          <section className={`py-32 border-t ${P.border}`}>
+            <div className={`mb-20 grid grid-cols-1 lg:grid-cols-2 gap-10 items-end ${dir.text}`}>
+              <div>
+                <TextReveal>
+                  <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-8 ${P.muted}`}>{copy.home.methodTitle}</span>
+                </TextReveal>
+                <SplitText
+                  text={copy.home.methodSteps.join('  ')}
+                  className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-snug
+                    ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
+                  type="words"
+                />
+              </div>
+              <TextReveal delay={0.15}>
+                <p className={`text-base font-light leading-relaxed max-w-md ${P.stone}`}>{copy.home.methodCopy}</p>
+              </TextReveal>
+            </div>
+
+            {/* Steps */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+              {copy.home.methodCards.map((item, index) => (
+                <ProcessStep key={item.title} title={item.title} copy={item.copy}
+                  number={`0${index + 1} / ${copy.home.methodCards.length}`} isDark={isDark} isArabic={isArabic} />
+              ))}
+            </div>
+
+            {/* Image strip */}
+            <div className="grid grid-cols-3 gap-4">
+              {IMAGES.method.map((src, i) => (
+                <div key={i} className={`overflow-hidden rounded-xl aspect-[4/3] ${isDark ? 'bg-white/5' : 'bg-[#e8e4d9] shadow-sm'}`}>
+                  <CinematicImage src={src} alt={`Method step ${i + 1}`} className="w-full h-full" />
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/*  TESTIMONIALS  */}
+          {testimonials.length > 0 && (
+            <section className={`py-32 border-t ${P.border} ${dir.text}`}>
               <TextReveal>
-                <span className={`text-[11px] font-medium tracking-[0.4em] uppercase block mb-10 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
+                <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-16 ${P.muted}`}>
+                  {(copy.home as Record<string, unknown>).testimonialsTitle as string ?? 'Proof of Work'}
+                </span>
+              </TextReveal>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {testimonials.slice(0, 2).map((t, i) => (
+                  <TestimonialCard key={i} quote={t.quote} name={t.name} role={t.role} isDark={isDark} isArabic={isArabic} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/*  CTA 
+               Light mode: inverted dark card for maximum contrast & drama
+               Dark mode: subtle glass card as before
+          */}
+          <section
+            id="contact"
+            className={`scroll-mt-28 py-40 relative overflow-hidden rounded-3xl mb-24 transition-colors duration-700
+              ${isDark
+                ? 'bg-white/[0.025] border border-white/[0.07]'
+                : 'bg-[#18160f] text-white'}`}
+          >
+            {/* Blurred orbs */}
+            <div className={`absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-[160px] pointer-events-none
+              ${isDark ? 'bg-white/[0.025]' : 'bg-white/[0.04]'}`} />
+            <div className={`absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none
+              ${isDark ? 'bg-white/[0.02]' : 'bg-white/[0.03]'}`} />
+
+            <div className="relative z-10 max-w-3xl mx-auto text-center px-6">
+              <TextReveal>
+                <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-10
+                  ${isDark ? 'text-white/28' : 'text-white/45'}`}>
                   {copy.home.ctaLabel}
                 </span>
               </TextReveal>
-              
-              <SplitText 
+
+              <SplitText
                 text={copy.home.ctaTitle}
-                className={`overflow-visible text-6xl md:text-8xl lg:text-[10rem] font-display font-normal mb-12 leading-[0.95] ${isDark ? 'text-white/90' : 'text-black'}`}
+                className="text-6xl md:text-8xl lg:text-[8.5rem] font-display font-light leading-[0.92] mb-10 overflow-visible text-white/90"
                 type="words"
                 delay={0.1}
               />
-              
-              <TextReveal delay={0.3}>
-                <p className={`text-lg max-w-xl mx-auto leading-relaxed font-light mb-20 ${isDark ? 'text-white/40' : 'text-black/50'}`}>
+
+              <TextReveal delay={0.25}>
+                <p className="text-base md:text-lg font-light leading-relaxed mb-12 max-w-lg mx-auto text-white/50">
                   {copy.home.ctaCopy}
                 </p>
               </TextReveal>
 
-              <div className="reveal-service">
-                <MagneticButton 
-                  href="mailto:hello@lightlab.dev"
-                  isDark={isDark}
-                  className="group relative inline-flex items-center justify-center px-14 py-6 rounded-full overflow-hidden transition-all duration-500"
-                  variant="primary"
-                >
-                  <span className="relative z-10 text-xs font-bold tracking-[0.25em] uppercase transition-colors duration-300">
-                    {copy.home.ctaButton}
+              {/* Availability badge */}
+              <TextReveal delay={0.3}>
+                <div className="inline-flex items-center gap-3 mb-12 px-5 py-2.5 rounded-full border border-white/[0.12] text-white/40">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400/70 animate-pulse shrink-0" />
+                  <span className="text-[10px] font-bold tracking-[0.28em] uppercase">
+                    {copy.home.ctaMeta}: {copy.home.ctaMetaValue}
                   </span>
-                </MagneticButton>
-              </div>
+                </div>
+              </TextReveal>
+
+              {/* Always use light-themed button inside the dark CTA card */}
+              <MagneticButton href="mailto:hello@lightlab.dev" isDark={true} variant="primary"
+                className="inline-flex items-center gap-4 px-12 py-5 rounded-full text-[12px] font-bold tracking-[0.25em] uppercase">
+                {copy.home.ctaButton}
+                <svg width="16" height="9" viewBox="0 0 16 9" fill="none">
+                  <path d="M1 4.5h14M9 1l4 3.5L9 8" strokeWidth="1.3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </MagneticButton>
             </div>
 
-            {/* Background watermark */}
-            <div className="absolute bottom-0 left-0 right-0 h-[8vw] overflow-hidden pointer-events-none flex items-start justify-center">
-              <div className={`text-[18vw] font-display font-bold leading-none text-center whitespace-nowrap ${isDark ? 'text-white/[0.02]' : 'text-black/[0.02]'}`}>
-                LIGHTLAB
-              </div>
+            {/* BG wordmark */}
+            <div className="absolute inset-x-0 bottom-0 h-[9vw] overflow-hidden pointer-events-none flex items-start justify-center">
+              <span className={`text-[18vw] font-display font-bold leading-none whitespace-nowrap
+                ${isDark ? 'text-white/[0.022]' : 'text-white/[0.04]'}`}>LIGHTLAB</span>
             </div>
           </section>
 
         </div>
 
-        {/* Global styles */}
         <style>{`
           @keyframes marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
           }
-          .animate-marquee {
-            animation: marquee 35s linear infinite;
-          }
+          .animate-marquee { animation: marquee 42s linear infinite; }
         `}</style>
       </div>
     </ThemeContext.Provider>

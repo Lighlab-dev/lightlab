@@ -363,6 +363,45 @@ html[data-theme="dark"] .navbar-scrolled {
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
+/* ── Hero overlay nav – force white on both themes ─────────────────────────── */
+.nav-over-hero,
+.nav-over-hero a,
+.nav-over-hero button,
+.nav-over-hero span {
+  color: rgba(255, 255, 255, 0.9) !important;
+  transition: color 0.4s ease, border-color 0.4s ease, background-color 0.4s ease;
+}
+
+.nav-over-hero .theme-toggle {
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  background: transparent !important;
+}
+
+.nav-over-hero .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
+
+.nav-over-hero .theme-outline {
+  border-color: rgba(255, 255, 255, 0.30) !important;
+  background: transparent !important;
+}
+
+.nav-over-hero .theme-outline:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
+
+/* Underline hover accent on nav links */
+.nav-over-hero a::after {
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Mobile menu border */
+.nav-over-hero button[aria-expanded] {
+  border-color: rgba(255, 255, 255, 0.30) !important;
+}
+
 .glass-card {
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(12px);
