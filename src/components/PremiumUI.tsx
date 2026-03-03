@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, useCallback, memo, type ReactNode, type MouseEvent } from 'react'
+import { useLayoutEffect, useRef, useCallback, memo, type ReactNode, type MouseEvent } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -35,18 +35,17 @@ export const MagneticButton = memo(({
   type = 'button'
 }: MagneticButtonProps) => {
   const buttonRef = useRef<any>(null)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!buttonRef.current) return
     const rect = buttonRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left - rect.width / 2) * 0.4
-    const y = (e.clientY - rect.top - rect.height / 2) * 0.4
-    setPosition({ x, y })
+    const x = (e.clientX - rect.left - rect.width / 2) * 0.3
+    const y = (e.clientY - rect.top - rect.height / 2) * 0.3
+    gsap.to(buttonRef.current, { x, y, duration: 0.3, ease: 'power2.out', overwrite: true })
   }, [])
 
   const handleMouseLeave = useCallback(() => {
-    setPosition({ x: 0, y: 0 })
+    gsap.to(buttonRef.current, { x: 0, y: 0, duration: 0.45, ease: 'power3.out', overwrite: true })
   }, [])
 
   const baseStyles = variant === 'primary'
@@ -59,8 +58,7 @@ export const MagneticButton = memo(({
 
   const commonProps = {
     ref: buttonRef,
-    className: `inline-block transition-transform duration-300 ease-out ${baseStyles} ${className}`,
-    style: { transform: `translate(${position.x}px, ${position.y}px)` },
+    className: `inline-block transition-[background-color,color,border-color,box-shadow] duration-300 ease-out ${baseStyles} ${className}`,
     onMouseMove: handleMouseMove,
     onMouseLeave: handleMouseLeave,
     onClick
@@ -105,12 +103,12 @@ export const TextReveal = memo(({ children, delay = 0, className = '', direction
         y: '0%',
         x: '0%',
         opacity: 1,
-        duration: ANIMATION.duration.reveal,
+        duration: 0.65,
         delay,
         ease: ANIMATION.ease.luxury,
         scrollTrigger: {
           trigger: el,
-          start: 'top 85%',
+          start: 'top 92%',
           once: true
         }
       }
@@ -154,18 +152,17 @@ export const SplitText = memo(({ text, className = '', delay = 0, type = 'chars'
     if (!chars?.length) return
 
     gsap.fromTo(chars,
-      { y: '100%', opacity: 0, rotateX: -90 },
+      { y: 24, opacity: 0 },
       {
-        y: '0%',
+        y: 0,
         opacity: 1,
-        rotateX: 0,
-        duration: 0.8,
-        stagger: type === 'chars' ? 0.02 : 0.08,
+        duration: 0.55,
+        stagger: type === 'chars' ? 0.018 : 0.06,
         delay,
         ease: ANIMATION.ease.luxury,
         scrollTrigger: {
           trigger: containerRef.current,
-          start: 'top 85%',
+          start: 'top 92%',
           once: true
         }
       }
@@ -173,7 +170,7 @@ export const SplitText = memo(({ text, className = '', delay = 0, type = 'chars'
   }, [delay, type])
 
   return (
-    <div ref={containerRef} className={`overflow-hidden ${className}`} style={{ perspective: '1000px' }}>
+    <div ref={containerRef} className={`${className}`} style={{ perspective: '1000px' }}>
       <div className="flex flex-wrap">
         {elements}
       </div>
@@ -204,19 +201,19 @@ export const CinematicImage = memo(({ src, alt, className = '', priority = false
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
-        start: 'top 80%',
+        start: 'top 88%',
         once: true
       }
     })
 
     tl.fromTo(overlay,
       { scaleX: 1 },
-      { scaleX: 0, duration: 1.4, ease: ANIMATION.ease.luxury, transformOrigin: 'right center' }
+      { scaleX: 0, duration: 1, ease: ANIMATION.ease.luxury, transformOrigin: 'right center' }
     )
     .fromTo(image,
-      { scale: 1.3, filter: 'blur(20px)' },
-      { scale: 1, filter: 'blur(0px)', duration: 1.6, ease: ANIMATION.ease.smooth },
-      '-=1.2'
+      { scale: 1.1 },
+      { scale: 1, duration: 1.2, ease: ANIMATION.ease.smooth },
+      '-=0.8'
     )
 
     return () => {

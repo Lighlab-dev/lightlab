@@ -20,10 +20,14 @@ const IMAGES = {
   ]
 }
 
-function Services() {
+interface ServicesProps {
+  themeMode?: 'dark' | 'light'
+}
+
+function Services({ themeMode = 'dark' }: ServicesProps) {
   const { copy } = useLanguage()
   const containerRef = useRef<HTMLDivElement>(null)
-  const isDark = true
+  const isDark = themeMode === 'dark'
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -46,7 +50,7 @@ function Services() {
   return (
     <main
       ref={containerRef}
-      className="relative min-h-screen overflow-x-hidden transition-colors duration-700 bg-[#050505] text-white"
+      className={`relative min-h-screen overflow-x-hidden transition-colors duration-700 ${isDark ? 'bg-[#080807] text-white' : 'bg-[#eeeae0] text-[#18160f]'}`}
     >
       <NoiseTexture />
       <AmbientGlow isDark={isDark} />
@@ -61,7 +65,7 @@ function Services() {
           <div className="flex flex-col lg:flex-row justify-between items-end gap-16 mb-24">
             <div className="max-w-5xl">
               <TextReveal>
-                <div className="text-[11px] uppercase tracking-[0.5em] mb-10 opacity-40 font-bold">
+                <div className={`text-[11px] uppercase tracking-[0.5em] mb-10 font-bold ${isDark ? 'opacity-40' : 'text-[#56514a]'}`}>
                   {copy.services.overview.heroEyebrow}
                 </div>
               </TextReveal>
@@ -75,7 +79,7 @@ function Services() {
               </h1>
             </div>
             <div className="max-w-sm reveal-services">
-              <p className="text-xl opacity-40 leading-relaxed font-light italic">
+              <p className={`text-xl leading-relaxed font-light italic ${isDark ? 'opacity-40' : 'text-[#56514a]'}`}>
                 {copy.services.overview.heroSubtitle}
               </p>
             </div>
@@ -113,19 +117,19 @@ function Services() {
                 <h2 className="text-5xl md:text-7xl font-display font-light leading-none tracking-tighter uppercase group-hover:italic transition-all duration-500">
                   {track.title}
                 </h2>
-                <p className="text-lg opacity-40 leading-relaxed font-light max-w-xl">
+                <p className={`text-lg leading-relaxed font-light max-w-xl ${isDark ? 'opacity-40' : 'text-[#56514a]'}`}>
                   {track.description}
                 </p>
                 
-                <div className="space-y-12 pt-12 border-t border-white/10">
+                <div className={`space-y-12 pt-12 border-t ${isDark ? 'border-white/10' : 'border-[#d9d5ca]'}`}>
                   <div>
-                    <span className="text-[10px] uppercase tracking-[0.4em] opacity-30 block mb-8 font-bold">
+                    <span className={`text-[10px] uppercase tracking-[0.4em] block mb-8 font-bold ${isDark ? 'opacity-30' : 'text-[#8c8780]'}`}>
                       {copy.ui.deliverables}
                     </span>
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                       {track.deliverables.map((item, idx) => (
-                        <li key={idx} className="flex items-center gap-4 text-sm font-light opacity-50 group-hover:opacity-80 transition-opacity">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white/30" />
+                        <li key={idx} className={`flex items-center gap-4 text-sm font-light transition-opacity ${isDark ? 'opacity-50 group-hover:opacity-80' : 'text-[#56514a] group-hover:text-[#18160f]'}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-white/30' : 'bg-[#56514a]'}`} />
                           {item}
                         </li>
                       ))}
@@ -133,12 +137,12 @@ function Services() {
                   </div>
                   
                   <div>
-                    <span className="text-[10px] uppercase tracking-[0.4em] opacity-30 block mb-8 font-bold">
+                    <span className={`text-[10px] uppercase tracking-[0.4em] block mb-8 font-bold ${isDark ? 'opacity-30' : 'text-[#8c8780]'}`}>
                       {copy.ui.techStack}
                     </span>
                     <div className="flex flex-wrap gap-3">
                       {track.tech.map((item, idx) => (
-                        <span key={idx} className="px-5 py-2 bg-white/5 rounded-full text-[9px] font-bold tracking-[0.2em] border border-white/10 uppercase group-hover:bg-white group-hover:text-black transition-all">
+                        <span key={idx} className={`px-5 py-2 rounded-full text-[9px] font-bold tracking-[0.2em] uppercase transition-all ${isDark ? 'bg-white/5 border border-white/10 group-hover:bg-white group-hover:text-black' : 'bg-white border border-[#d9d5ca] text-[#56514a] group-hover:bg-[#18160f] group-hover:text-white group-hover:border-[#18160f]'}`}>
                           {item}
                         </span>
                       ))}
@@ -151,30 +155,30 @@ function Services() {
         </section>
 
         {/* Workflow Section */}
-        <section className="py-40 border-t border-white/5">
+        <section className={`py-40 border-t ${isDark ? 'border-white/5' : 'border-[#d9d5ca]'}`}>
           <div className="text-center mb-40 reveal-services">
-            <span className="text-[11px] uppercase tracking-[0.5em] mb-8 block opacity-30 font-bold">
+            <span className={`text-[11px] uppercase tracking-[0.5em] mb-8 block font-bold ${isDark ? 'opacity-30' : 'text-[#8c8780]'}`}>
               {copy.services.overview.workflowEyebrow}
             </span>
-            <h2 className="text-7xl md:text-9xl font-display font-light tracking-tighter uppercase leading-none italic opacity-80">
+            <h2 className={`text-7xl md:text-9xl font-display font-light tracking-tighter uppercase leading-none italic ${isDark ? 'opacity-80' : 'text-[#18160f]'}`}>
               {copy.services.overview.workflowTitleLine1} <br className="hidden md:block" />
               {copy.services.overview.workflowTitleLine2}
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/10 border border-white/10 rounded-3xl overflow-hidden reveal-services shadow-2xl">
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-px rounded-3xl overflow-hidden reveal-services shadow-2xl border ${isDark ? 'bg-white/10 border-white/10' : 'bg-[#d9d5ca] border-[#d9d5ca]'}`}>
             {copy.services.overview.workflowSteps.map((step, idx) => (
-              <div key={idx} className="bg-[#050505] p-12 lg:p-16 hover:bg-white/[0.03] transition-colors duration-500 group relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-8 text-4xl font-display italic opacity-5 group-hover:opacity-20 transition-opacity">
+              <div key={idx} className={`p-12 lg:p-16 transition-colors duration-500 group relative overflow-hidden ${isDark ? 'bg-[#080807] hover:bg-white/[0.03]' : 'bg-[#eeeae0] hover:bg-white'}`}>
+                <div className={`absolute top-0 right-0 p-8 text-4xl font-display italic transition-opacity ${isDark ? 'opacity-5 group-hover:opacity-20' : 'opacity-10 group-hover:opacity-30 text-[#18160f]'}`}>
                   0{idx + 1}
                 </div>
-                <span className="text-[10px] font-bold opacity-30 block mb-12 tracking-[0.3em]">
+                <span className={`text-[10px] font-bold block mb-12 tracking-[0.3em] ${isDark ? 'opacity-30' : 'text-[#8c8780]'}`}>
                   {step.label}
                 </span>
                 <h4 className="text-3xl font-display font-light mb-8 group-hover:italic transition-all">
                   {step.title}
                 </h4>
-                <p className="text-sm opacity-40 leading-relaxed font-light group-hover:opacity-60 transition-opacity">
+                <p className={`text-sm leading-relaxed font-light transition-opacity ${isDark ? 'opacity-40 group-hover:opacity-60' : 'text-[#56514a] group-hover:text-[#18160f]'}`}>
                   {step.copy}
                 </p>
               </div>
@@ -183,36 +187,36 @@ function Services() {
         </section>
 
         {/* Final CTA */}
-        <section className="py-40 border-t border-white/5">
+        <section className={`py-40 border-t ${isDark ? 'border-white/5' : 'border-[#d9d5ca]'}`}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div className="reveal-services">
-              <span className="text-[11px] uppercase tracking-[0.5em] mb-8 block opacity-30 font-bold">
+              <span className={`text-[11px] uppercase tracking-[0.5em] mb-8 block font-bold ${isDark ? 'opacity-30' : 'text-[#8c8780]'}`}>
                 {copy.services.overview.ctaEyebrow}
               </span>
               <h2 className="text-7xl md:text-9xl font-display font-light tracking-tighter uppercase mb-12 leading-[0.85]">
                 {copy.services.overview.ctaTitle} <br className="hidden md:block" />
-                <span className="italic opacity-60">{copy.services.overview.ctaTitleEmphasis}</span>
+                <span className={`italic ${isDark ? 'opacity-60' : 'text-[#56514a]'}`}>{copy.services.overview.ctaTitleEmphasis}</span>
               </h2>
-              <p className="text-xl opacity-40 max-w-md font-light leading-relaxed">
+              <p className={`text-xl max-w-md font-light leading-relaxed ${isDark ? 'opacity-40' : 'text-[#56514a]'}`}>
                 {copy.services.overview.ctaCopy}
               </p>
             </div>
 
             <div className="reveal-services flex justify-center lg:justify-end">
-              <div className="rounded-3xl border border-white/10 p-12 md:p-20 text-center bg-white/[0.02] backdrop-blur-3xl max-w-lg w-full relative overflow-hidden group shadow-2xl">
+              <div className={`rounded-3xl border p-12 md:p-20 text-center backdrop-blur-3xl max-w-lg w-full relative overflow-hidden group shadow-2xl ${isDark ? 'border-white/10 bg-white/[0.02]' : 'bg-[#18160f] text-white border-[#18160f]'}`}>
                 <div className="absolute top-0 right-0 w-32 h-[1px] bg-gradient-to-l from-white/40 to-transparent" />
                 <div className="absolute bottom-0 left-0 w-[1px] h-32 bg-gradient-to-t from-white/40 to-transparent" />
 
-                <span className="text-[11px] uppercase tracking-[0.4em] opacity-30 block mb-8 font-bold">
+                <span className={`text-[11px] uppercase tracking-[0.4em] block mb-8 font-bold ${isDark ? 'opacity-30' : 'text-white/50'}`}>
                   {copy.services.overview.ctaMetaLabel}
                 </span>
-                <div className="text-4xl font-display font-light mb-16 italic opacity-80">
+                <div className={`text-4xl font-display font-light mb-16 italic ${isDark ? 'opacity-80' : 'text-white'}`}>
                   {copy.services.overview.ctaMetaValue}
                 </div>
 
                 <MagneticButton
                   href="/contact"
-                  isDark={isDark}
+                  isDark={true}
                   className="w-full py-7 rounded-full text-[11px] font-bold uppercase tracking-[0.3em]"
                 >
                   {copy.services.overview.ctaButton}
@@ -224,7 +228,7 @@ function Services() {
 
         {/* Background watermark */}
         <div className="absolute bottom-0 left-0 right-0 h-[8vw] overflow-hidden pointer-events-none flex items-start justify-center">
-          <div className="text-[18vw] font-display font-bold leading-none text-center whitespace-nowrap text-white/[0.015] tracking-widest">
+          <div className={`text-[18vw] font-display font-bold leading-none text-center whitespace-nowrap tracking-widest ${isDark ? 'text-white/[0.015]' : 'text-[#d0ccbf]'}`}>
             ENGINEERING VALUE
           </div>
         </div>

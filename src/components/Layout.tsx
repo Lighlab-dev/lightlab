@@ -87,6 +87,15 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     setMenuOpen(false);
   }, [location.pathname]);
 
+  // Immediately reset hero-section flag on every route change
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setIsHeroSection(false);
+    } else {
+      setIsHeroSection(window.scrollY < 2);
+    }
+  }, [location.pathname]);
+
   useEffect(() => {
     if (location.pathname !== "/") return;
     setShowIntro(true);

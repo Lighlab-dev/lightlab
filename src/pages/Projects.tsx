@@ -318,7 +318,8 @@ const StatCounter = memo(({ value, label, isDark, isArabic }: StatCounterProps) 
   )
 })
 
-function Projects({}: ProjectsProps) {
+function Projects({ themeMode = 'dark' }: ProjectsProps) {
+  const isDark = themeMode === 'dark'
   const { copy, language } = useLanguage()
   const sectionRef = useRef<HTMLElement | null>(null)
   const headerRef = useRef<HTMLElement | null>(null)
@@ -350,11 +351,11 @@ function Projects({}: ProjectsProps) {
 
   return (
     <main
-      ref={sectionRef} 
-      className="relative min-h-screen overflow-x-hidden transition-colors duration-700 bg-[#050505] text-white"
+      ref={sectionRef}
+      className={`relative min-h-screen overflow-x-hidden transition-colors duration-700 ${isDark ? 'bg-[#080807] text-white' : 'bg-[#eeeae0] text-[#18160f]'}`}
     >
       <NoiseTexture />
-      <AmbientGlow isDark={true} />
+      <AmbientGlow isDark={isDark} />
 
       <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-20 relative z-10">
         {/* Navigation spacer */}
@@ -366,11 +367,11 @@ function Projects({}: ProjectsProps) {
           <div className={`overflow-hidden mb-12 ${isArabic ? 'text-right' : ''}`}>
             <TextReveal>
               <div className="flex items-center gap-6">
-                <span className="text-[11px] font-bold tracking-[0.5em] uppercase opacity-40">
+                <span className={`text-[11px] font-bold tracking-[0.5em] uppercase ${isDark ? 'opacity-40' : 'text-[#8c8780]'}`}>
                   {copy.nav.projects}
                 </span>
-                <span className="w-16 h-px bg-white/20" />
-                <span className="text-[10px] font-bold tracking-[0.3em] uppercase px-4 py-1 rounded-full border border-white/10 opacity-40">
+                <span className={`w-16 h-px ${isDark ? 'bg-white/20' : 'bg-[#d9d5ca]'}`} />
+                <span className={`text-[10px] font-bold tracking-[0.3em] uppercase px-4 py-1 rounded-full border ${isDark ? 'border-white/10 opacity-40' : 'border-[#d9d5ca] text-[#8c8780]'}`}>
                   2026 Archive
                 </span>
               </div>
@@ -392,20 +393,20 @@ function Projects({}: ProjectsProps) {
           {/* Subtitle & Stats */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-end">
             <div className={`col-span-12 lg:col-span-7 overflow-hidden ${isArabic ? 'text-right' : ''}`}>
-              <p className="reveal-projects text-xl md:text-2xl max-w-2xl leading-relaxed font-light opacity-40 italic">
+              <p className={`reveal-projects text-xl md:text-2xl max-w-2xl leading-relaxed font-light italic ${isDark ? 'opacity-40' : 'text-[#56514a]'}`}>
                 {copy.projects.subtitle}
               </p>
             </div>
 
             <div className="col-span-12 lg:col-span-5 stats-container grid grid-cols-3 gap-8">
               <div className="reveal-projects">
-                <StatCounter value="48" label={copy.projects.stats.projects} isDark={true} isArabic={isArabic} />
+                <StatCounter value="48" label={copy.projects.stats.projects} isDark={isDark} isArabic={isArabic} />
               </div>
               <div className="reveal-projects">
-                <StatCounter value="12" label={copy.projects.stats.awards} isDark={true} isArabic={isArabic} />
+                <StatCounter value="12" label={copy.projects.stats.awards} isDark={isDark} isArabic={isArabic} />
               </div>
               <div className="reveal-projects">
-                <StatCounter value="8" label={copy.projects.stats.years} isDark={true} isArabic={isArabic} />
+                <StatCounter value="8" label={copy.projects.stats.years} isDark={isDark} isArabic={isArabic} />
               </div>
             </div>
           </div>
@@ -414,12 +415,12 @@ function Projects({}: ProjectsProps) {
         {/* Featured Project */}
         {featuredProject && (
           <div className="mb-8 reveal-projects">
-            <ProjectCard 
+            <ProjectCard
               project={featuredProject}
               index={0}
               layout="featured"
               isArabic={isArabic}
-              isDark={true}
+              isDark={isDark}
               copy={copy}
             />
           </div>
@@ -428,37 +429,37 @@ function Projects({}: ProjectsProps) {
         {/* Project Grid */}
         <div className="grid grid-cols-12 gap-8 reveal-projects">
           {remainingProjects.map((project, idx) => (
-            <ProjectCard 
+            <ProjectCard
               key={project.title}
               project={project}
               index={idx + 1}
               layout={idx === 0 ? 'wide' : 'standard'}
               isArabic={isArabic}
-              isDark={true}
+              isDark={isDark}
               copy={copy}
             />
           ))}
         </div>
 
-        <AnimatedDivider isDark={true} isArabic={isArabic} />
+        <AnimatedDivider isDark={isDark} isArabic={isArabic} />
 
         {/* Focus Areas & CTA */}
         <div className="pb-40">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
             {/* Focus Areas */}
-            <div className="relative p-12 md:p-20 rounded-3xl overflow-hidden bg-white/[0.02] border border-white/10 reveal-projects shadow-2xl group">
+            <div className={`relative p-12 md:p-20 rounded-3xl overflow-hidden reveal-projects shadow-sm group ${isDark ? 'bg-white/[0.02] border border-white/10' : 'bg-white border border-[#e8e4d9]'}`}>
               {/* Background number */}
-              <div className={`absolute -bottom-12 ${isArabic ? '-left-12' : '-right-12'} text-[25vw] font-display font-bold text-white/[0.015] select-none pointer-events-none group-hover:opacity-10 transition-opacity`}>
+              <div className={`absolute -bottom-12 ${isArabic ? '-left-12' : '-right-12'} text-[25vw] font-display font-bold select-none pointer-events-none group-hover:opacity-10 transition-opacity ${isDark ? 'text-white/[0.015]' : 'text-[#ece8dd]'}`}>
                 01
               </div>
 
               <div className={`relative z-10 ${isArabic ? 'text-right' : ''}`}>
-                <p className="text-[11px] font-bold tracking-[0.5em] uppercase mb-12 opacity-30">
+                <p className={`text-[11px] font-bold tracking-[0.5em] uppercase mb-12 ${isDark ? 'opacity-30' : 'text-[#8c8780]'}`}>
                   {copy.ui.focusAreas}
                 </p>
 
-                <h2 className="text-4xl md:text-6xl font-display font-light mb-16 leading-tight tracking-tight uppercase group-hover:italic transition-all">
+                <h2 className={`text-4xl md:text-6xl font-display font-light mb-16 leading-tight tracking-tight uppercase group-hover:italic transition-all ${isDark ? '' : 'text-[#18160f]'}`}>
                   {copy.projects.focusTitle}
                 </h2>
 
@@ -468,10 +469,10 @@ function Projects({}: ProjectsProps) {
                       key={item}
                       className={`group/item flex items-center gap-6 cursor-default ${isArabic ? 'flex-row-reverse' : ''}`}
                     >
-                      <span className="text-2xl font-display font-light text-white/10 group-hover/item:text-white/40 group-hover/item:italic transition-all duration-300">
+                      <span className={`text-2xl font-display font-light transition-all duration-300 group-hover/item:italic ${isDark ? 'text-white/10 group-hover/item:text-white/40' : 'text-[#d0ccbf] group-hover/item:text-[#8c8780]'}`}>
                         0{idx + 1}
                       </span>
-                      <span className="text-lg font-light text-white/40 group-hover/item:text-white group-hover/item:translate-x-2 transition-all duration-300">
+                      <span className={`text-lg font-light transition-all duration-300 group-hover/item:translate-x-2 ${isDark ? 'text-white/40 group-hover/item:text-white' : 'text-[#56514a] group-hover/item:text-[#18160f]'}`}>
                         {item}
                       </span>
                     </li>
@@ -481,15 +482,15 @@ function Projects({}: ProjectsProps) {
             </div>
 
             {/* CTA Card */}
-            <div className="relative p-12 md:p-20 rounded-3xl overflow-hidden flex flex-col justify-between min-h-[500px] bg-white/[0.02] border border-white/10 reveal-projects shadow-2xl group backdrop-blur-3xl">
-              <div className="absolute top-0 right-0 w-32 h-[1px] bg-gradient-to-l from-white/40 to-transparent group-hover:w-full transition-all duration-1000" />
-              <div className="absolute bottom-0 left-0 w-[1px] h-32 bg-gradient-to-t from-white/40 to-transparent group-hover:h-full transition-all duration-1000" />
+            <div className={`relative p-12 md:p-20 rounded-3xl overflow-hidden flex flex-col justify-between min-h-[500px] reveal-projects group ${isDark ? 'bg-white/[0.02] border border-white/10 shadow-2xl backdrop-blur-3xl' : 'bg-[#18160f] text-white border border-[#18160f]'}`}>
+              <div className={`absolute top-0 right-0 w-32 h-[1px] bg-gradient-to-l ${isDark ? 'from-white/40' : 'from-white/30'} to-transparent group-hover:w-full transition-all duration-1000`} />
+              <div className={`absolute bottom-0 left-0 w-[1px] h-32 bg-gradient-to-t ${isDark ? 'from-white/40' : 'from-white/30'} to-transparent group-hover:h-full transition-all duration-1000`} />
 
               <div className={`relative z-10 ${isArabic ? 'text-right' : ''}`}>
-                <p className="text-[11px] font-bold tracking-[0.5em] uppercase mb-10 opacity-30">
+                <p className="text-[11px] font-bold tracking-[0.5em] uppercase mb-10 opacity-30 text-white">
                   {copy.ui.nextBuild}
                 </p>
-                <p className="text-4xl md:text-7xl font-display font-light leading-[1.1] tracking-tighter uppercase group-hover:italic transition-all duration-700">
+                <p className="text-4xl md:text-7xl font-display font-light leading-[1.1] tracking-tighter uppercase group-hover:italic transition-all duration-700 text-white">
                   {copy.projects.ctaTitle}
                 </p>
               </div>
@@ -516,7 +517,7 @@ function Projects({}: ProjectsProps) {
 
         {/* Footer watermark */}
         <div className="relative h-[8vw] overflow-hidden flex items-start justify-center pointer-events-none">
-          <div className="text-[15vw] font-display font-bold text-center whitespace-nowrap leading-none text-white/[0.015] tracking-widest uppercase">
+          <div className={`text-[15vw] font-display font-bold text-center whitespace-nowrap leading-none tracking-widest uppercase ${isDark ? 'text-white/[0.015]' : 'text-[#d0ccbf]'}`}>
             {copy.nav.projects}
           </div>
         </div>

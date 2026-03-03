@@ -1,4 +1,4 @@
-﻿import { useLayoutEffect, useRef, useMemo, memo, useState, createContext, useContext } from 'react'
+﻿import { useLayoutEffect, useRef, useMemo, memo, useState, createContext, useContext, type ReactNode } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLanguage } from '../i18n'
@@ -8,8 +8,6 @@ import {
   SplitText,
   CinematicImage,
   ANIMATION,
-  NoiseTexture,
-  AmbientGlow
 } from '../components/PremiumUI'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -78,21 +76,9 @@ const ServiceRow = memo(({ item, index, copy, isArabic }: ServiceRowProps) => {
   const [open, setOpen] = useState(false)
   const { theme } = useContext(ThemeContext)
   const isDark = theme === 'dark'
-  const rowRef = useRef<HTMLDivElement>(null)
-
-  useLayoutEffect(() => {
-    const el = rowRef.current
-    if (!el) return
-    gsap.fromTo(el,
-      { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, duration: 0.9, ease: ANIMATION.ease.luxury,
-        scrollTrigger: { trigger: el, start: 'top 82%', once: true } }
-    )
-  }, [])
 
   return (
     <div
-      ref={rowRef}
       className={`group cursor-pointer transition-colors duration-300 border-b
         ${isDark
           ? 'border-white/[0.07] hover:border-white/20'
@@ -143,9 +129,9 @@ const ServiceRow = memo(({ item, index, copy, isArabic }: ServiceRowProps) => {
                 {item.copy}
               </p>
               <MagneticButton href="#contact" variant="outline" isDark={isDark}
-                className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.2em] uppercase">
+                className={`inline-flex items-center gap-3 px-5 py-2.5 rounded-full text-[11px] font-semibold tracking-[0.2em] uppercase ${isArabic ? 'flex-row-reverse' : ''}`}>
                 {copy.home.servicesCta}
-                <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
+                <svg width="14" height="8" viewBox="0 0 14 8" fill="none" className={isArabic ? 'scale-x-[-1]' : ''}>
                   <path d="M1 4h12M8 1l3 3-3 3" strokeWidth="1.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </MagneticButton>
@@ -165,25 +151,15 @@ const ServiceRow = memo(({ item, index, copy, isArabic }: ServiceRowProps) => {
 interface ProcessStepProps { title: string; copy: string; number: string; isDark: boolean; isArabic: boolean }
 
 const ProcessStep = memo(({ title, copy, number, isDark, isArabic }: ProcessStepProps) => {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    gsap.fromTo(el, { opacity: 0, y: 50 },
-      { opacity: 1, y: 0, duration: 1, ease: ANIMATION.ease.luxury,
-        scrollTrigger: { trigger: el, start: 'top 80%', once: true } })
-  }, [])
-
   return (
-    <div ref={ref} className={`group relative pt-10 border-t
+    <div className={`group relative h-full flex flex-col pt-10 border-t
       ${isDark ? 'border-white/[0.07]' : 'border-[#d9d5ca]'}
       ${isArabic ? 'text-right' : ''}`}>
       <span className={`block text-[10px] font-mono tracking-[0.4em] uppercase mb-6
         ${isDark ? 'text-white/25' : 'text-[#8c8780]'}`}>{number}</span>
       <h4 className={`text-xl md:text-2xl font-display font-light mb-4 transition-colors duration-300
         ${isDark ? 'text-white/85 group-hover:text-white' : 'text-[#18160f] group-hover:text-black'}`}>{title}</h4>
-      <p className={`text-sm leading-relaxed font-light
+      <p className={`flex-1 text-sm leading-relaxed font-light
         ${isDark ? 'text-white/40' : 'text-[#56514a]'}`}>{copy}</p>
       <div className={`absolute -top-3 ${isArabic ? 'left-0' : 'right-0'} text-[90px] font-display font-bold leading-none select-none pointer-events-none
         ${isDark ? 'text-white/[0.025]' : 'text-[#d0ccbf]'}`}>
@@ -194,43 +170,33 @@ const ProcessStep = memo(({ title, copy, number, isDark, isArabic }: ProcessStep
 })
 
 //  Stat Card 
-interface StatCardProps { label: string; value: string; isDark: boolean; delay: number }
+interface StatCardProps { label: string; value: string; isDark: boolean }
 
-const StatCard = memo(({ label, value, isDark, delay }: StatCardProps) => (
-  <TextReveal delay={delay}>
-    <div className={`text-center px-8 py-6 group rounded-2xl transition-all duration-300
+const StatCard = memo(({ label, value, isDark }: StatCardProps) => {
+  return (
+    <div className={`h-full flex flex-col items-center justify-center text-center px-8 py-10 group rounded-2xl transition-all duration-300
       ${isDark ? 'hover:bg-white/[0.03]' : 'bg-white shadow-sm hover:shadow-md border border-[#e8e4d9]'}`}>
       <div className={`text-[10px] uppercase tracking-[0.4em] font-bold mb-4
         ${isDark ? 'text-white/28' : 'text-[#8c8780]'}`}>{label}</div>
       <div className={`text-6xl md:text-7xl font-display font-light transition-transform duration-500 group-hover:scale-105
         ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}>{value}</div>
     </div>
-  </TextReveal>
-))
+  )
+})
 
 //  Testimonial Card 
 interface TestimonialCardProps { quote: string; name: string; role: string; isDark: boolean; isArabic: boolean }
 
 const TestimonialCard = memo(({ quote, name, role, isDark, isArabic }: TestimonialCardProps) => {
-  const ref = useRef<HTMLDivElement>(null)
-
-  useLayoutEffect(() => {
-    const el = ref.current
-    if (!el) return
-    gsap.fromTo(el, { opacity: 0, y: 40 },
-      { opacity: 1, y: 0, duration: 1, ease: ANIMATION.ease.luxury,
-        scrollTrigger: { trigger: el, start: 'top 82%', once: true } })
-  }, [])
-
   return (
-    <div ref={ref} className={`p-8 md:p-10 rounded-2xl border transition-all duration-500
+    <div className={`h-full flex flex-col p-8 md:p-10 rounded-2xl border transition-all duration-500
       ${isDark
         ? 'border-white/[0.07] bg-white/[0.02] hover:border-white/[0.14] hover:bg-white/[0.04]'
         : 'border-[#e8e4d9] bg-white shadow-sm hover:shadow-md'}
       ${isArabic ? 'text-right' : ''}`}>
       <div className={`text-5xl font-display leading-none mb-6
         ${isDark ? 'text-white/12' : 'text-[#d0ccbf]'}`}>&ldquo;</div>
-      <p className={`text-base md:text-lg font-light leading-relaxed mb-8
+      <p className={`flex-1 text-base md:text-lg font-light leading-relaxed mb-8
         ${isDark ? 'text-white/65' : 'text-[#18160f]'}`}>{quote}</p>
       <div className={`flex items-center gap-4 ${isArabic ? 'flex-row-reverse' : ''}`}>
         <div className={`w-10 h-10 rounded-full border flex items-center justify-center text-xs font-bold
@@ -246,6 +212,36 @@ const TestimonialCard = memo(({ quote, name, role, isDark, isArabic }: Testimoni
   )
 })
 
+//  Lazy section reveal 
+interface LazySectionProps { children: ReactNode; className?: string; id?: string }
+
+const LazySection = memo(({ children, className = '', id }: LazySectionProps) => {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold: 0.02 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  return (
+    <div
+      ref={ref}
+      id={id}
+      className={`will-change-[opacity,transform] transition-[opacity,transform] duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)]
+        ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} ${className}`}
+    >
+      {children}
+    </div>
+  )
+})
+
 //  Home 
 function Home({ themeMode }: HomeProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -255,27 +251,30 @@ function Home({ themeMode }: HomeProps) {
   const [scrollProgress, setScrollProgress] = useState(0)
 
   useLayoutEffect(() => {
+    let rafId: number
     const handleScroll = () => {
-      const total = document.documentElement.scrollHeight - window.innerHeight
-      setScrollProgress(total > 0 ? window.scrollY / total : 0)
+      rafId = requestAnimationFrame(() => {
+        const total = document.documentElement.scrollHeight - window.innerHeight
+        setScrollProgress(total > 0 ? window.scrollY / total : 0)
+      })
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => { window.removeEventListener('scroll', handleScroll); cancelAnimationFrame(rafId) }
   }, [])
 
   useLayoutEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.3 })
-      tl.from('.hero-eyebrow', { y: 20, opacity: 0, duration: 0.7, ease: ANIMATION.ease.luxury })
-        .from('.hero-line', { y: '105%', duration: 1.1, stagger: 0.1, ease: ANIMATION.ease.luxury }, '-=0.3')
-        .from('.hero-body', { y: 30, opacity: 0, duration: 0.8, ease: ANIMATION.ease.smooth }, '-=0.5')
-        .from('.hero-cta', { y: 20, opacity: 0, duration: 0.7, ease: ANIMATION.ease.smooth }, '-=0.4')
-        .from('.hero-image-wrap', { scale: 1.08, opacity: 0, duration: 1.4, ease: ANIMATION.ease.luxury }, '-=1.2')
+      const tl = gsap.timeline({ delay: 0.1 })
+      tl.from('.hero-eyebrow', { y: 14, opacity: 0, duration: 0.45, ease: ANIMATION.ease.luxury })
+        .from('.hero-line', { y: 18, opacity: 0, duration: 0.7, stagger: 0.08, ease: ANIMATION.ease.luxury }, '-=0.18')
+        .from('.hero-body', { y: 16, opacity: 0, duration: 0.45, ease: ANIMATION.ease.smooth }, '-=0.32')
+        .from('.hero-cta', { y: 12, opacity: 0, duration: 0.38, ease: ANIMATION.ease.smooth }, '-=0.24')
+        .from('.hero-image-wrap', { scale: 1.04, opacity: 0, duration: 0.9, ease: ANIMATION.ease.luxury }, '-=0.8')
 
       gsap.to('.hero-image-wrap', {
-        yPercent: 12, ease: 'none',
-        scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: 1.5 }
+        yPercent: 10, ease: 'none',
+        scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: 0.9 }
       })
     }, wrapperRef)
     return () => ctx.revert()
@@ -296,104 +295,77 @@ function Home({ themeMode }: HomeProps) {
     <ThemeContext.Provider value={{ theme: themeMode }}>
       <div
         ref={wrapperRef}
+        dir={isArabic ? 'rtl' : 'ltr'}
         className={`relative min-h-screen overflow-x-hidden transition-colors duration-700 ${P.bg} ${P.text}`}
       >
         {/* Scroll progress */}
         <div
-          className={`fixed top-0 left-0 h-[1.5px] z-[100] transition-none
+          className={`fixed top-0 h-[1.5px] z-[100] transition-none
+            ${isArabic ? 'right-0' : 'left-0'}
             ${isDark ? 'bg-white/50' : 'bg-[#18160f]'}`}
           style={{ width: `${scrollProgress * 100}%` }}
         />
 
-        <NoiseTexture />
-        <AmbientGlow isDark={isDark} />
+        {/* ambient bg removed for perf */}
 
-        {/*  HERO  */}
-        <section ref={heroRef} className="relative min-h-screen flex flex-col">
-          {/* Full-bleed background image */}
-          <div className="hero-image-wrap absolute inset-0 overflow-hidden will-change-transform">
-            <CinematicImage src={IMAGES.hero} alt="Lightlab studio hero" className="w-full h-full" priority />
-            {/* Always dark overlay — hero is a cinematic image section in both themes */}
-            <div className={`absolute inset-0 bg-gradient-to-b
-              ${isDark
-                ? 'from-[#080807]/60 via-[#080807]/40 to-[#080807]'
-                : 'from-black/55 via-black/35 to-black/80'}`} />
+        {/* ---------------- HERO ---------------- */}
+
+        <section ref={heroRef} className="relative min-h-screen flex items-end">
+          <div className="absolute inset-0">
+            <CinematicImage src={IMAGES.hero} alt="Hero" className="w-full h-full" priority />
+            <div className="absolute inset-0 bg-black/60" />
           </div>
 
-          {/* Hero content */}
-          <div className="relative z-10 flex flex-col justify-end min-h-screen max-w-[1700px] mx-auto w-full px-6 md:px-12 lg:px-20 pb-24 pt-44">
-            <div className={`max-w-5xl ${dir.text}`}>
+          <div className={`relative z-10 max-w-6xl px-8 pb-28 ${dir.text}`}>
+            <h1 className="font-display font-light leading-[0.9] text-[clamp(3.5rem,8vw,8rem)] text-white mb-10">
+              <span className="hero-line block">{copy.home.heroTitle1}</span>
+              <span className="hero-line block italic text-white/70">
+                {copy.home.heroTitle2}
+              </span>
+            </h1>
 
-              {/* Eyebrow — always white, hero is always over a dark image */}
-              <div className="hero-eyebrow mb-10">
-                <span className="inline-flex items-center gap-3 text-[11px] font-semibold tracking-[0.4em] uppercase text-white/45">
-                  <span className="w-8 h-px bg-white/30" />
-                  {copy.home.heroTag}
-                </span>
-              </div>
+            <p className="text-lg text-white/70 max-w-lg mb-10">
+              {copy.home.heroCopy}
+            </p>
 
-              {/* Headline — always white over image */}
-              <h1 className="font-display font-light tracking-tight leading-[0.88] text-[clamp(4.5rem,11vw,11rem)] mb-12 text-white">
-                <div className="overflow-hidden">
-                  <span className="hero-line block">{copy.home.heroTitle1}</span>
-                </div>
-                <div className="overflow-hidden">
-                  <span className="hero-line block italic text-white/45">{copy.home.heroTitle2}</span>
-                </div>
-              </h1>
-
-              {/* Body copy — always white over image */}
-              <p className="hero-body text-base md:text-lg font-light leading-relaxed max-w-lg mb-12 text-white/55">
-                {copy.home.heroCopy}
-              </p>
-
-              {/* CTAs — always dark-variant since hero is always over a dark image */}
-              <div className={`hero-cta flex flex-wrap gap-4 ${isArabic ? 'justify-end' : ''}`}>
-                <MagneticButton href="#contact" isDark={true} variant="primary"
-                  className="inline-flex items-center gap-3 px-9 py-4 rounded-full text-[12px] font-bold tracking-[0.22em] uppercase">
-                  {copy.home.ctaButton}
-                </MagneticButton>
-                <MagneticButton href="/services" isDark={true} variant="outline"
-                  className="inline-flex items-center gap-3 px-8 py-4 rounded-full text-[12px] font-semibold tracking-[0.2em] uppercase">
-                  {copy.nav?.services ?? 'Services'}
-                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
-                    <path d="M1 4h12M8 1l3 3-3 3" strokeWidth="1.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </MagneticButton>
-              </div>
-            </div>
-
-            {/* Scroll hint — always white over image */}
-            <div className={`absolute bottom-10 ${isArabic ? 'left-20' : 'right-20'} flex flex-col items-center gap-2 text-white opacity-30`}>
-              <span className="text-[9px] font-bold tracking-[0.45em] uppercase">{copy.home.scrollLabel}</span>
-              <div className="w-px h-14 bg-gradient-to-b from-white/60 to-transparent" />
-            </div>
+            <MagneticButton
+              href="#contact"
+              variant="primary"
+              isDark
+              className="px-10 py-4 rounded-full text-[12px] tracking-[0.25em] uppercase font-bold"
+            >
+              {copy.home.ctaButton}
+            </MagneticButton>
           </div>
         </section>
 
-        <div className="max-w-[1700px] mx-auto px-6 md:px-12 lg:px-20 relative z-10">
-
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
           {/*  TICKER  */}
-          <div className={`py-6 border-y overflow-hidden ${P.border}`}>
-            <div className="flex gap-12 animate-marquee whitespace-nowrap">
-              {[...Array(8)].map((_, i) => (
-                <span key={i} className={`text-[10px] font-bold tracking-[0.45em] uppercase shrink-0 ${P.muted}`}>
-                  AI Automation &nbsp;&nbsp; Engineering &nbsp;&nbsp; Media Buying &nbsp;&nbsp; Revenue Scaling &nbsp;&nbsp;
-                </span>
-              ))}
+          <LazySection>
+            <div className={`py-6 border-y overflow-hidden ${P.border}`}>
+              <div className="flex gap-12 animate-marquee whitespace-nowrap">
+                {[...Array(8)].map((_, i) => (
+                  <span key={i} className={`text-[10px] font-bold tracking-[0.45em] uppercase shrink-0 ${P.muted}`}>
+                    AI Automation &nbsp;&nbsp; Engineering &nbsp;&nbsp; Media Buying &nbsp;&nbsp; Revenue Scaling &nbsp;&nbsp;
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          </LazySection>
 
           {/*  IMPACT STATS  */}
-          <section className={`py-24 border-b ${P.border}`}>
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6`}>
-              {copy.home.impactStats.map((stat, i) => (
-                <StatCard key={i} label={stat.label} value={stat.value} isDark={isDark} delay={i * 0.1} />
-              ))}
-            </div>
-          </section>
+          <LazySection>
+            <section className={`py-24 border-b ${P.border}`}>
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch`}>
+                {copy.home.impactStats.map((stat, i) => (
+                  <StatCard key={i} label={stat.label} value={stat.value} isDark={isDark} />
+                ))}
+              </div>
+            </section>
+          </LazySection>
 
           {/*  ABOUT  */}
+          <LazySection>
           <section className={`py-32 grid grid-cols-1 lg:grid-cols-2 gap-16 items-end border-b ${P.border} ${dir.text}`}>
             <div>
               <TextReveal>
@@ -403,7 +375,7 @@ function Home({ themeMode }: HomeProps) {
               </TextReveal>
               <SplitText
                 text={copy.home.expertiseTitle}
-                className={`text-5xl md:text-6xl lg:text-7xl font-display font-light leading-none
+                className={`text-5xl md:text-6xl lg:text-7xl font-display font-light leading-none overflow-visible
                   ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
                 type="words"
               />
@@ -414,33 +386,73 @@ function Home({ themeMode }: HomeProps) {
               </p>
             </TextReveal>
           </section>
+          </LazySection>
 
           {/*  CLARITY / PHILOSOPHY  */}
-          <section className="py-32">
-            <div className={`grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-16 ${dir.text}`}>
+          <LazySection>
+          <section className="pb-32">
+            <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch ${dir.text}`}>
               {copy.home.clarity.map((item, index) => (
-                <div key={item.title} className="group">
-                  <TextReveal delay={index * 0.12}>
-                    <div className={`relative p-8 rounded-2xl border transition-all duration-500
-                      ${isDark
-                        ? 'border-white/[0.05] hover:border-white/[0.12] hover:bg-white/[0.02]'
-                        : 'bg-white border-[#e8e4d9] shadow-sm hover:shadow-md'}`}>
-                      <span className={`absolute top-6 ${isArabic ? 'left-8' : 'right-8'} text-[72px] font-display font-bold leading-none select-none pointer-events-none
-                        ${isDark ? 'text-white/[0.03]' : 'text-[#ece8dd]'}`}>
-                        0{index + 1}
-                      </span>
-                      <span className={`block text-[10px] font-bold tracking-[0.4em] uppercase mb-6 ${P.muted}`}>{item.title}</span>
-                      <h4 className={`text-2xl md:text-3xl font-display font-light leading-snug mb-4 transition-colors duration-300
-                        ${isDark ? 'text-white/85 group-hover:text-white' : 'text-[#18160f]'}`}>{item.lead}</h4>
-                      <p className={`text-sm leading-relaxed font-light ${P.stone}`}>{item.copy}</p>
+                <div
+                  key={item.title}
+                  className={`group relative h-full flex flex-col overflow-hidden rounded-2xl border transition-all duration-500 cursor-default
+                    ${isDark
+                      ? 'border-white/[0.07] bg-white/[0.025] hover:border-white/[0.18] hover:bg-white/[0.045] hover:-translate-y-1'
+                      : 'bg-white border-[#e8e4d9] shadow-sm hover:shadow-xl hover:-translate-y-1'}`}
+                >
+                  {/* Top accent bar */}
+                  <div className={`h-[2px] w-full shrink-0 transition-all duration-500
+                    ${isDark
+                      ? 'bg-gradient-to-r from-white/5 via-white/20 to-white/5 group-hover:via-white/40'
+                      : 'bg-gradient-to-r from-[#d9d5ca] via-[#18160f]/30 to-[#d9d5ca] group-hover:via-[#18160f]/60'}`}
+                  />
+
+                  <div className="flex flex-col flex-1 p-8 md:p-10">
+                    {/* Index + eyebrow row */}
+                    <div className={`flex items-center justify-between mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                      <span className={`text-[9px] font-bold tracking-[0.4em] uppercase
+                        ${P.muted}`}>{item.title}</span>
+                      <span className={`text-[11px] font-mono tabular-nums
+                        ${isDark ? 'text-white/15' : 'text-[#c8c4b8]'}`}>0{index + 1}</span>
                     </div>
-                  </TextReveal>
+
+                    {/* Headline */}
+                    <h4 className={`text-2xl md:text-[1.6rem] font-display font-light leading-snug mb-5 transition-colors duration-300
+                      ${isDark ? 'text-white/85 group-hover:text-white' : 'text-[#18160f]'}`}>
+                      {item.lead}
+                    </h4>
+
+                    {/* Divider line that expands on hover */}
+                    <div className={`w-8 h-px mb-6 transition-all duration-500 group-hover:w-14
+                      ${isDark ? 'bg-white/15' : 'bg-[#c8c4b8]'}`} />
+
+                    {/* Body */}
+                    <p className={`flex-1 text-sm leading-relaxed font-light mb-8
+                      ${isDark ? 'text-white/42 group-hover:text-white/58' : 'text-[#56514a]'}`}>
+                      {item.copy}
+                    </p>
+
+                    {/* Bottom arrow */}
+                    <div className={`flex items-center gap-2 text-[10px] font-bold tracking-[0.3em] uppercase transition-all duration-300
+                      ${isDark ? 'text-white/20 group-hover:text-white/55' : 'text-[#8c8780] group-hover:text-[#18160f]'}
+                      ${isArabic ? 'flex-row-reverse' : ''}`}>
+                      <span>{isArabic ? 'اكتشف' : 'Explore'}</span>
+                      <svg
+                        width="16" height="9" viewBox="0 0 16 9" fill="none"
+                        className={`transition-transform duration-500 ${isArabic ? 'scale-x-[-1] group-hover:-translate-x-1.5' : 'group-hover:translate-x-1.5'}`}
+                      >
+                        <path d="M1 4.5h14M9 1.5l4 3-4 3" strokeWidth="1.2" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
+          </LazySection>
 
           {/*  SERVICES  */}
+          <LazySection>
           <section className={`pt-4 pb-10 border-t ${P.border}`}>
             <div className={`flex items-end justify-between gap-8 mb-6 ${isArabic ? 'flex-row-reverse' : ''}`}>
               <div className={dir.text}>
@@ -449,7 +461,7 @@ function Home({ themeMode }: HomeProps) {
                 </TextReveal>
                 <SplitText
                   text={`${copy.home.servicesTitleLine1} ${copy.home.servicesTitleLine2}`}
-                  className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-tight
+                  className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-tight overflow-visible
                     ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
                   type="words"
                 />
@@ -461,8 +473,10 @@ function Home({ themeMode }: HomeProps) {
               ))}
             </div>
           </section>
+          </LazySection>
 
           {/*  METHOD  */}
+          <LazySection>
           <section className={`py-32 border-t ${P.border}`}>
             <div className={`mb-20 grid grid-cols-1 lg:grid-cols-2 gap-10 items-end ${dir.text}`}>
               <div>
@@ -471,7 +485,7 @@ function Home({ themeMode }: HomeProps) {
                 </TextReveal>
                 <SplitText
                   text={copy.home.methodSteps.join('  ')}
-                  className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-snug
+                  className={`text-4xl md:text-5xl lg:text-6xl font-display font-light leading-snug overflow-visible
                     ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
                   type="words"
                 />
@@ -482,7 +496,7 @@ function Home({ themeMode }: HomeProps) {
             </div>
 
             {/* Steps */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 items-stretch">
               {copy.home.methodCards.map((item, index) => (
                 <ProcessStep key={item.title} title={item.title} copy={item.copy}
                   number={`0${index + 1} / ${copy.home.methodCards.length}`} isDark={isDark} isArabic={isArabic} />
@@ -498,30 +512,33 @@ function Home({ themeMode }: HomeProps) {
               ))}
             </div>
           </section>
+          </LazySection>
 
           {/*  TESTIMONIALS  */}
           {testimonials.length > 0 && (
+            <LazySection>
             <section className={`py-32 border-t ${P.border} ${dir.text}`}>
               <TextReveal>
                 <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-16 ${P.muted}`}>
                   {(copy.home as Record<string, unknown>).testimonialsTitle as string ?? 'Proof of Work'}
                 </span>
               </TextReveal>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                 {testimonials.slice(0, 2).map((t, i) => (
                   <TestimonialCard key={i} quote={t.quote} name={t.name} role={t.role} isDark={isDark} isArabic={isArabic} />
                 ))}
               </div>
             </section>
+            </LazySection>
           )}
 
           {/*  CTA 
                Light mode: inverted dark card for maximum contrast & drama
                Dark mode: subtle glass card as before
           */}
+          <LazySection id="contact" className="scroll-mt-28">
           <section
-            id="contact"
-            className={`scroll-mt-28 py-40 relative overflow-hidden rounded-3xl mb-24 transition-colors duration-700
+            className={`min-h-[680px] flex flex-col justify-center relative overflow-hidden rounded-3xl mb-24 transition-colors duration-700
               ${isDark
                 ? 'bg-white/[0.025] border border-white/[0.07]'
                 : 'bg-[#18160f] text-white'}`}
@@ -532,7 +549,7 @@ function Home({ themeMode }: HomeProps) {
             <div className={`absolute -bottom-40 -right-40 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none
               ${isDark ? 'bg-white/[0.02]' : 'bg-white/[0.03]'}`} />
 
-            <div className="relative z-10 max-w-3xl mx-auto text-center px-6">
+          <div className="relative z-10 w-full max-w-3xl mx-auto text-center px-6 py-20">
               <TextReveal>
                 <span className={`text-[11px] font-bold tracking-[0.4em] uppercase block mb-10
                   ${isDark ? 'text-white/28' : 'text-white/45'}`}>
@@ -555,7 +572,7 @@ function Home({ themeMode }: HomeProps) {
 
               {/* Availability badge */}
               <TextReveal delay={0.3}>
-                <div className="inline-flex items-center gap-3 mb-12 px-5 py-2.5 rounded-full border border-white/[0.12] text-white/40">
+                <div className={`inline-flex items-center gap-3 mb-12 px-5 py-2.5 rounded-full border border-white/[0.12] text-white/40 ${isArabic ? 'flex-row-reverse' : ''}`}>
                   <span className="w-2 h-2 rounded-full bg-emerald-400/70 animate-pulse shrink-0" />
                   <span className="text-[10px] font-bold tracking-[0.28em] uppercase">
                     {copy.home.ctaMeta}: {copy.home.ctaMetaValue}
@@ -565,9 +582,9 @@ function Home({ themeMode }: HomeProps) {
 
               {/* Always use light-themed button inside the dark CTA card */}
               <MagneticButton href="mailto:hello@lightlab.dev" isDark={true} variant="primary"
-                className="inline-flex items-center gap-4 px-12 py-5 rounded-full text-[12px] font-bold tracking-[0.25em] uppercase">
+                className={`inline-flex items-center gap-4 px-12 py-5 rounded-full text-[12px] font-bold tracking-[0.25em] uppercase ${isArabic ? 'flex-row-reverse' : ''}`}>
                 {copy.home.ctaButton}
-                <svg width="16" height="9" viewBox="0 0 16 9" fill="none">
+                <svg width="16" height="9" viewBox="0 0 16 9" fill="none" className={isArabic ? 'scale-x-[-1]' : ''}>
                   <path d="M1 4.5h14M9 1l4 3.5L9 8" strokeWidth="1.3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </MagneticButton>
@@ -579,6 +596,7 @@ function Home({ themeMode }: HomeProps) {
                 ${isDark ? 'text-white/[0.022]' : 'text-white/[0.04]'}`}>LIGHTLAB</span>
             </div>
           </section>
+          </LazySection>
 
         </div>
 
