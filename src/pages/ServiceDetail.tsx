@@ -96,7 +96,7 @@ function ServiceDetail() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
           <div className="bento-item bg-[var(--card-bg)] p-8 rounded-2xl">
             <p className="text-[11px] uppercase tracking-[0.4em] text-[var(--muted)]">{copy.ui.deliverables}</p>
-            <ul className="mt-6 space-y-2 text-sm text-[var(--muted)]">
+            <ul className="mt-6 space-y-2 text-sm text-(--muted)">
               {data.deliverables.map((item) => (
                 <li key={item}>{item}</li>
               ))}

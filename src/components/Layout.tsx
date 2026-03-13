@@ -14,7 +14,8 @@ type LayoutProps = {
 };
 
 function Layout({ themeMode, onToggleTheme }: LayoutProps) {
-  const logoSrc = themeMode === "dark" ? "/lightlab-lightlogo.svg" : "/logo.svg";
+  const logoSrc =
+    themeMode === "dark" ? "/lightlab-lightlogo.svg" : "/logo.svg";
   const mainRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const navLogoRef = useRef<HTMLImageElement>(null);
@@ -23,11 +24,12 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const lenisRef = useRef<Lenis | null>(null);
   const location = useLocation();
   const { language, setLanguage, copy } = useLanguage();
   const isRtl = language === "ar";
   // True while the viewport is inside the hero section (home page only)
-  const [isHeroSection, setIsHeroSection] = useState(location.pathname === '/');
+  const [isHeroSection, setIsHeroSection] = useState(location.pathname === "/");
 
   const handleLanguageChange = (value: string) => {
     if (value === "fr" || value === "en" || value === "ar") {
@@ -37,7 +39,9 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
 
   const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
     `relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:bg-current after:origin-left after:transition-transform transition-opacity ${
-      isActive ? "after:scale-x-100 opacity-100" : "after:scale-x-0 hover:after:scale-x-100"
+      isActive
+        ? "after:scale-x-100 opacity-100"
+        : "after:scale-x-0 hover:after:scale-x-100"
     }`;
 
   const mobileNavClass = ({ isActive }: { isActive: boolean }) =>
@@ -55,6 +59,8 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       lenis.raf(time * 1000);
     };
 
+    lenisRef.current = lenis;
+
     lenis.on("scroll", onLenisScroll);
     gsap.ticker.add(onTick);
     gsap.ticker.lagSmoothing(0);
@@ -63,6 +69,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       gsap.ticker.remove(onTick);
       lenis.off("scroll", onLenisScroll);
       lenis.destroy();
+      lenisRef.current = null;
     };
   }, []);
 
@@ -83,13 +90,32 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     return () => ctx.revert();
   }, [location.pathname]);
 
+  // Scroll to top on every route change
+  useLayoutEffect(() => {
+    // Immediate native scroll reset
+    window.scrollTo(0, 0);
+
+    // Coordinate with Lenis for a clean reset
+    if (lenisRef.current) {
+      lenisRef.current.scrollTo(0, { immediate: true });
+    }
+
+    // Force GSAP to recalculate all triggers
+    // A small buffer ensures page components have mounted their own triggers
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
 
   // Immediately reset hero-section flag on every route change
   useEffect(() => {
-    if (location.pathname !== '/') {
+    if (location.pathname !== "/") {
       setIsHeroSection(false);
     } else {
       setIsHeroSection(window.scrollY < 2);
@@ -182,7 +208,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       }
 
       // Track whether we are still inside the hero section
-      setIsHeroSection(location.pathname === '/' && window.scrollY < 2);
+      setIsHeroSection(location.pathname === "/" && window.scrollY < 2);
     };
 
     // Run immediately (handles menu open / close)
@@ -202,7 +228,9 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
   }, []);
 
   return (
-    <div className={`transition-colors duration-700 ${isRtl ? "rtl-adapt" : ""}`}>
+    <div
+      className={`transition-colors duration-700 ${isRtl ? "rtl-adapt" : ""}`}
+    >
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:px-6 focus:py-3 theme-surface font-bold uppercase tracking-widest text-[10px] border border-current shadow-2xl"
@@ -225,46 +253,31 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       <nav
         ref={navRef}
         id="main-nav"
-        className={`fixed top-0 w-full z-100 transition-all duration-300 ${isHeroSection ? 'nav-over-hero' : ''}`}
+        className={`fixed top-0 w-full z-100 transition-all duration-300 ${isHeroSection ? "nav-over-hero" : ""}`}
       >
         <div className="max-w-360 mx-auto px-6 md:px-16 py-5 sm:py-6 flex justify-between items-center">
           <Link to="/" className="flex items-center">
             <img
               ref={navLogoRef}
-              src={isHeroSection ? '/lightlab-lightlogo.svg' : logoSrc}
+              src={isHeroSection ? "/lightlab-lightlogo.svg" : logoSrc}
               alt="Lightlab"
               className="h-5 sm:h-6 w-auto transition-opacity duration-300"
             />
           </Link>
           <div className="hidden lg:flex items-center gap-8  text-[10px] uppercase tracking-[0.2em] font-bold">
-            <NavLink
-              to="/services"
-              className={desktopNavClass}
-            >
+            <NavLink to="/services" className={desktopNavClass}>
               {copy.nav.services}
             </NavLink>
-            <NavLink
-              to="/projects"
-              className={desktopNavClass}
-            >
+            <NavLink to="/projects" className={desktopNavClass}>
               {copy.nav.projects}
             </NavLink>
-            <NavLink
-              to="/method"
-              className={desktopNavClass}
-            >
+            <NavLink to="/method" className={desktopNavClass}>
               {copy.nav.method}
             </NavLink>
-            <NavLink
-              to="/about"
-              className={desktopNavClass}
-            >
+            <NavLink to="/about" className={desktopNavClass}>
               {copy.nav.about}
             </NavLink>
-            <NavLink
-              to="/contact"
-              className={desktopNavClass}
-            >
+            <NavLink to="/contact" className={desktopNavClass}>
               {copy.nav.contact}
             </NavLink>
           </div>
@@ -279,7 +292,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
             </button>
             <Link
               to="/contact"
-              className="hidden lg:block theme-outline px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors"
+              className="hidden lg:block theme-solid px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors"
             >
               {copy.nav.cta}
             </Link>
@@ -299,7 +312,9 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       <div
         className={`fixed inset-0 z-90 theme-menu-overlay transition-opacity duration-300 lg:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       >
-        <div className={`pt-24 px-8 flex flex-col gap-6 text-[14px] uppercase tracking-[0.2em] font-bold ${isRtl ? "text-right" : "text-left"}`}>
+        <div
+          className={`pt-24 px-8 flex flex-col gap-6 text-[14px] uppercase tracking-[0.2em] font-bold ${isRtl ? "text-right" : "text-left"}`}
+        >
           <NavLink to="/services" className={mobileNavClass}>
             {copy.nav.services}
           </NavLink>
@@ -317,7 +332,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
           </NavLink>
           <Link
             to="/contact"
-            className="mt-2 inline-flex theme-outline px-6 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all w-fit"
+            className="mt-2 inline-flex theme-solid px-6 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all w-fit"
           >
             {copy.nav.cta}
           </Link>
