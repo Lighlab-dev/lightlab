@@ -1,123 +1,110 @@
 ---
 phase: 01-home-redesign
 plan: 02
-subsystem: pages/home
-tags: [hero, projects, gsap, video, rtl, i18n]
-dependency_graph:
-  requires: []
-  provides: [home-hero-section, home-projects-section, home-placeholder-sections]
-  affects: [src/pages/Home.tsx, src/components/Layout.tsx]
-tech_stack:
+subsystem: ui
+tags: [react, typescript, i18n, tailwind, gsap]
+
+# Dependency graph
+requires:
+  - phase: 01-home-redesign-01
+    provides: "TrustSignals section, 4th serviceTrack (Performance Marketing), ctaButtonStart i18n key"
+provides:
+  - "HowWeWork 4-step section (Architecture, Build, Deploy, Scale) in Home.tsx"
+  - "howWeWork i18n keys in all three locales (en/fr/ar)"
+  - "Services grid updated to md:grid-cols-2 lg:grid-cols-4 for 4 cards"
+  - "Stats LazySection has id='stats' for DOM identification"
+  - "METHOD LazySection removed from Home.tsx"
+affects:
+  - 01-home-redesign-03
+  - home-page-verification
+
+# Tech tracking
+tech-stack:
   added: []
-  patterns: [gsap-context-scoping, lazy-section-reveal, cursor-provider-pattern, hover-to-play-video]
-key_files:
+  patterns:
+    - "Memo component defined above Home function with explicit props interface — no closure over Home locals"
+    - "Section i18n keys nested under copy.home.[sectionName] with label/headline/items shape"
+
+key-files:
   created: []
   modified:
     - src/pages/Home.tsx
-    - src/components/Layout.tsx
-decisions:
-  - CursorProvider already exists in App.tsx — no double-wrap in Home.tsx
-  - ProjectCard uses native video element (not CinematicVideo) for hover-controlled play/pause
-  - Layout.tsx unused mobileNavClass removed to resolve pre-existing TS error blocking build
-metrics:
-  duration: ~20 minutes
-  completed: 2026-03-14
-  tasks_completed: 2
-  files_modified: 2
+    - src/i18n.tsx
+
+key-decisions:
+  - "HowWeWork defined as memo component above Home with explicit props — matches TrustSignals pattern from plan 01-01"
+  - "METHOD section removed from JSX only — i18n keys preserved (methodTitle, methodCards, methodCopy) for other page reuse"
+  - "HowWeWork inserted between Services and Projects to match the intended 9-section order"
+  - "Services grid changed to md:grid-cols-2 lg:grid-cols-4 — graceful 2-col at tablet, 4-col at desktop"
+
+patterns-established:
+  - "Pattern: All section components defined above Home() as named memos with typed props interface"
+  - "Pattern: Section layout uses border-t wrapper + max-w-7xl mx-auto padding container"
+
+requirements-completed: [HOW-WE-WORK-4-STEPS, SERVICES-4-PILLARS]
+
+# Metrics
+duration: 15min
+completed: 2026-03-14
 ---
 
-# Phase 01 Plan 02: Home.tsx Hero + Projects Sections Summary
+# Phase 01 Plan 02: How We Work + Services 4-Pillar Summary
 
-**One-liner:** Rewrote Home.tsx with cinematic Hero (video loop, blend-mode h1, GSAP parallax) and Projects section (3 hover-to-play full-width video cards with asymmetric layout), plus empty placeholders for plan 04.
+**4-step process section (Architecture → Build → Deploy → Scale) added with full i18n in en/fr/ar; Services grid updated to 4 columns; legacy METHOD section removed**
 
-## Tasks Completed
+## Performance
 
-| Task | Name | Commit | Files |
-|------|------|--------|-------|
-| 1 | Abort git revert and confirm clean baseline | (no-op) | No revert was in progress |
-| 2 | Rewrite Home.tsx — Hero + Projects sections | 72db99f | src/pages/Home.tsx, src/components/Layout.tsx |
+- **Duration:** 15 min
+- **Started:** 2026-03-14T22:10:00Z
+- **Completed:** 2026-03-14T22:26:44Z
+- **Tasks:** 2
+- **Files modified:** 2
 
-## What Was Built
+## Accomplishments
 
-### Hero Section
-- Full-screen `CinematicVideo` background with `scale-110` to prevent parallax edges
-- Two scrim layers: `bg-black/40 mix-blend-multiply` + `bg-gradient-to-t from-black/80`
-- Studio badge (top-right, flips left for Arabic) using `heroMeta` key
-- `heroTag` label (top-left) in fine mono uppercase
-- `<h1>` with `mix-blend-difference text-white font-display` at `clamp(4.5rem,11vw,11rem)`
-  - Two `.hero-line` spans with overflow-hidden clip for entrance animation
-  - Second line: `italic text-white/70` for `heroTitle2`
-- `heroCopy` sub-copy, CTA `MagneticButton` with `ctaButton` key, scroll indicator with pulse animation
-- GSAP entrance timeline: `.hero-line` stagger, `.hero-body`, `.hero-meta`, `.hero-cta`, `.hero-video-wrap` fade
-- Parallax: `.hero-video-wrap` `yPercent:15`, `.hero-content-inner` `yPercent:-10` (scrub)
-- Reduced motion guard on all GSAP animations
+- Added `howWeWork` i18n namespace to all three locales (EN, FR, AR) with 4 step objects each
+- Built `HowWeWork` memo component with 4 numbered step cards including connector line and Scale badge on last card
+- Inserted HowWeWork section between Services and Featured Projects (section 4 of 9)
+- Fixed Services grid from `md:grid-cols-3` to `md:grid-cols-2 lg:grid-cols-4` so all 4 service pillars display
+- Added `id="stats"` to Stats LazySection for DOM identification
+- Removed METHOD LazySection block from Home.tsx (i18n keys untouched)
 
-### Projects Section
-- `LazySection` wrapper for IntersectionObserver reveal
-- Section eyebrow with `viewProjectLabel` i18n key + `SplitText` headline
-- New memoized `ProjectCard` component:
-  - Props: `project`, `index`, `isArabic`, `isDark`, `align: 'left'|'right'|'center'`
-  - Poster `<img>` as background, `<video>` overlay plays on hover
-  - `onMouseEnter` → `video.play()` + `setType('play')` + GSAP title `yPercent:-5`
-  - `onMouseLeave` → `video.pause()` + `setType('default')` + GSAP title `yPercent:0`
-  - Asymmetric overlay alignment (RTL-aware: left↔right flips for Arabic)
-  - Ghost typography accent: `aria-hidden` span with `text-[22vw] opacity-[0.04] mix-blend-overlay`
-  - Category label in `font-mono small-caps text-white/50`
-  - Project title in `font-display text-[6vw] text-white`
-- 3 cards with `align` values: `'left'`, `'right'`, `'center'`
-- Editorial stacked layout with `mb-4 md:mb-6` gap
+## Task Commits
 
-### Placeholder Sections
-- `<section id="services">`, `<section id="about">`, `<section id="contact">` with `{/* TODO: plan 04 */}` comments
+Each task was committed atomically:
 
-### i18n Keys Consumed
-- `copy.home.heroTag` — tag label top-left
-- `copy.home.heroTitle1` — "Revenue"
-- `copy.home.heroTitle2` — "Scaling."
-- `copy.home.heroMeta` — "Lightlab Studio ©2026"
-- `copy.home.heroCopy` — hero sub-paragraph
-- `copy.home.scrollLabel` — "Scroll"
-- `copy.home.ctaButton` — "Book a Diagnostic"
-- `copy.home.viewProjectLabel` — "View Project"
+1. **Task 1: Add howWeWork i18n keys** - `ff80706` (feat)
+2. **Task 2: Fix Services grid, add Stats id, remove METHOD, build HowWeWork** - `2ed652c` (feat)
 
-### RTL Support
-- Studio badge flips: `isArabic ? 'left-8 md:left-14' : 'right-8 md:right-14'`
-- heroTag label flips to right for Arabic
-- ProjectCard overlay alignment inverts: `align='left'` becomes `'right'` for Arabic
-- All flex rows use `isArabic ? 'flex-row-reverse' : 'flex-row'`
+## Files Created/Modified
 
-## Deviations from Plan
-
-### Auto-fixed Issues
-
-**1. [Rule 3 - Blocking] Removed unused `mobileNavClass` in Layout.tsx**
-- **Found during:** Task 2 — first build attempt
-- **Issue:** Pre-existing TS6133 error `'mobileNavClass' is declared but its value is never read` in `src/components/Layout.tsx:45` prevented `npm run build` from exiting 0
-- **Fix:** Removed the unused `mobileNavClass` function (mobile nav already used inline arrow functions in JSX)
-- **Files modified:** src/components/Layout.tsx
-- **Commit:** 72db99f
-
-**2. [Rule 1 - Bug] Removed unused `CinematicImage` import from Home.tsx**
-- **Found during:** Task 2 — first build attempt
-- **Issue:** TS6133 error — `CinematicImage` was imported but not used in new Home.tsx (projects use native `<video>` + `<img>` for hover control, not CinematicVideo)
-- **Fix:** Removed `CinematicImage` from the named import block
-- **Files modified:** src/pages/Home.tsx
-- **Commit:** 72db99f (same commit, fixed before committing)
+- `src/i18n.tsx` - Added `howWeWork` object (label, headline, 4 steps) to `home` namespace in EN, FR, AR locales
+- `src/pages/Home.tsx` - Added HowWeWork component + 4 targeted changes (Services grid, Stats id, METHOD removal, HowWeWork insertion)
 
 ## Decisions Made
 
-1. **CursorProvider not added to Home.tsx** — `App.tsx` already wraps all routes in `<CursorProvider>`, so adding it in Home.tsx would double-wrap and break context isolation. The plan explicitly says "Check App.tsx — if CursorProvider is already there, do NOT double-wrap."
+- HowWeWork component follows the same pattern as TrustSignals from plan 01-01: defined above Home as a named memo with explicit typed props, no closure over Home locals.
+- METHOD section removed from JSX only — the corresponding i18n keys (`methodTitle`, `methodCards`, `methodCopy`, `methodSteps`) are preserved because they may still be used on other pages (e.g., Services, About).
+- Services grid at tablet breakpoint uses 2 columns (`md:grid-cols-2`) rather than 4 to avoid cramped cards on narrow viewports.
 
-2. **ProjectCard uses native `<video>` + `<img>` instead of `CinematicVideo`** — `CinematicVideo` uses IntersectionObserver for auto-play control, which conflicts with the hover-based play/pause required by ProjectCard. Native video element gives direct imperative control via `videoRef.current?.play()` / `.pause()`.
+## Deviations from Plan
 
-3. **MEDIA constant instead of IMAGES** — Plan specifies `const MEDIA = { ... }` replacing the old `const IMAGES = { ... }`. New structure has `heroVideo`, `heroPoster`, `projects[]`, `services[]` arrays.
+None - plan executed exactly as written.
 
-## Self-Check
+## Issues Encountered
 
-Checking created/modified files and commits:
+None.
 
-## Self-Check: PASSED
-- `src/pages/Home.tsx` — FOUND
-- `src/components/Layout.tsx` — FOUND
-- Commit 72db99f — FOUND (verified via git log)
-- `npm run build` exits 0 — VERIFIED
+## User Setup Required
+
+None - no external service configuration required.
+
+## Next Phase Readiness
+
+- Plan 01-03 can proceed: HowWeWork section is in place, Services shows 4 pillars, HOME has correct section order
+- The `ctaButton` key is preserved in i18n for plan 01-03's dual-button Final CTA reuse
+- Stats section is identifiable by `id="stats"` for any DOM-based verification
+
+---
+*Phase: 01-home-redesign*
+*Completed: 2026-03-14*
