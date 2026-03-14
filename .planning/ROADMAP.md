@@ -7,6 +7,6 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Add Trust Signals section and upgrade ProjectCard with result metrics
+- [x] 01-01-PLAN.md — Add Trust Signals section and upgrade ProjectCard with result metrics
 - [ ] 01-02-PLAN.md — Add How We Work 4-step section and fix Services to 4 pillars
 - [ ] 01-03-PLAN.md — Add Why LIGHTLAB differentiation section and dual-button Final CTA
