@@ -200,6 +200,7 @@ interface TrustSignalsProps {
   copy: ReturnType<typeof useLanguage>['copy']
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const TrustSignals = memo(({ isDark: _isDark, isArabic, P, dir, copy }: TrustSignalsProps) => (
   <LazySection className={`border-t ${P.border}`}>
     <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-12 md:py-16">
