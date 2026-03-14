@@ -180,6 +180,16 @@ const translations = {
         ],
         industries: ['SaaS', 'E-Commerce', 'AI Infrastructure', 'HealthTech', 'Growth Teams'],
       },
+      howWeWork: {
+        label: 'Our Process',
+        headline: 'How we build.',
+        steps: [
+          { number: '01', title: 'Architecture', copy: 'Deep diagnostic of your systems and revenue levers. We define the technical blueprint and KPIs before writing a single line of code.' },
+          { number: '02', title: 'Build', copy: 'Iterative sprints with weekly deliverables. Full-stack execution from data models to polished interfaces.' },
+          { number: '03', title: 'Deploy', copy: 'Zero-downtime launches with monitoring, error tracking, and performance baselines established from day one.' },
+          { number: '04', title: 'Scale', copy: 'Continuous optimization, A/B testing infrastructure, and system expansion as your product grows.' },
+        ],
+      },
     },
     services: {
       title: 'Scaling Engines',
@@ -803,6 +813,16 @@ const translations = {
           { name: 'Vance Media' },
         ],
         industries: ['SaaS', 'E-Commerce', 'Infrastructure IA', 'HealthTech', 'Équipes de croissance'],
+      },
+      howWeWork: {
+        label: 'Notre Processus',
+        headline: 'Comment nous construisons.',
+        steps: [
+          { number: '01', title: 'Architecture', copy: 'Diagnostic approfondi de vos systèmes et leviers de croissance. Nous définissons le blueprint technique avant d\'écrire la première ligne de code.' },
+          { number: '02', title: 'Construction', copy: 'Sprints itératifs avec des livrables hebdomadaires. Exécution full-stack des modèles de données aux interfaces finalisées.' },
+          { number: '03', title: 'Déploiement', copy: 'Lancements sans interruption avec surveillance, suivi des erreurs et benchmarks de performance dès le premier jour.' },
+          { number: '04', title: 'Croissance', copy: 'Optimisation continue, infrastructure de tests A/B et expansion du système au rythme de votre croissance.' },
+        ],
       },
     },
     services: {
@@ -1432,6 +1452,16 @@ const ar = {
         { name: 'Vance Media' },
       ],
       industries: ['برمجيات كخدمة', 'التجارة الإلكترونية', 'بنية الذكاء الاصطناعي', 'التكنولوجيا الصحية', 'فرق النمو'],
+    },
+    howWeWork: {
+      label: 'عمليتنا',
+      headline: 'كيف نبني.',
+      steps: [
+        { number: '01', title: 'الهندسة المعمارية', copy: 'تشخيص عميق لأنظمتك ورافعات الإيرادات. نحدد المخطط التقني ومؤشرات الأداء قبل كتابة سطر واحد من الكود.' },
+        { number: '02', title: 'البناء', copy: 'سبرينت تكرارية مع تسليمات أسبوعية. تنفيذ متكامل من نماذج البيانات إلى الواجهات المصقولة.' },
+        { number: '03', title: 'النشر', copy: 'إطلاق بدون توقف مع المراقبة وتتبع الأخطاء وخطوط الأداء الأساسية المحددة من اليوم الأول.' },
+        { number: '04', title: 'التوسع', copy: 'تحسين مستمر وبنية تحتية لاختبار A/B وتوسيع النظام مع نمو منتجك.' },
+      ],
     },
   },
   services: {
