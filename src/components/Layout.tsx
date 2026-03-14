@@ -14,7 +14,8 @@ type LayoutProps = {
 };
 
 function Layout({ themeMode, onToggleTheme }: LayoutProps) {
-  const logoSrc = themeMode === "dark" ? "/lightlab-lightlogo.svg" : "/logo.svg";
+  const logoSrc =
+    themeMode === "dark" ? "/lightlab-lightlogo.svg" : "/logo.svg";
   const mainRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const navLogoRef = useRef<HTMLImageElement>(null);
@@ -26,8 +27,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
   const location = useLocation();
   const { language, setLanguage, copy } = useLanguage();
   const isRtl = language === "ar";
-  // True while the viewport is inside the hero section (home page only)
-  const [isHeroSection, setIsHeroSection] = useState(location.pathname === '/');
+  const [isHeroSection, setIsHeroSection] = useState(location.pathname === "/");
 
   const handleLanguageChange = (value: string) => {
     if (value === "fr" || value === "en" || value === "ar") {
@@ -37,11 +37,13 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
 
   const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
     `relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:bg-current after:origin-left after:transition-transform transition-opacity ${
-      isActive ? "after:scale-x-100 opacity-100" : "after:scale-x-0 hover:after:scale-x-100"
+      isActive
+        ? "after:scale-x-100 opacity-100"
+        : "after:scale-x-0 opacity-60 hover:opacity-100 hover:after:scale-x-100"
     }`;
 
   const mobileNavClass = ({ isActive }: { isActive: boolean }) =>
-    `transition-opacity ${isActive ? "opacity-100 underline underline-offset-8" : "hover:opacity-60"}`;
+    `transition-all duration-200 ${isActive ? "opacity-100 underline underline-offset-8" : "opacity-50 hover:opacity-100"}`;
 
   useLayoutEffect(() => {
     const lenis = new Lenis({
@@ -58,13 +60,14 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     lenis.on("scroll", onLenisScroll);
     gsap.ticker.add(onTick);
     gsap.ticker.lagSmoothing(0);
+    lenis.scrollTo(0, { immediate: true });
 
     return () => {
       gsap.ticker.remove(onTick);
       lenis.off("scroll", onLenisScroll);
       lenis.destroy();
     };
-  }, []);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!mainRef.current) return;
@@ -87,9 +90,8 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     setMenuOpen(false);
   }, [location.pathname]);
 
-  // Immediately reset hero-section flag on every route change
   useEffect(() => {
-    if (location.pathname !== '/') {
+    if (location.pathname !== "/") {
       setIsHeroSection(false);
     } else {
       setIsHeroSection(window.scrollY < 2);
@@ -115,7 +117,6 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     const startRect = introLogo.getBoundingClientRect();
     const endRect = navLogo.getBoundingClientRect();
 
-    // Calculate center-to-center movement
     const startCenterX = startRect.left + startRect.width / 2;
     const startCenterY = startRect.top + startRect.height / 2;
     const endCenterX = endRect.left + endRect.width / 2;
@@ -125,39 +126,33 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     const deltaY = endCenterY - startCenterY;
     const scale = endRect.width / startRect.width;
 
-    gsap.set(navLogo, { opacity: 0 });
+    let ctx = gsap.context(() => {
+      gsap.set(navLogo, { opacity: 0 });
 
-    const tl = gsap.timeline({
-      onComplete: () => {
-        gsap.set(navLogo, { opacity: 1 });
-        setShowIntro(false);
-        body.style.overflow = prevOverflow;
-      },
-    });
+      const tl = gsap.timeline({
+        onComplete: () => {
+          gsap.set(navLogo, { opacity: 1 });
+          setShowIntro(false);
+          body.style.overflow = prevOverflow;
+        },
+      });
 
-    tl.set(introLogo, {
-      x: 0,
-      y: 0,
-      scale: 1,
-      opacity: 1,
-      clipPath: "inset(0 100% 0 0)",
-      transformOrigin: "center center",
-    })
-      .to(
-        introLogo,
-        { duration: 0.7, clipPath: "inset(0 0% 0 0)", ease: "power2.out" },
-        0,
-      )
-      .to(
-        introLogo,
-        { duration: 0.9, x: deltaX, y: deltaY, scale, ease: "power3.inOut" },
-        0.8,
-      )
-      .to(introLogo, { duration: 0.15, opacity: 0, ease: "power2.out" }, 1.7)
-      .to(overlay, { duration: 0.3, opacity: 0, ease: "power2.out" }, 1.55);
+      tl.set(introLogo, {
+        x: 0,
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        clipPath: "inset(0 100% 0 0)",
+        transformOrigin: "center center",
+      })
+        .to(introLogo, { duration: 0.7, clipPath: "inset(0 0% 0 0)", ease: "power2.out" }, 0)
+        .to(introLogo, { duration: 0.9, x: deltaX, y: deltaY, scale, ease: "power3.inOut" }, 0.8)
+        .to(introLogo, { duration: 0.15, opacity: 0, ease: "power2.out" }, 1.7)
+        .to(overlay, { duration: 0.3, opacity: 0, ease: "power2.out" }, 1.55);
+    }, [navLogo, introLogo, overlay]);
 
     return () => {
-      tl.kill();
+      ctx.revert();
       gsap.set(navLogo, { opacity: 1 });
       body.style.overflow = prevOverflow;
     };
@@ -168,29 +163,20 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     if (!nav) return;
 
     const updateNavbar = () => {
-      // 🧊 Freeze + reset when menu is open
       if (menuOpen) {
         nav.classList.remove("navbar-scrolled");
         return;
       }
-
-      // 🧭 Normal scroll behavior
       if (window.scrollY > 50) {
         nav.classList.add("navbar-scrolled");
       } else {
         nav.classList.remove("navbar-scrolled");
       }
-
-      // Track whether we are still inside the hero section
-      setIsHeroSection(location.pathname === '/' && window.scrollY < 2);
+      setIsHeroSection(location.pathname === "/" && window.scrollY < 2);
     };
 
-    // Run immediately (handles menu open / close)
     updateNavbar();
-
-    // Listen to scroll
     window.addEventListener("scroll", updateNavbar);
-
     return () => window.removeEventListener("scroll", updateNavbar);
   }, [menuOpen, location.pathname]);
 
@@ -209,6 +195,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       >
         Skip to content
       </a>
+
       {showIntro && (
         <div
           ref={introOverlayRef}
@@ -222,53 +209,32 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
           />
         </div>
       )}
+
+      {/* Navbar */}
       <nav
         ref={navRef}
         id="main-nav"
-        className={`fixed top-0 w-full z-100 transition-all duration-300 ${isHeroSection ? 'nav-over-hero' : ''}`}
+        className={`fixed top-0 w-full z-100 transition-all duration-500 ${isHeroSection ? "nav-over-hero" : ""}`}
       >
-        <div className="max-w-360 mx-auto px-6 md:px-16 py-5 sm:py-6 flex justify-between items-center">
-          <Link to="/" className="flex items-center">
+        <div className="max-w-360 mx-auto px-6 md:px-16 py-4 sm:py-5 flex justify-between items-center">
+          <Link to="/" className="flex items-center group">
             <img
               ref={navLogoRef}
-              src={isHeroSection ? '/lightlab-lightlogo.svg' : logoSrc}
+              src={isHeroSection ? "/lightlab-lightlogo.svg" : logoSrc}
               alt="Lightlab"
-              className="h-5 sm:h-6 w-auto transition-opacity duration-300"
+              className="h-5 sm:h-6 w-auto transition-all duration-300 group-hover:opacity-70"
             />
           </Link>
-          <div className="hidden lg:flex items-center gap-8  text-[10px] uppercase tracking-[0.2em] font-bold">
-            <NavLink
-              to="/services"
-              className={desktopNavClass}
-            >
-              {copy.nav.services}
-            </NavLink>
-            <NavLink
-              to="/projects"
-              className={desktopNavClass}
-            >
-              {copy.nav.projects}
-            </NavLink>
-            <NavLink
-              to="/method"
-              className={desktopNavClass}
-            >
-              {copy.nav.method}
-            </NavLink>
-            <NavLink
-              to="/about"
-              className={desktopNavClass}
-            >
-              {copy.nav.about}
-            </NavLink>
-            <NavLink
-              to="/contact"
-              className={desktopNavClass}
-            >
-              {copy.nav.contact}
-            </NavLink>
+
+          <div className="hidden lg:flex items-center gap-10 text-[10px] uppercase tracking-[0.2em] font-bold">
+            <NavLink to="/services" className={desktopNavClass}>{copy.nav.services}</NavLink>
+            <NavLink to="/projects" className={desktopNavClass}>{copy.nav.projects}</NavLink>
+            <NavLink to="/method" className={desktopNavClass}>{copy.nav.method}</NavLink>
+            <NavLink to="/about" className={desktopNavClass}>{copy.nav.about}</NavLink>
+            <NavLink to="/contact" className={desktopNavClass}>{copy.nav.contact}</NavLink>
           </div>
-          <div className="flex items-center gap-4 sm:gap-6">
+
+          <div className="flex items-center gap-3 sm:gap-5">
             <button
               type="button"
               className="theme-toggle"
@@ -279,13 +245,13 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
             </button>
             <Link
               to="/contact"
-              className="hidden lg:block theme-outline px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-colors"
+              className="hidden lg:block theme-outline px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all hover:opacity-80"
             >
               {copy.nav.cta}
             </Link>
             <button
               type="button"
-              className="lg:hidden inline-flex items-center px-5 justify-center py-2 rounded-none border border-current text-[10px] uppercase tracking-widest"
+              className="lg:hidden inline-flex items-center px-4 justify-center py-2 rounded-none border border-current text-[10px] uppercase tracking-widest transition-opacity hover:opacity-70"
               aria-label={menuOpen ? copy.nav.menuClose : copy.nav.menuOpen}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
@@ -296,48 +262,60 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
         </div>
       </nav>
 
+      {/* Mobile menu overlay */}
       <div
-        className={`fixed inset-0 z-90 theme-menu-overlay transition-opacity duration-300 lg:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 z-90 theme-menu-overlay transition-opacity duration-500 lg:hidden ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
       >
-        <div className={`pt-24 px-8 flex flex-col gap-6 text-[14px] uppercase tracking-[0.2em] font-bold ${isRtl ? "text-right" : "text-left"}`}>
-          <NavLink to="/services" className={mobileNavClass}>
-            {copy.nav.services}
-          </NavLink>
-          <NavLink to="/projects" className={mobileNavClass}>
-            {copy.nav.projects}
-          </NavLink>
-          <NavLink to="/method" className={mobileNavClass}>
-            {copy.nav.method}
-          </NavLink>
-          <NavLink to="/about" className={mobileNavClass}>
-            {copy.nav.about}
-          </NavLink>
-          <NavLink to="/contact" className={mobileNavClass}>
-            {copy.nav.contact}
-          </NavLink>
-          <Link
-            to="/contact"
-            className="mt-2 inline-flex theme-outline px-6 py-2.5 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all w-fit"
+        <div className="h-full flex flex-col justify-between">
+          <div
+            className={`pt-28 px-10 flex flex-col gap-8 ${isRtl ? "text-right items-end" : "text-left items-start"}`}
           >
-            {copy.nav.cta}
-          </Link>
+            {[
+              { to: "/services", label: copy.nav.services },
+              { to: "/projects", label: copy.nav.projects },
+              { to: "/method", label: copy.nav.method },
+              { to: "/about", label: copy.nav.about },
+              { to: "/contact", label: copy.nav.contact },
+            ].map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.1em] leading-none transition-all duration-200 ${
+                    isActive ? "opacity-100" : "opacity-40 hover:opacity-100"
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </div>
+          <div className={`px-10 pb-12 ${isRtl ? "text-right" : "text-left"}`}>
+            <Link
+              to="/contact"
+              className="inline-flex theme-outline px-7 py-3 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all hover:opacity-80 w-fit"
+            >
+              {copy.nav.cta}
+            </Link>
+          </div>
         </div>
       </div>
 
+      {/* Language selector */}
       <div className={`fixed bottom-6 z-110 ${isRtl ? "right-6" : "left-6"}`}>
         <div className="relative">
           <select
             aria-label="Select language"
             value={language}
             onChange={(event) => handleLanguageChange(event.target.value)}
-            className={`theme-surface backdrop-blur border border-black/10 dark:border-white/12 rounded-none appearance-none text-[11px] font-bold tracking-[0.12em] ${isRtl ? "pl-10 pr-4 text-right" : "pr-10 pl-4 text-left"} py-2.5 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black/30 dark:focus:border-white/25`}
+            className={`theme-surface backdrop-blur border border-black/10 dark:border-white/12 rounded-full appearance-none text-[11px] font-bold tracking-[0.12em] ${isRtl ? "pl-10 pr-5 text-right" : "pr-10 pl-5 text-left"} py-2.5 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black/30 dark:focus:border-white/25 cursor-pointer hover:border-black/25 dark:hover:border-white/25`}
           >
             <option value="fr">FR · Français</option>
             <option value="en">EN · English</option>
             <option value="ar">AR · العربية</option>
           </select>
           <span
-            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-[10px] opacity-60 ${isRtl ? "left-4" : "right-4"}`}
+            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-[10px] opacity-50 ${isRtl ? "left-4" : "right-4"}`}
             aria-hidden="true"
           >
             ▾
@@ -345,9 +323,10 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
         </div>
       </div>
 
+      {/* Scroll to top */}
       <button
         type="button"
-        className={`fixed bottom-6 z-110 inline-flex items-center justify-center h-10 w-10 rounded-none theme-surface backdrop-blur border border-black/10 dark:border-white/12 transition-all ${isRtl ? "left-6" : "right-6"} ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
+        className={`fixed bottom-6 z-110 inline-flex items-center justify-center h-10 w-10 rounded-full theme-surface backdrop-blur border border-black/10 dark:border-white/12 transition-all duration-300 hover:border-black/25 dark:hover:border-white/25 ${isRtl ? "left-6" : "right-6"} ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3 pointer-events-none"}`}
         aria-label="Back to top"
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
       >
@@ -358,50 +337,34 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
         <Outlet />
       </main>
 
-      <footer className="py-24 px-8 md:px-16 lg:px-24 border-t border-black/8 dark:border-white/10 bg-white/[0.12] dark:bg-white/[0.01]">
+      {/* Footer */}
+      <footer className="py-28 px-8 md:px-16 lg:px-24 border-t border-black/8 dark:border-white/10 bg-white/[0.12] dark:bg-white/[0.01]">
         <div className="max-w-360 mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
             <div className="lg:col-span-5">
-              <div className="mb-8">
-                <img
-                  src={logoSrc}
-                  alt="Lightlab"
-                  className="h-9 sm:h-10 w-auto"
-                />
-              </div>
-              <p className="text-sm opacity-50 max-w-sm leading-relaxed">
-                {copy.footer.summary}
+              <p className="text-[10px] uppercase tracking-[0.2em] opacity-30 mb-6 font-bold">
+                Digital Studio
               </p>
+              <div className="mb-8">
+                <img src={logoSrc} alt="Lightlab" className="h-9 sm:h-10 w-auto" />
+              </div>
+              <p className="text-sm opacity-50 max-w-xs leading-loose">{copy.footer.summary}</p>
             </div>
-            <div className="lg:col-span-3">
-              <span className="text-[10px] uppercase tracking-widest opacity-40 block mb-8">
-                {copy.footer.servicesTitle}
-              </span>
-              <ul className="space-y-4 text-sm font-medium">
+            <div className="lg:col-span-3 lg:pt-14">
+              <span className="text-[10px] uppercase tracking-widest opacity-35 block mb-7 font-bold">{copy.footer.servicesTitle}</span>
+              <ul className="space-y-5 text-sm">
                 {copy.footer.services.map((item) => (
                   <li key={item}>
-                    <Link
-                      className="hover:opacity-50 transition-opacity"
-                      to="/services"
-                    >
-                      {item}
-                    </Link>
+                    <Link className="opacity-60 hover:opacity-100 transition-opacity duration-200" to="/services">{item}</Link>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="lg:col-span-4">
-              <span className="text-[10px] uppercase tracking-widest opacity-40 block mb-8">
-                {copy.footer.contactTitle}
-              </span>
-              <div className="space-y-1 mb-12">
-                <a
-                  className="text-xl font-display hover:opacity-50 transition-opacity"
-                  href="mailto:hello@lightlab.dev"
-                >
-                  {copy.footer.email}
-                </a>
-                <p className="text-sm opacity-40">{copy.footer.location}</p>
+            <div className="lg:col-span-4 lg:pt-14">
+              <span className="text-[10px] uppercase tracking-widest opacity-35 block mb-7 font-bold">{copy.footer.contactTitle}</span>
+              <div className="space-y-2 mb-14">
+                <a className="text-xl font-display hover:opacity-60 transition-opacity duration-200 block" href="mailto:hello@lightlab.dev">{copy.footer.email}</a>
+                <p className="text-sm opacity-35">{copy.footer.location}</p>
               </div>
               <Link
                 className="theme-solid px-8 py-4 rounded-none font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] transition-transform"
@@ -411,25 +374,11 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
               </Link>
             </div>
           </div>
-          <div className="mt-24 pt-8 border-t border-primary/10 flex justify-between items-center text-[10px] uppercase tracking-widest opacity-30">
-            <span>(c) 2024 Lightlab Studio</span>
+          <div className="mt-28 pt-8 border-t border-primary/10 flex justify-between items-center text-[10px] uppercase tracking-widest opacity-25">
+            <span>&copy; 2025 Lightlab Studio</span>
             <div className="flex gap-8">
-              <a
-                className="hover:opacity-100"
-                href="https://www.linkedin.com"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Linkedin
-              </a>
-              <a
-                className="hover:opacity-100"
-                href="https://x.com"
-                target="_blank"
-                rel="noreferrer"
-              >
-                X / Twitter
-              </a>
+              <a className="hover:opacity-100 transition-opacity duration-200" href="https://www.linkedin.com" target="_blank" rel="noreferrer">Linkedin</a>
+              <a className="hover:opacity-100 transition-opacity duration-200" href="https://x.com" target="_blank" rel="noreferrer">X / Twitter</a>
             </div>
           </div>
         </div>
