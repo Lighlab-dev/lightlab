@@ -232,6 +232,66 @@ const TrustSignals = memo(({ isDark: _isDark, isArabic, P, dir, copy }: TrustSig
 ))
 TrustSignals.displayName = 'TrustSignals'
 
+// ─── HowWeWork ────────────────────────────────────────────────────────────────
+interface HowWeWorkProps {
+  isDark: boolean
+  isArabic: boolean
+  P: typeof LT
+  dir: { text: string; flex: string }
+  copy: ReturnType<typeof useLanguage>['copy']
+}
+
+const HowWeWork = memo(({ isDark, isArabic: _isArabic, P, dir, copy }: HowWeWorkProps) => (
+  <LazySection id="how-we-work">
+    <div className={`border-t ${P.border}`}>
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-20 md:py-28">
+        <div className={`mb-12 ${dir.text}`}>
+          <TextReveal>
+            <span className={`text-[9px] font-bold tracking-[0.52em] uppercase block mb-3 ${P.muted}`}>
+              {copy.home.howWeWork.label}
+            </span>
+          </TextReveal>
+          <SplitText
+            text={copy.home.howWeWork.headline}
+            className={`text-3xl md:text-4xl font-display font-light leading-[1.1] ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
+            type="words"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {copy.home.howWeWork.steps.map((step) => (
+            <div
+              key={step.number}
+              className={`relative flex flex-col gap-5 p-8 rounded-2xl border
+                ${isDark ? `${P.cardBg} ${P.border}` : `${P.cardBg} ${P.border}`}`}
+            >
+              <span className={`font-mono text-[9px] tracking-[0.44em] uppercase ${isDark ? 'text-white/20' : 'text-[#8c8780]'}`}>
+                {step.number}
+              </span>
+              <span className={`h-px w-12 ${isDark ? 'bg-white/10' : 'bg-[#d9d5ca]'}`} />
+              <h4 className={`text-xl md:text-2xl font-display font-light leading-tight
+                ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}>
+                {step.title}
+              </h4>
+              <p className={`text-sm font-light leading-[1.72] flex-1
+                ${isDark ? 'text-white/40' : 'text-[#56514a]'}`}>
+                {step.copy}
+              </p>
+              {step.number === '04' && (
+                <div className={`inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-bold tracking-[0.3em] uppercase border
+                  ${isDark ? 'border-white/[0.08] text-white/30' : 'border-[#d9d5ca] text-[#8c8780]'}`}>
+                  → {step.title}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </LazySection>
+))
+HowWeWork.displayName = 'HowWeWork'
+
 // ─── Home ─────────────────────────────────────────────────────────────────────
 function Home({ themeMode }: HomeProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -427,7 +487,7 @@ function Home({ themeMode }: HomeProps) {
           </div>
 
           {/* Service cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {copy.home.serviceTracks.map((track, i) => (
               <div
                 key={i}
@@ -465,6 +525,9 @@ function Home({ themeMode }: HomeProps) {
           </div>
         </div>
       </LazySection>
+
+      {/* ══════════════════════════ HOW WE WORK ══════════════════════════ */}
+      <HowWeWork isDark={isDark} isArabic={isArabic} P={P} dir={dir} copy={copy} />
 
       {/* ══════════════════════════ PROJECTS ══════════════════════════ */}
       <LazySection id="projects">
@@ -512,73 +575,13 @@ function Home({ themeMode }: HomeProps) {
       </LazySection>
 
       {/* ══════════════════════════ STATS ══════════════════════════ */}
-      <LazySection>
+      <LazySection id="stats">
         <div className={`border-t ${P.border}`}>
           <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-16 md:py-24">
             <div className={`grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 ${isArabic ? 'text-right' : 'text-left'}`}>
               {copy.home.impactStats.map((stat, i) => (
                 <AnimatedCounter key={i} value={stat.value} label={stat.label} isDark={isDark} />
               ))}
-            </div>
-          </div>
-        </div>
-      </LazySection>
-
-      {/* ══════════════════════════ METHOD ══════════════════════════ */}
-      <LazySection id="method">
-        <div className={`border-t ${P.border}`}>
-          <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-20 md:py-28">
-            <div className={`mb-12 ${dir.text}`}>
-              <TextReveal>
-                <span className={`text-[9px] font-bold tracking-[0.52em] uppercase block mb-3 ${P.muted}`}>
-                  {copy.home.methodTitle}
-                </span>
-              </TextReveal>
-              <SplitText
-                text={copy.home.expertiseTitle}
-                className={`text-3xl md:text-4xl font-display font-light leading-[1.1]
-                  ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
-                type="words"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {copy.home.methodCards.map((card, i) => (
-                <div
-                  key={i}
-                  className={`flex flex-col gap-5 p-8 rounded-2xl border
-                    ${isDark ? `${P.cardBg} ${P.border}` : `${P.cardBg} ${P.border}`}`}
-                >
-                  <div className={`flex items-center gap-3`}>
-                    <span className={`font-mono text-[9px] tracking-[0.44em] uppercase
-                      ${isDark ? 'text-white/20' : 'text-[#8c8780]'}`}>
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className={`h-px flex-1 ${isDark ? 'bg-white/[0.07]' : 'bg-[#d9d5ca]'}`} />
-                    <span className={`text-[9px] font-bold tracking-[0.3em] uppercase
-                      ${isDark ? 'text-white/20' : 'text-[#8c8780]'}`}>
-                      {copy.home.methodSteps[i]}
-                    </span>
-                  </div>
-                  <h4 className={`text-xl md:text-2xl font-display font-light leading-tight
-                    ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}>
-                    {card.title}
-                  </h4>
-                  <p className={`text-sm font-light leading-[1.72]
-                    ${isDark ? 'text-white/40' : 'text-[#56514a]'}`}>
-                    {card.copy}
-                  </p>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-10 max-w-xl">
-              <TextReveal>
-                <p className={`text-base font-light leading-[1.8]
-                  ${isDark ? 'text-white/35' : 'text-[#8c8780]'}`}>
-                  {copy.home.methodCopy}
-                </p>
-              </TextReveal>
             </div>
           </div>
         </div>
