@@ -292,6 +292,60 @@ const HowWeWork = memo(({ isDark, isArabic: _isArabic, P, dir, copy }: HowWeWork
 ))
 HowWeWork.displayName = 'HowWeWork'
 
+// ─── WhyLightlab ──────────────────────────────────────────────────────────────
+interface WhyLightlabProps {
+  isDark: boolean
+  isArabic: boolean
+  P: typeof LT
+  dir: { text: string; flex: string }
+  copy: ReturnType<typeof useLanguage>['copy']
+}
+
+const WhyLightlab = memo(({ isDark, isArabic: _isArabic, P, dir, copy }: WhyLightlabProps) => (
+  <LazySection id="why-lightlab">
+    <div className={`border-t ${P.border}`}>
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-20 md:py-28">
+        <div className={`mb-12 ${dir.text}`}>
+          <TextReveal>
+            <span className={`text-[9px] font-bold tracking-[0.52em] uppercase block mb-3 ${P.muted}`}>
+              {copy.home.whyLightlab.label}
+            </span>
+          </TextReveal>
+          <SplitText
+            text={copy.home.whyLightlab.headline}
+            className={`text-3xl md:text-4xl font-display font-light leading-[1.1] ${isDark ? 'text-white/90' : 'text-[#18160f]'}`}
+            type="words"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-12">
+          {copy.home.whyLightlab.pillars.map((pillar, i) => (
+            <div
+              key={i}
+              className={`flex flex-col gap-4 p-8 rounded-2xl border
+                ${isDark
+                  ? `${P.cardBg} ${P.border} hover:bg-white/[0.06]`
+                  : `${P.cardBg} ${P.border} hover:bg-[#f5f2ea]`}
+                transition-colors duration-300 group`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${isDark ? 'bg-white/20' : 'bg-[#d9d5ca]'}`} />
+              <h4 className={`text-lg md:text-xl font-display font-light leading-tight
+                ${isDark ? 'text-white/85' : 'text-[#18160f]'}`}>
+                {pillar.title}
+              </h4>
+              <p className={`text-sm font-light leading-[1.72]
+                ${isDark ? 'text-white/40' : 'text-[#56514a]'}`}>
+                {pillar.copy}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </LazySection>
+))
+WhyLightlab.displayName = 'WhyLightlab'
+
 // ─── Home ─────────────────────────────────────────────────────────────────────
 function Home({ themeMode }: HomeProps) {
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -431,7 +485,7 @@ function Home({ themeMode }: HomeProps) {
                 ${isDark ? 'border-white/15 text-white/60 hover:text-white' : 'border-[#d9d5ca] text-[#56514a]'}
                 ${isArabic ? 'flex-row-reverse' : ''}`}
             >
-              {copy.nav.services}
+              {copy.home.heroCtaSecondary}
             </MagneticButton>
           </div>
         </div>
@@ -639,6 +693,9 @@ function Home({ themeMode }: HomeProps) {
         </div>
       </LazySection>
 
+      {/* ══════════════════════════ WHY LIGHTLAB ══════════════════════════ */}
+      <WhyLightlab isDark={isDark} isArabic={isArabic} P={P} dir={dir} copy={copy} />
+
       {/* ══════════════════════════ CONTACT CTA ══════════════════════════ */}
       <LazySection id="contact" className="scroll-mt-24">
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pb-20 md:pb-28">
@@ -680,21 +737,34 @@ function Home({ themeMode }: HomeProps) {
                 </div>
               </TextReveal>
 
-              <MagneticButton
-                href="mailto:hello@lightlab.dev"
-                isDark
-                variant="primary"
-                className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
-                  text-[11px] font-bold tracking-[0.24em] uppercase
-                  ${isArabic ? 'flex-row-reverse' : ''}`}
-              >
-                {copy.home.ctaButton}
-                <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true"
-                  className={isArabic ? 'scale-x-[-1]' : ''}>
-                  <path d="M1 4h12M7.5 1l3.5 3-3.5 3" strokeWidth="1.4" stroke="currentColor"
-                    strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </MagneticButton>
+              <div className={`flex flex-wrap gap-4 items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <MagneticButton
+                  href="mailto:hello@lightlab.dev"
+                  isDark
+                  variant="primary"
+                  className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
+                    text-[11px] font-bold tracking-[0.24em] uppercase
+                    ${isArabic ? 'flex-row-reverse' : ''}`}
+                >
+                  {copy.home.ctaButtonStart}
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true"
+                    className={isArabic ? 'scale-x-[-1]' : ''}>
+                    <path d="M1 4h12M7.5 1l3.5 3-3.5 3" strokeWidth="1.4" stroke="currentColor"
+                      strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </MagneticButton>
+                <MagneticButton
+                  href="/contact"
+                  variant="outline"
+                  isDark
+                  className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
+                    text-[11px] font-bold tracking-[0.24em] uppercase
+                    border-white/15 text-white/60 hover:text-white
+                    ${isArabic ? 'flex-row-reverse' : ''}`}
+                >
+                  {copy.home.ctaButton2}
+                </MagneticButton>
+              </div>
             </div>
 
             {/* Wordmark watermark */}
