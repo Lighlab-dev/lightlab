@@ -190,6 +190,34 @@ const translations = {
           { number: '04', title: 'Scale', copy: 'Continuous optimization, A/B testing infrastructure, and system expansion as your product grows.' },
         ],
       },
+      heroCtaSecondary: 'View Our Work',
+      ctaButton2: 'Book a Diagnostic',
+      whyLightlab: {
+        label: 'Why LIGHTLAB',
+        headline: 'Built different. By design.',
+        pillars: [
+          {
+            title: 'Engineering-First',
+            copy: 'Every engagement starts with architecture. We build systems that scale, not prototypes that break.',
+          },
+          {
+            title: 'Performance-Focused',
+            copy: 'We measure success in revenue impact, not deliverables. Every sprint ships against a KPI.',
+          },
+          {
+            title: 'Long-Term Partnership',
+            copy: 'We operate as an embedded product team — aligned to your roadmap, not billable hours.',
+          },
+          {
+            title: 'Data-Driven',
+            copy: 'Attribution, analytics, and feedback loops are built into every system from day one.',
+          },
+          {
+            title: 'Built for Scale',
+            copy: 'Infrastructure decisions are made for 10x growth. We never build what you will need to rebuild.',
+          },
+        ],
+      },
     },
     services: {
       title: 'Scaling Engines',
@@ -822,6 +850,19 @@ const translations = {
           { number: '02', title: 'Construction', copy: 'Sprints itératifs avec des livrables hebdomadaires. Exécution full-stack des modèles de données aux interfaces finalisées.' },
           { number: '03', title: 'Déploiement', copy: 'Lancements sans interruption avec surveillance, suivi des erreurs et benchmarks de performance dès le premier jour.' },
           { number: '04', title: 'Croissance', copy: 'Optimisation continue, infrastructure de tests A/B et expansion du système au rythme de votre croissance.' },
+        ],
+      },
+      heroCtaSecondary: 'Voir nos réalisations',
+      ctaButton2: 'Réserver un Diagnostic',
+      whyLightlab: {
+        label: 'Pourquoi LIGHTLAB',
+        headline: 'Construit différemment. Par conception.',
+        pillars: [
+          { title: 'Engineering en premier', copy: 'Chaque engagement commence par l\'architecture. Nous construisons des systèmes qui évoluent, pas des prototypes qui cassent.' },
+          { title: 'Axé sur la performance', copy: 'Nous mesurons le succès par l\'impact sur les revenus, pas par les livrables. Chaque sprint livre contre un KPI.' },
+          { title: 'Partenariat à long terme', copy: 'Nous opérons comme une équipe produit intégrée — alignée sur votre roadmap, pas sur les heures facturables.' },
+          { title: 'Basé sur les données', copy: 'L\'attribution, l\'analytique et les boucles de feedback sont intégrés dans chaque système dès le premier jour.' },
+          { title: 'Construit pour l\'échelle', copy: 'Les décisions d\'infrastructure sont prises pour une croissance 10x. Nous ne construisons jamais ce que vous devrez reconstruire.' },
         ],
       },
     },
@@ -1461,6 +1502,19 @@ const ar = {
         { number: '02', title: 'البناء', copy: 'سبرينت تكرارية مع تسليمات أسبوعية. تنفيذ متكامل من نماذج البيانات إلى الواجهات المصقولة.' },
         { number: '03', title: 'النشر', copy: 'إطلاق بدون توقف مع المراقبة وتتبع الأخطاء وخطوط الأداء الأساسية المحددة من اليوم الأول.' },
         { number: '04', title: 'التوسع', copy: 'تحسين مستمر وبنية تحتية لاختبار A/B وتوسيع النظام مع نمو منتجك.' },
+      ],
+    },
+    heroCtaSecondary: 'عرض أعمالنا',
+    ctaButton2: 'احجز تشخيصاً',
+    whyLightlab: {
+      label: 'لماذا LIGHTLAB',
+      headline: 'مبني بشكل مختلف. بالتصميم.',
+      pillars: [
+        { title: 'الهندسة أولاً', copy: 'كل مشاركة تبدأ بالهندسة المعمارية. نبني أنظمة قابلة للتوسع، وليس نماذج أولية تنكسر.' },
+        { title: 'التركيز على الأداء', copy: 'نقيس النجاح بتأثير الإيرادات، وليس بالمخرجات. كل سبرينت يُسلَّم مقابل مؤشر أداء رئيسي.' },
+        { title: 'شراكة طويلة الأمد', copy: 'نعمل كفريق منتج مدمج — متوافق مع خارطة طريقك، وليس الساعات القابلة للفوترة.' },
+        { title: 'مدفوع بالبيانات', copy: 'الإسناد والتحليلات وحلقات التغذية الراجعة مدمجة في كل نظام من اليوم الأول.' },
+        { title: 'مبني للتوسع', copy: 'قرارات البنية التحتية تُتخذ لنمو 10x. لا نبني أبداً ما ستحتاج إلى إعادة بنائه.' },
       ],
     },
   },
