@@ -32,9 +32,10 @@ interface ProjectsProps {
 // Premium curated images - museum/gallery quality
 const IMAGES = {
   hero: "https://images.unsplash.com/photo-1600607686527-6fb886090705?w=1400&q=90",
+  // 0: SwiftHire (HR/Tech), 1: BrightSmile (Dental/Healthcare)
   projects: [
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=90",
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=90",
+    "https://images.unsplash.com/photo-1573164574230-db1d5e960238?w=1200&q=90", // Tech/HR dashboard vibe
+    "https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=1200&q=90", // Modern Clinic vibe
     "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&q=90",
     "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=90",
     "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1200&q=90",
@@ -169,14 +170,54 @@ const ProjectCard = memo(
     const isFeatured = layout === "featured";
     const isWide = layout === "wide";
 
+    // Tech stack integration
+    const renderTechStack = () => {
+      const techTags = project.title.includes("Swift")
+        ? ["React", "Next.js", "Custom AI / LLM"]
+        : project.title.includes("BrightSmile")
+          ? ["Laravel", "Next.js"]
+          : [];
+
+      if (techTags.length === 0) return null;
+
+      return (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {techTags.map((tech) => (
+            <span
+              key={tech}
+              className="inline-block px-3 py-1 text-[9px] font-bold tracking-[0.2em] uppercase bg-white/5 backdrop-blur-md rounded-full text-white/90 border border-white/20"
+            >
+              {tech}
+            </span>
+          ))}
+        </div>
+      );
+    };
+
+    // Specific styling per project
+    const isSwiftHire = project.title.includes("SwiftHire");
+    const isBrightSmile = project.title.includes("BrightSmile");
+
+    let cardGradient = isFeatured
+      ? "bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90"
+      : "bg-gradient-to-t from-black/70 via-black/10 to-transparent group-hover:from-black/80";
+
+    if (isSwiftHire) {
+      cardGradient =
+        "bg-gradient-to-t from-[#0f172a]/95 via-[#0f172a]/40 to-transparent group-hover:from-[#0f172a]";
+    } else if (isBrightSmile) {
+      cardGradient =
+        "bg-gradient-to-t from-[#0ea5e9]/20 via-black/10 to-transparent group-hover:from-[#0ea5e9]/30";
+    }
+
     return (
       <article
         ref={cardRef}
         data-cursor="pointer"
         className={`
         group relative overflow-hidden cursor-pointer
-        ${isFeatured ? "col-span-12 lg:col-span-8 row-span-2 h-[70vh] min-h-[600px] rounded-3xl" : ""}
-        ${isWide ? "col-span-12 lg:col-span-6 h-[50vh] min-h-[400px] rounded-3xl" : "col-span-12 md:col-span-6 lg:col-span-4 h-[45vh] min-h-[350px] rounded-3xl"}
+        ${isFeatured ? "col-span-12 lg:col-span-8 row-span-2 h-[75vh] min-h-[600px] rounded-3xl" : ""}
+        ${isWide ? "col-span-12 lg:col-span-6 h-[55vh] min-h-[400px] rounded-3xl" : "col-span-12 md:col-span-6 lg:col-span-4 h-[45vh] min-h-[350px] rounded-3xl"}
       `}
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
@@ -202,11 +243,7 @@ const ProjectCard = memo(
         <div
           className={`
         absolute inset-0 transition-all duration-700
-        ${
-          isFeatured
-            ? "bg-gradient-to-t from-black/80 via-black/20 to-transparent group-hover:from-black/90"
-            : "bg-gradient-to-t from-black/70 via-black/10 to-transparent group-hover:from-black/80"
-        }
+        ${cardGradient}
       `}
         />
 
@@ -225,9 +262,21 @@ const ProjectCard = memo(
           ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
         `}
           >
-            <span className="inline-block px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/10">
+            <span
+              className={`inline-block px-3 py-1 text-[10px] font-bold tracking-[0.2em] uppercase bg-white/10 backdrop-blur-md rounded-full text-white/80 border border-white/10 ${isSwiftHire ? "text-cyan-400 border-cyan-400/30 bg-cyan-900/20" : ""} ${isBrightSmile ? "text-sky-100 border-sky-100/30" : ""}`}
+            >
               {project.focus}
             </span>
+          </div>
+
+          {/* Tech Stack */}
+          <div
+            className={`
+          overflow-hidden transition-all duration-500 delay-75
+          ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+        `}
+          >
+            {renderTechStack()}
           </div>
 
           {/* Title with character animation */}
@@ -260,13 +309,13 @@ const ProjectCard = memo(
           {/* View project link */}
           <div
             className={`
-          flex items-center gap-3 text-[11px] font-medium tracking-[0.2em] uppercase text-white/60
+          flex items-center gap-3 text-[11px] font-medium tracking-[0.2em] uppercase ${isSwiftHire ? "text-cyan-400" : "text-white/60"}
           transition-all duration-500
           ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
           ${isArabic ? "flex-row-reverse" : ""}
         `}
           >
-            <span>{copy.ui.viewProject}</span>
+            <span>{isSwiftHire ? "Talk to us" : "View Project"}</span>
             <svg
               className={`w-4 h-4 transition-transform duration-300 ${isArabic ? "rotate-180" : ""} ${isHovered ? "translate-x-1" : ""}`}
               fill="none"
@@ -296,7 +345,9 @@ const ProjectCard = memo(
         </div>
 
         {/* Border accent */}
-        <div className="absolute inset-0 border border-white/0 group-hover:border-white/10 rounded-3xl transition-all duration-500 pointer-events-none" />
+        <div
+          className={`absolute inset-0 border rounded-3xl transition-all duration-500 pointer-events-none ${isSwiftHire ? "border-transparent group-hover:border-cyan-500/30" : isBrightSmile ? "border-transparent group-hover:border-sky-300/30" : "border-white/0 group-hover:border-white/10"}`}
+        />
       </article>
     );
   },
@@ -326,64 +377,6 @@ const AnimatedDivider = memo(({ isDark, isArabic }: AnimatedDividerProps) => (
     />
   </div>
 ));
-
-// Stat counter with animation
-interface StatCounterProps {
-  value: string;
-  label: string;
-  isDark: boolean;
-  isArabic: boolean;
-}
-
-const StatCounter = memo(
-  ({ value, label, isDark, isArabic }: StatCounterProps) => {
-    const [count, setCount] = useState(0);
-    const ref = useRef<HTMLDivElement | null>(null);
-
-    useLayoutEffect(() => {
-      const element = ref.current;
-      if (!element) return;
-
-      const ctx = gsap.context(() => {
-        ScrollTrigger.create({
-          trigger: element,
-          start: "top 85%",
-          once: true,
-          onEnter: () => {
-            gsap.to(
-              { val: 0 },
-              {
-                val: parseInt(value),
-                duration: 2,
-                ease: "power2.out",
-                onUpdate: function () {
-                  setCount(Math.floor(this.targets()[0].val));
-                },
-              },
-            );
-          },
-        });
-      }, ref);
-
-      return () => ctx.revert();
-    }, [value]);
-
-    return (
-      <div ref={ref} className={`text-center ${isArabic ? "text-right" : ""}`}>
-        <div
-          className={`text-5xl md:text-7xl font-display font-light mb-2 ${isDark ? "text-white/90" : "text-black/90"}`}
-        >
-          {count}+
-        </div>
-        <div
-          className={`text-[10px] font-bold tracking-[0.3em] uppercase ${isDark ? "text-white/30" : "text-black/30"}`}
-        >
-          {label}
-        </div>
-      </div>
-    );
-  },
-);
 
 function Projects({ themeMode = "dark" }: ProjectsProps) {
   const isDark = themeMode === "dark";
@@ -457,7 +450,7 @@ function Projects({ themeMode = "dark" }: ProjectsProps) {
           <div className={`mb-24 ${isArabic ? "text-right" : ""}`}>
             <h1 className="font-display text-[clamp(3.5rem,10vw,12rem)] font-light leading-[0.85] tracking-tighter uppercase">
               <SplitText text={copy.projects.titleLine1} type="words" />
-              <div className="overflow-hidden">
+              <div className="overflow-hidden pb-6">
                 <span className="block italic opacity-40 translate-y-4 translate-x-4">
                   <SplitText text={copy.projects.titleLine2} type="words" />
                 </span>
@@ -465,43 +458,16 @@ function Projects({ themeMode = "dark" }: ProjectsProps) {
             </h1>
           </div>
 
-          {/* Subtitle & Stats */}
+          {/* Subtitle */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-end">
             <div
-              className={`col-span-12 lg:col-span-7 overflow-hidden ${isArabic ? "text-right" : ""}`}
+              className={`col-span-12 lg:col-span-8 overflow-hidden ${isArabic ? "text-right" : ""}`}
             >
               <p
                 className={`reveal-projects text-xl md:text-2xl max-w-2xl leading-relaxed font-light italic ${isDark ? "opacity-40" : "text-[#56514a]"}`}
               >
                 {copy.projects.subtitle}
               </p>
-            </div>
-
-            <div className="col-span-12 lg:col-span-5 stats-container grid grid-cols-3 gap-8">
-              <div className="reveal-projects">
-                <StatCounter
-                  value="48"
-                  label={copy.projects.stats.projects}
-                  isDark={isDark}
-                  isArabic={isArabic}
-                />
-              </div>
-              <div className="reveal-projects">
-                <StatCounter
-                  value="12"
-                  label={copy.projects.stats.awards}
-                  isDark={isDark}
-                  isArabic={isArabic}
-                />
-              </div>
-              <div className="reveal-projects">
-                <StatCounter
-                  value="8"
-                  label={copy.projects.stats.years}
-                  isDark={isDark}
-                  isArabic={isArabic}
-                />
-              </div>
             </div>
           </div>
         </header>

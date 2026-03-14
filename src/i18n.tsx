@@ -568,10 +568,10 @@ const translations = {
       ctaButton: "Schedule a Call",
     },
     projects: {
-      titleLine1: "Proven",
-      titleLine2: "Results",
+      titleLine1: "We don't just build.",
+      titleLine2: "We solve.",
       subtitle:
-        "A selection of high-impact engagements across AI automation, product development, and revenue-scaling media.",
+        "Transforming complex business challenges into elegant, high-performance digital realities.",
       stats: {
         projects: "Projects",
         awards: "Awards",
@@ -579,34 +579,24 @@ const translations = {
       },
       items: [
         {
-          title: "Helios Automation Suite",
-          focus: "AI + Ops",
-          result: "Reduced support workload by 22% in 60 days.",
+          title: "SwiftHire: Automating the Future of HR",
+          focus: "Recruitment Technology",
+          result:
+            "A 70% reduction in time-to-hire. Recruiters now manage talent pools with unmatched speed and efficiency through a frictionless, intuitive platform.",
         },
         {
-          title: "Pulse Commerce Build",
-          focus: "Development",
-          result: "3x release velocity with a modular storefront.",
-        },
-        {
-          title: "Nova Media Engine",
-          focus: "Media Buying",
-          result: "CAC down 28% with multi-channel testing.",
-        },
-        {
-          title: "Beacon Growth Stack",
-          focus: "AI + Media",
-          result: "ROAS lift of 32% after automation rollout.",
+          title: "BrightSmile: Redefining the Patient Experience",
+          focus: "Healthcare & Cosmetic Dentistry",
+          result:
+            "A surge in premium consultations. The new platform effortlessly converts visitors into patients by projecting clinical professionalism wrapped in modern luxury.",
         },
       ],
-      focusTitle: "Where we build",
+      focusTitle: "Engineering Growth",
       focusItems: [
-        "Automation systems for operations teams",
-        "Product platforms with high-velocity releases",
-        "Paid media engines optimized for compounding ROI",
+        "Intelligent Automation & AI: From custom LLM integrations to automated workflow systems.",
+        "Strategic Media & Growth: Brand-safe performance creative and funnel analytics engineered to scale revenue.",
       ],
-      ctaTitle:
-        "Ready to bring your next platform to life? We can map the roadmap this week.",
+      ctaTitle: "Let's engineer your next breakthrough.",
       ctaButton: "Start a Project",
     },
     contact: {
