@@ -112,6 +112,12 @@ const translations = {
           result: '41% ROAS lift',
           href: '/services/media-buying',
         },
+        {
+          title: 'Performance Marketing',
+          copy: 'Data-driven paid acquisition and funnel optimization engineered to maximize ROAS and reduce CAC at scale.',
+          result: '2.8x ROAS lift',
+          href: '/services/marketing',
+        },
       ],
       impactStats: [
         { label: 'Revenue Growth', value: '+35% Avg' },
@@ -158,6 +164,22 @@ const translations = {
       ctaMeta: 'Response time',
       ctaMetaValue: 'Within 24 hours',
       ctaButton: 'Book a Diagnostic',
+      ctaButtonStart: 'Start a Project',
+      projectsSectionTitle: 'Selected Projects',
+      viewAllLabel: 'View all',
+      trustSignals: {
+        label: 'Trusted By',
+        headline: 'Built for companies that move fast.',
+        clients: [
+          { name: 'Meridian Commerce' },
+          { name: 'Nova Health' },
+          { name: 'Orion Capital' },
+          { name: 'Apex Labs' },
+          { name: 'Stratum AI' },
+          { name: 'Vance Media' },
+        ],
+        industries: ['SaaS', 'E-Commerce', 'AI Infrastructure', 'HealthTech', 'Growth Teams'],
+      },
     },
     services: {
       title: 'Scaling Engines',
@@ -714,6 +736,12 @@ const translations = {
           result: '+41% ROAS lift',
           href: '/services/media-buying',
         },
+        {
+          title: 'Marketing de Performance',
+          copy: 'Acquisition payante et optimisation de funnel axées sur les données, conçues pour maximiser le ROAS et réduire le CAC à grande échelle.',
+          result: '2.8x ROAS',
+          href: '/services/marketing',
+        },
       ],
       impactStats: [
         { label: 'Croissance Revenu', value: '+35% Moy' },
@@ -760,6 +788,22 @@ const translations = {
       ctaMeta: 'Temps de reponse',
       ctaMetaValue: 'Moins de 24 heures',
       ctaButton: 'Réserver un Diagnostic',
+      ctaButtonStart: 'Démarrer un Projet',
+      projectsSectionTitle: 'Projets Sélectionnés',
+      viewAllLabel: 'Voir tout',
+      trustSignals: {
+        label: 'Ils nous font confiance',
+        headline: 'Conçu pour les entreprises qui avancent vite.',
+        clients: [
+          { name: 'Meridian Commerce' },
+          { name: 'Nova Health' },
+          { name: 'Orion Capital' },
+          { name: 'Apex Labs' },
+          { name: 'Stratum AI' },
+          { name: 'Vance Media' },
+        ],
+        industries: ['SaaS', 'E-Commerce', 'Infrastructure IA', 'HealthTech', 'Équipes de croissance'],
+      },
     },
     services: {
       title: 'Moteurs de Scaling',
@@ -1321,6 +1365,12 @@ const ar = {
         copy: 'إبداع أدائي آمن للعلامة التجارية وتحليلات قمع تسويقي مصممة لزيادة الإيرادات وتحقيق أقصى عائد على الإنفاق الإعلاني.',
         result: 'زيادة ROAS بنسبة +41%',
       },
+      {
+        ...translations.en.home.serviceTracks[3],
+        title: 'تسويق الأداء',
+        copy: 'اكتساب مدفوع قائم على البيانات وتحسين مسار التحويل لزيادة ROAS وتقليل CAC على نطاق واسع.',
+        result: '2.8x ROAS',
+      },
     ],
     impactStats: [
       { label: 'نمو الإيرادات', value: '+35% متوسّط' },
@@ -1367,6 +1417,22 @@ const ar = {
     ctaMeta: 'زمن الرد',
     ctaMetaValue: 'خلال 24 ساعة',
     ctaButton: 'حجز جلسة تشخيص',
+    ctaButtonStart: 'ابدأ مشروعًا',
+    projectsSectionTitle: 'مشاريع مختارة',
+    viewAllLabel: 'عرض الكل',
+    trustSignals: {
+      label: 'موثوق به',
+      headline: 'مصمم للشركات التي تتحرك بسرعة.',
+      clients: [
+        { name: 'Meridian Commerce' },
+        { name: 'Nova Health' },
+        { name: 'Orion Capital' },
+        { name: 'Apex Labs' },
+        { name: 'Stratum AI' },
+        { name: 'Vance Media' },
+      ],
+      industries: ['برمجيات كخدمة', 'التجارة الإلكترونية', 'بنية الذكاء الاصطناعي', 'التكنولوجيا الصحية', 'فرق النمو'],
+    },
   },
   services: {
     ...translations.en.services,
