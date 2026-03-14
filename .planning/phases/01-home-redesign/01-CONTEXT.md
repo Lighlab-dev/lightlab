@@ -1,135 +1,132 @@
 # Phase 1: Home Page Redesign - Context
 
-**Gathered:** 2026-03-14 (updated)
+**Gathered:** 2026-03-14
 **Status:** Ready for planning
 
 <domain>
 ## Phase Boundary
 
-Transform `src/pages/Home.tsx` into a luxury, media-rich, animated experience. Full replacement of the current Home page is allowed. Scope: visual design, content sections, animations, and performance. Other pages, routing, and shared Layout are out of scope.
+Redesign and rebuild the `Home.tsx` landing page (`/`) into a conversion-optimized, premium technology studio page. All 9 sections defined in the PRD are in scope. Other pages (Services, Projects, Contact, About, Method) are out of scope unless directly linked from Home CTAs.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Section structure & order
-- Hero → Projects → Services → About/Stats → Contact CTA
-- Lead with impact, prove authority immediately with work, pitch services, add trust signals, close with CTA
+### Positioning & Messaging
+- Position LIGHTLAB as "Your outsourced product and growth engineering team" — not a marketing agency
+- Target clients willing to spend $20k–$200k+ on projects (startups, scaleups, SaaS, e-commerce)
+- Quality benchmark: Linear, Stripe, Vercel, Ramp, OpenAI, Framer, Replit
+- Hero headline direction: outcome-focused — e.g., "Engineering Growth Infrastructure." or "We Build Systems That Scale Revenue."
+- Hero subheadline: one sentence explaining what LIGHTLAB does — "Custom SaaS, AI automation, and growth systems designed to accelerate modern companies."
 
-### Hero section
-- Full-screen cinematic video loop as background (100vh)
-- Headlines rendered with `mix-blend-difference` or `mix-blend-exclusion` over the video
-- "Visionary & Minimalist" copy — punchy, evocative, result-focused (no jargon)
-- Hero reveal sequence: deliberate GSAP timeline, ~1.2s total settle
-- `heroTitle1`, `heroTitle2`, `heroTag`, `heroMeta` copy keys must all appear
+### Page Structure (9 sections, in order)
+1. **Hero** — headline + subheadline + primary CTA ("Start a Project") + secondary CTA ("View Our Work") + visual element
+2. **Trust Signals** — immediately after hero; client logos, performance metrics, industries
+3. **Services** — 4 pillars: AI Systems, Custom SaaS Development, Growth Infrastructure, Performance Marketing; each card has title + description + key outcomes
+4. **How We Work** — 4 steps: Architecture → Build → Deploy → Scale
+5. **Featured Projects** — case study cards with project name, type (SaaS/AI/Growth), measurable results
+6. **Performance Metrics** — large visually impactful numbers (35% avg growth, 4x marketing perf, 40% faster deployment)
+7. **Client Testimonials** — professional quotes from founders/executives focused on business impact, speed, engineering quality
+8. **Why LIGHTLAB** — differentiation: engineering-first, performance-focused, long-term partnership, data-driven, built for scale
+9. **Final CTA** — large bold section, headline "Build Your Next Growth System.", primary "Start a Project", secondary "Book a Diagnostic"
 
-### Projects section
-- 3–4 featured project cards, full-width
-- Each card plays a short video loop on hover (hover-to-play video preview)
-- Asymmetric layout — alternate card compositions (full-left image, full-right image, centered)
-- Section height: 60–80vh per card or section total
+### Visual Design
+- Color palette: warm minimal neutral — soft beige/sand background, near-black charcoal text, deep neutral gray accent, optional subtle gold/champagne highlight
+- Dark sections allowed for contrast (especially Final CTA or Metrics sections)
+- No cheap gradients, no startup clichés, no stock-like marketing design
+- Generous whitespace, clear hierarchy, subtle motion only
 
-### Services section
-- Visual Dynamic List — background media swaps as user hovers/scrolls over each service track
-- Replaces any accordion-style component
-- Section height: 60–80vh
+### Typography
+- Hero headline: elegant serif font (premium editorial feel)
+- Body text: modern sans-serif
+- Section titles: large, confident, minimal
+- Overall feel: luxury technology studio, not startup template
 
-### About/Stats section
-- Animated counters (clients, projects, years) that count up on scroll entry
-- 1–2 sentence vision statement alongside the counters
-- No team headshots in this phase
-- Section height: 60–80vh
+### Hero Visual
+- Subtle animated dashboard, product architecture visualization, or system diagrams
+- No generic stock photos
+- Should feel like a tech workspace or system architecture visualization
 
-### Contact CTA section
-- Bold, persistent "Start a Project" call-to-action
-- Must always be visible or fixed so it's never more than a click away
+### Motion & Animation
+- GSAP ScrollTrigger for scroll-reveal (already established pattern)
+- Hover interactions on cards/CTAs
+- Animated metrics (count-up on scroll)
+- Parallax depth on hero
+- Elegant microinteractions — nothing flashy
+- Lenis smooth scroll already handles page-level smoothness
 
-### Spacing philosophy
-- Generous, editorial breathing room — let content breathe
-- Hero + Projects: 100vh
-- Services, About/Stats, CTA: 60–80vh
-- Tall section padding, comfortable internal gutters
+### Conversion Optimization
+- CTA visible above fold (in hero)
+- CTA repeated every few sections throughout the page
+- Trust signals immediately after hero
+- Frictionless contact path
 
-### Typography scale
-- Viewport-relative headings: 8–12vw, fluid and cinematic
-- Scales naturally from large screens to mobile
-- Typography as a primary design element, not just content carrier
-- Elegant & Contained — large but perfectly framed and legible (no chaotic bleed-off)
-
-### Visual accents
-- Ghost typography: massive ultra-low-opacity background characters (`text-[30vw]`, `opacity-10`, `mix-blend-overlay`)
-- Fine-line UI: 1px borders, mono-spaced labels throughout
-- Visual "Pause" sections: pure text on solid `#080807`/`#eeeae0` between media-heavy sections
-- Asymmetric rhythm: alternate text alignment (left/right/center) across sections — magazine feel
-
-### Animation & interactions
-- Fluid Parallax: background media `yPercent: 15`, foreground text `yPercent: -10`, `scrub: true`
-- Custom Magnetic Cursor: `gsap.quickTo()` XY tracking, expands/reveals labels on CTA hover
-- Animated counters in About/Stats: count up on scroll entry
-- Clean Cinematic Fades/Wipes for transitions — no glitchy or liquid effects
-- All GSAP scoped via `gsap.context()` for cleanup
-
-### Performance
-- Mandatory lazy-loading for all media via Intersection Observer (play/pause on viewport entry/exit)
-- Loading sequence: poster image → `preload="metadata"` → GSAP opacity fade-in on `onLoadedData`
-- Hero video only: `preload="auto"`
-- Format: WebM (VP9/AV1) primary, H.264 MP4 fallback for Safari
-- `muted playsInline autoPlay loop` on all background videos
-- `object-cover` for full-screen bleed without distortion
+### Content (placeholder data acceptable for launch)
+- Performance metrics: +35% average revenue growth, 4x marketing performance, 40% faster product launches
+- Services example outcome: AI Systems — "reduce operational complexity and unlock scale"
+- Featured projects: AI Revenue Engine (+52% leads), Growth Platform (4x ROI), Media Optimization System (40% CAC reduction)
+- "How We Work" steps: Architecture, Build, Deploy, Scale
 
 ### Claude's Discretion
-- Exact animation durations and easing (use ANIMATION constants from PremiumUI.tsx)
-- Loading skeleton or transition between poster and video
-- Exact padding values within the generous spacing intent
-- Error/fallback state for failed video loads
-- Scroll-triggered counter animation implementation (GSAP countTo vs CSS)
+- Exact serif font choice (Playfair Display, DM Serif Display, or similar premium serif already in the stack or easily imported)
+- Loading skeleton / page transition details
+- Exact card shadow and border-radius values
+- Specific animation easing curves and durations
+- Whether metrics section is dark or light background
+- Exact grid layout within each section (2-col, 3-col, etc.)
+- Testimonial card layout details
 
 </decisions>
+
+<specifics>
+## Specific Ideas
+
+- "This company builds serious technology" — the feeling visitors should leave with
+- Reference quality: Linear (clean card layouts), Stripe (trust signals + metrics), Vercel (minimal, dark sections), Ramp (business ROI focus)
+- Hero visual: subtle animated dashboard or product architecture diagram — NOT stock photos
+- Metrics section: numbers should be "very visually impactful" — large, bold, possibly counting up on scroll
+- Services cards: title + short description + key outcomes format
+- Project cards: project name + type label + measurable result in large text
+- Final CTA section: "large bold section" — likely dark background for contrast
+
+</specifics>
 
 <code_context>
 ## Existing Code Insights
 
 ### Reusable Assets
-- `PremiumUI.tsx` — `MagneticButton`, `TextReveal`, `SplitText`, `CinematicImage`, `CinematicVideo`, `useCursor`, `CursorProvider`, `ANIMATION` constants — all ready to use and extend
-- `ANIMATION` constants: `{ duration: { reveal: 1.2, hover: 0.6, stagger: 0.08 }, ease: { luxury, smooth, bounce } }` — use these, don't define new easing values
-- `LT` / `DK` palette token objects already defined in current `Home.tsx` — keep as-is, use via `P = isDark ? DK : LT` pattern
-- `LazySection` component in current `Home.tsx` — Intersection Observer reveal wrapper, reuse
+- `src/components/PremiumUI.tsx`: Animated UI primitives already built — use for cards, reveals, hover states, metric counters
+- `src/components/Layout.tsx`: Provides Lenis smooth scroll, GSAP context, navbar, footer — page only needs to provide content sections
+- `react-icons` (Feather Icons set): Available for service icons, CTA arrows, etc.
+- `/public/logo.svg` + `/public/lightlab-lightlogo.svg`: Two logo variants available
 
 ### Established Patterns
-- GSAP must be scoped via `gsap.context()` — pattern established in Layout.tsx and Home.tsx
-- ScrollTrigger registered at top of Home.tsx — maintain this
-- Theme: `isDark` boolean derived from `themeMode` prop, `P = isDark ? DK : LT` for all tokens
-- i18n: `const { copy, language } = useLanguage()` — all copy via `copy.home.*` keys
-- RTL: `isArabic = language === 'ar'`, `dir={isArabic ? 'rtl' : 'ltr'}` on root wrapper — asymmetric layouts must mirror for Arabic
+- **GSAP animations**: Use `gsap.context()` with `.reveal-el` class pattern for scroll reveals; cleanup via `ctx.revert()`
+- **Tailwind CSS 4**: All styling via utility classes; no separate CSS files per component
+- **TypeScript strict mode**: All components must be typed; props interfaces defined above or inline
+- **i18n**: `useLanguage()` hook + `t()` function for all user-facing strings (EN/FR/AR support required)
+- **Theme**: `data-theme` attribute handles light/dark; color tokens via CSS variables in `App.css`
 
 ### Integration Points
-- `Home.tsx` receives `themeMode: 'dark' | 'light'` prop from `App.tsx`
-- `CursorProvider` wraps the Home component — custom cursor lives inside this provider
-- Layout.tsx handles navbar, footer, Lenis — Home does not re-implement these
-- Lenis smooth scroll is active — GSAP ScrollTrigger already set up to work with Lenis in Layout.tsx
+- `src/App.tsx` → `Home.tsx` is the `/` route — no routing changes needed
+- Layout wraps the page — navbar and footer are automatic
+- Smooth scroll and reveal animations are initialized in Layout — Home just needs `.reveal-el` classes
+- i18n translations must be added to `src/i18n.tsx` for any new strings
 
 </code_context>
-
-<specifics>
-## Specific Ideas
-
-- "Feel alive" — videos and parallax create motion even when user is not actively scrolling
-- "More content" — 5 clear sections (Hero, Projects, Services, About/Stats, CTA) each with substantial visual presence, not placeholder padding
-- Project cards with hover-to-play video: premium interaction that showcases real work in motion
-- Animated counters: simple but impactful trust signal in About/Stats
-- Deleting and rewriting Home.tsx is explicitly allowed — no obligation to patch current code
-
-</specifics>
 
 <deferred>
 ## Deferred Ideas
 
-- None — discussion stayed within phase scope
+- Contact form with lead capture (mentioned in PRD as "frictionless contact path" — the CTA links to `/contact` which already exists)
+- Blog/case study detail pages — Full case studies are a separate feature
+- Animated background effects beyond the hero (separate animation polish phase if needed)
+- A/B testing on CTAs — future growth optimization phase
 
 </deferred>
 
 ---
 
 *Phase: 01-home-redesign*
-*Context gathered: 2026-03-14 (updated session)*
+*Context gathered: 2026-03-14*
