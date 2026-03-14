@@ -42,9 +42,6 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
         : "after:scale-x-0 opacity-60 hover:opacity-100 hover:after:scale-x-100"
     }`;
 
-  const mobileNavClass = ({ isActive }: { isActive: boolean }) =>
-    `transition-all duration-200 ${isActive ? "opacity-100 underline underline-offset-8" : "opacity-50 hover:opacity-100"}`;
-
   useLayoutEffect(() => {
     const lenis = new Lenis({
       duration: 1.25,
