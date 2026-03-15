@@ -2,20 +2,144 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
+/* ── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  --color-bg-light:     #EDE8DF;
+  --color-bg-dark:      #090909;
+  --color-text-primary: #0F0F0F;
+  --color-text-stone:   #4A4540;
+  --color-text-muted:   #8A8580;
+  --color-border:       #D8D3C8;
+  --color-card-light:   #F7F4EF;
+  --color-accent-red:   #FF3B3B;
+  --color-gold:         #C6A96B;
+}
+
+/* ── Base resets ────────────────────────────────────────────────────────── */
 * {
-	box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 html {
-	scroll-behavior: auto;
+  scroll-behavior: auto;
+  background-color: #090909;
+  color-scheme: dark;
 }
 
 body {
-	margin: 0;
-	font-family: 'DM Sans', sans-serif;
+  margin: 0;
+  background-color: #090909;
+  color: #ffffff;
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 img {
-	max-width: 100%;
-	display: block;
+  max-width: 100%;
+  display: block;
+}
+
+/* ── Typography utility ─────────────────────────────────────────────────── */
+.font-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* ── Selection ──────────────────────────────────────────────────────────── */
+::selection {
+  background-color: rgba(255, 59, 59, 0.18);
+  color: #0F0F0F;
+}
+
+[data-theme='dark'] ::selection {
+  background-color: rgba(255, 59, 59, 0.25);
+  color: #ffffff;
+}
+
+/* ── Theme surface ──────────────────────────────────────────────────────── */
+/* Applied to elements that need to match the page background */
+.theme-surface {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-primary);
+}
+
+[data-theme='dark'] .theme-surface {
+  background-color: var(--color-bg-dark);
+  color: #ffffff;
+}
+
+/* ── Theme outline button ───────────────────────────────────────────────── */
+.theme-outline {
+  border: 1px solid var(--color-text-primary);
+  color: var(--color-text-primary);
+  background: transparent;
+}
+
+[data-theme='dark'] .theme-outline {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.85);
+  background: transparent;
+}
+
+/* ── Theme solid button (always red accent) ─────────────────────────────── */
+.theme-solid {
+  background-color: var(--color-accent-red);
+  color: #ffffff;
+  border: 1px solid var(--color-accent-red);
+}
+
+.theme-solid:hover {
+  background-color: #E02E2E;
+  border-color: #E02E2E;
+}
+
+/* ── Hero overlay (intro logo animation backdrop) ───────────────────────── */
+.theme-hero-overlay {
+  background-color: var(--color-bg-light);
+}
+
+[data-theme='dark'] .theme-hero-overlay {
+  background-color: var(--color-bg-dark);
+}
+
+/* ── Mobile menu overlay ────────────────────────────────────────────────── */
+.theme-menu-overlay {
+  background-color: var(--color-bg-light);
+  color: var(--color-text-primary);
+}
+
+[data-theme='dark'] .theme-menu-overlay {
+  background-color: var(--color-bg-dark);
+  color: #ffffff;
+}
+
+/* ── Navbar: over hero (transparent) ───────────────────────────────────── */
+.nav-over-hero {
+  background: transparent;
+  color: #ffffff;
+}
+
+/* ── Navbar: scrolled state ─────────────────────────────────────────────── */
+.navbar-scrolled {
+  background-color: rgba(9, 9, 9, 0.97);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ── Theme toggle ───────────────────────────────────────────────────────── */
+.theme-toggle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.45;
+  padding: 0.25rem 0.5rem;
+  transition: opacity 200ms ease;
+  color: inherit;
+}
+
+.theme-toggle:hover {
+  opacity: 1;
 }

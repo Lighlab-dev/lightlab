@@ -1,685 +1,628 @@
-import { useLayoutEffect, useRef, useMemo, useState, useCallback, memo, type ReactNode, type MouseEvent } from 'react'
-import { FiChevronDown } from 'react-icons/fi'
+import { useLayoutEffect, useRef, useMemo, memo, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLanguage } from '../i18n'
+import {
+  MagneticButton,
+  TextReveal,
+  SplitText,
+  ANIMATION,
+} from '../components/PremiumUI'
 
 gsap.registerPlugin(ScrollTrigger)
 
 type Theme = 'dark' | 'light'
+interface MethodProps { themeMode: Theme }
 
-interface MethodProps {
-  themeMode: Theme
-}
+const ACCENT = '#FF3B3B'
 
-// Animation constants
-const EASE = {
-  luxury: 'cubic-bezier(0.16, 1, 0.3, 1)',
-  smooth: 'cubic-bezier(0.62, 0.05, 0.01, 0.99)'
-}
-
-// Curated method images - process & architecture focused
-const METHOD_IMAGES = [
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=90', // Strategy
-  'https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&q=90', // Design process
-  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=90', // Development
-  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=90'  // Launch
+const IMAGES = [
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=90',
+  'https://images.unsplash.com/photo-1551434678-e076c223a692?w=1200&q=90',
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=90',
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=90',
 ]
 
-// Magnetic button component
-interface MagneticButtonProps {
-  children: ReactNode
-  href: string
-  variant?: 'primary' | 'dark' | 'light' | 'outline'
-  className?: string
-  isArabic: boolean
-  isDark: boolean
-}
+// Results shown in the strip between steps and CTA
+const RESULTS = [
+  { value: '14', unit: 'days', label: 'Avg. time to first results' },
+  { value: '3.8×', unit: '',   label: 'Avg. client ROI at 6 months' },
+  { value: '97',  unit: '%',   label: 'Projects shipped on schedule' },
+]
 
-const MagneticButton = memo(({ children, href, variant = 'primary', className = '', isArabic, isDark }: MagneticButtonProps) => {
-  const buttonRef = useRef<HTMLAnchorElement | null>(null)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
-
-  const handleMouseMove = useCallback((e: MouseEvent<HTMLAnchorElement>) => {
-    if (!buttonRef.current) return
-    const rect = buttonRef.current.getBoundingClientRect()
-    const x = (e.clientX - rect.left - rect.width / 2) * 0.4
-    const y = (e.clientY - rect.top - rect.height / 2) * 0.4
-    setPosition({ x, y })
-  }, [])
-
-  const handleMouseLeave = useCallback(() => {
-    setPosition({ x: 0, y: 0 })
-  }, [])
-
-  const isPrimaryDark = variant === 'dark'
-  const isOutline = variant === 'outline'
-
-  return (
-    <a
-      ref={buttonRef}
-      href={href}
-      className={`
-        group relative inline-flex items-center justify-center gap-3 
-        px-10 py-5 rounded-full overflow-hidden
-        text-xs font-bold tracking-[0.2em] uppercase
-        transition-all duration-500
-        ${isOutline 
-          ? (isDark
-              ? 'border border-white/30 text-white hover:bg-white hover:text-black hover:border-white/50 hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]'
-              : 'border border-black/30 text-black hover:bg-black hover:text-white hover:border-black/50 hover:shadow-[0_0_30px_rgba(0,0,0,0.2)]')
-          : isPrimaryDark
-            ? 'bg-white text-black border border-white/30 hover:bg-transparent hover:text-white hover:border-white/50 hover:shadow-[0_0_40px_rgba(255,255,255,0.25)]'
-            : 'bg-black text-white border border-black/30 hover:bg-transparent hover:text-black hover:border-black/50 hover:shadow-[0_0_40px_rgba(0,0,0,0.25)]'
-        }
-        ${className}
-      `}
-      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <span className="relative z-10">{children}</span>
-      {isOutline ? (
-        <svg 
-          className={`relative z-10 w-4 h-4 transition-transform duration-300 ${isArabic ? 'rotate-180 group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-        </svg>
-      ) : null}
-    </a>
-  )
-})
-
-// Text reveal animation
-interface TextRevealProps {
-  children: ReactNode
-  delay?: number
-  className?: string
-  direction?: 'up' | 'down'
-}
-
-const TextReveal = memo(({ children, delay = 0, className = '', direction = 'up' }: TextRevealProps) => {
-  const ref = useRef<HTMLDivElement | null>(null)
-  
+// ─── LazySection ─────────────────────────────────────────────────────────────
+const LazySection = memo(({ children, className = '', id }: {
+  children: React.ReactNode; className?: string; id?: string
+}) => {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(false)
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
-    
-    gsap.fromTo(el, 
-      { y: direction === 'up' ? '100%' : '-100%', opacity: 0 },
-      { 
-        y: '0%', 
-        opacity: 1, 
-        duration: 1,
-        delay,
-        ease: EASE.luxury,
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 90%',
-          once: true
-        }
-      }
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold: 0.04, rootMargin: '0px 0px -32px 0px' }
     )
-  }, [delay, direction])
-
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
   return (
-    <div className={`overflow-hidden ${className}`}>
-      <div ref={ref} className="will-change-transform">
-        {children}
-      </div>
+    <div
+      ref={ref}
+      id={id}
+      className={`transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]
+        ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'} ${className}`}
+    >
+      {children}
     </div>
   )
 })
+LazySection.displayName = 'LazySection'
 
-// Split headline animation
-interface SplitHeadlineProps {
-  text: string
-  className?: string
-  delay?: number
-}
-
-const SplitHeadline = memo(({ text, className = '', delay = 0 }: SplitHeadlineProps) => {
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const lines = text.split('\n')
-
-  useLayoutEffect(() => {
-    const lines = containerRef.current?.querySelectorAll('.headline-line')
-    if (!lines?.length) return
-
-    gsap.fromTo(lines,
-      { y: '100%', rotateX: -90, opacity: 0 },
-      {
-        y: '0%',
-        rotateX: 0,
-        opacity: 1,
-        duration: 1.2,
-        stagger: 0.1,
-        delay,
-        ease: EASE.luxury,
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 80%',
-          once: true
-        }
-      }
-    )
-  }, [delay])
-
-  return (
-    <div ref={containerRef} className={className} style={{ perspective: '1000px' }}>
-      {lines.map((line: string, i: number) => (
-        <div key={i} className="overflow-hidden">
-          <div className="headline-line will-change-transform" style={{ transformOrigin: 'center bottom' }}>
-            {line}
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-})
-
-// Progress ring component
-interface ProgressRingProps {
-  progress: string
-  size?: number
-  strokeWidth?: number
-  isDark: boolean
-}
-
-const ProgressRing = memo(({ progress, size = 120, strokeWidth = 2, isDark }: ProgressRingProps) => {
-  const radius = (size - strokeWidth) / 2
-  const circumference = radius * 2 * Math.PI
-  const offset = circumference - (parseInt(progress) / 100) * circumference
-
-  return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90 w-full h-full">
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          className={isDark ? 'text-white/10' : 'text-black/10'}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="currentColor"
-          strokeWidth={strokeWidth}
-          fill="transparent"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          className={`transition-all duration-1000 ease-out ${isDark ? 'text-white/60' : 'text-black/60'}`}
-        />
-      </svg>
-      <div className={`absolute inset-0 flex items-center justify-center text-sm font-display font-light ${isDark ? 'text-white/80' : 'text-black/80'}`}>
-        {progress}
-      </div>
-    </div>
-  )
-})
-
-// Step card with immersive design
+// ─── Types ────────────────────────────────────────────────────────────────────
 type MethodStep = NonNullable<ReturnType<typeof useLanguage>['copy']['method']>['steps'][number]
 
-interface StepCardProps {
+// ─── ProcessRail ─────────────────────────────────────────────────────────────
+// Horizontal process overview — all 4 steps at a glance
+const ProcessRail = memo(({ steps, isArabic }: { steps: readonly MethodStep[]; isArabic: boolean }) => (
+  <LazySection>
+    <div className="border-t border-white/[0.07]">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-14 md:py-16">
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-0 ${isArabic ? 'direction-rtl' : ''}`}>
+          {steps.map((step, i) => (
+            <div
+              key={step.number}
+              className={`relative group py-2 ${
+                i < steps.length - 1 ? 'pr-6 md:pr-10 border-r border-white/[0.07]' : ''
+              } ${i > 0 ? 'pl-6 md:pl-10' : ''}`}
+            >
+              {/* Step number */}
+              <span
+                className="block text-[9px] font-bold tracking-[0.44em] uppercase mb-3"
+                style={{ color: 'rgba(255,59,59,0.55)' }}
+              >
+                {step.number}
+              </span>
+              {/* Title */}
+              <span className="block font-display font-light text-xl md:text-2xl text-white/70 mb-1.5 group-hover:text-white transition-colors duration-300">
+                {step.title}
+              </span>
+              {/* Timeline */}
+              <span className="block text-[10px] font-medium tracking-[0.18em] uppercase text-white/22">
+                {step.metaValue}
+              </span>
+              {/* Hover accent line */}
+              <div
+                className="absolute bottom-0 left-0 h-[1.5px] w-0 group-hover:w-full transition-all duration-500 rounded-full"
+                style={{ background: 'linear-gradient(to right, rgba(255,59,59,0.5), transparent)' }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </LazySection>
+))
+ProcessRail.displayName = 'ProcessRail'
+
+// ─── StepCard ─────────────────────────────────────────────────────────────────
+const StepCard = memo(({ step, index, totalSteps, isArabic }: {
   step: MethodStep
   index: number
   totalSteps: number
   isArabic: boolean
-  isDark: boolean
-}
-
-const StepCard = memo(({ step, index, totalSteps, isArabic, isDark }: StepCardProps) => {
-  const cardRef = useRef<HTMLElement | null>(null)
-  const [isHovered, setIsHovered] = useState(false)
-  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 })
+}) => {
   const isEven = index % 2 === 0
-  const progress = ['25%', '50%', '75%', '100%'][index] || '100%'
-
-  const handleMouseMove = useCallback((e: MouseEvent<HTMLElement>) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    setMousePos({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height
-    })
-  }, [])
 
   return (
-    <section
-      ref={cardRef}
-      className={`
-        min-h-screen relative flex items-center py-20 overflow-hidden
-        ${isDark ? 'bg-[#0a0a0a] text-white' : 'bg-[#fafafa] text-black'}
-        transition-colors duration-700
-      `}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Background number watermark */}
-      <div className={`
-        absolute top-1/2 -translate-y-1/2 pointer-events-none select-none
-        ${isArabic ? 'right-0 translate-x-1/3' : 'left-0 -translate-x-1/3'}
-        text-[40vw] font-display font-bold leading-none
-        ${isDark ? 'text-white/[0.015]' : 'text-black/[0.015]'}
-      `}>
-        {step.number}
-      </div>
+    <LazySection>
+      <div className="border-t border-white/[0.07]">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-      {/* Ambient glow */}
-      <div 
-        className={`
-          absolute w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none
-          transition-all duration-1000
-          ${isDark ? 'bg-white/[0.02]' : 'bg-black/[0.02]'}
-        `}
-        style={{
-          left: `${mousePos.x * 100}%`,
-          top: `${mousePos.y * 100}%`,
-          transform: 'translate(-50%, -50%)'
-        }}
-      />
+            {/* ── Content ── */}
+            <div className={`relative ${isEven ? 'lg:order-1' : 'lg:order-2'} ${isArabic ? 'text-right' : ''}`}>
 
-      <div className="w-full px-6 md:px-12 lg:px-20 relative z-10">
-        <div className="max-w-[1600px] mx-auto">
-          <div className={`grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20 items-center ${isArabic ? 'text-right' : ''}`}>
-            
-            {/* Content Side */}
-            <div className={`lg:col-span-5 ${isEven ? 'lg:order-1' : 'lg:order-2'}`}>
-              {/* Step indicator */}
-              <div className={`flex items-center gap-6 mb-10 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                <div className={`
-                  px-4 py-2 rounded-full text-[10px] font-medium tracking-[0.2em] uppercase
-                  ${isDark ? 'bg-white/10 text-white/60' : 'bg-black/5 text-black/60'}
-                `}>
-                  Step {step.number} / {totalSteps}
-                </div>
-                <div className={`flex-1 h-px max-w-[100px] ${isDark ? 'bg-gradient-to-r from-white/20' : 'bg-gradient-to-r from-black/20'}`} />
-              </div>
-
-              {/* Title */}
-              <SplitHeadline 
-                text={step.title}
-                className={`
-                  text-5xl md:text-6xl lg:text-7xl font-display font-light leading-[0.95] mb-8
-                  ${index % 2 === 0 ? 'italic' : ''}
-                  ${isDark ? 'text-white/90' : 'text-black/90'}
-                `}
-              />
-
-              {/* Description */}
-              <TextReveal delay={0.2}>
-                <p className={`text-lg leading-relaxed mb-12 max-w-lg font-light ${isDark ? 'text-white/50' : 'text-black/50'}`}>
-                  {step.copy}
-                </p>
-              </TextReveal>
-
-              {/* Deliverables */}
-              <div className="space-y-6">
-                <div className={`text-[11px] font-medium tracking-[0.3em] uppercase ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-                  {step.deliverablesLabel}
-                </div>
-                <ul className="space-y-4">
-                  {step.deliverables.map((item: string) => (
-                    <li 
-                      key={item} 
-                      className={`
-                        group flex items-center gap-4 text-base font-light
-                        ${isArabic ? 'flex-row-reverse' : ''}
-                        ${isDark ? 'text-white/60' : 'text-black/60'}
-                      `}
-                    >
-                      <span className={`
-                        w-8 h-px transition-all duration-300 group-hover:w-12
-                        ${isDark ? 'bg-white/30' : 'bg-black/30'}
-                      `} />
-                      <span className="group-hover:translate-x-1 transition-transform duration-300">
-                        {item}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Meta value */}
-              <div className="mt-12 pt-8 border-t border-current border-opacity-10">
-                <div className={`text-[11px] font-medium tracking-[0.3em] uppercase mb-2 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-                  {step.metaLabel}
-                </div>
-                <div className={`text-2xl font-display font-light ${isDark ? 'text-white/80' : 'text-black/80'}`}>
-                  {step.metaValue}
-                </div>
-              </div>
-            </div>
-
-            {/* Visual Side */}
-            <div className={`lg:col-span-7 ${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
-              <div 
-                className="relative group cursor-pointer"
+              {/* Giant ghost step number — behind all content */}
+              <span
+                aria-hidden="true"
+                className="absolute select-none pointer-events-none font-display font-bold leading-none text-white/[0.022]"
                 style={{
-                  transform: `perspective(1000px) rotateY(${(mousePos.x - 0.5) * 5}deg) rotateX(${(0.5 - mousePos.y) * 5}deg)`,
-                  transition: 'transform 0.3s ease-out'
+                  fontSize: 'clamp(9rem,20vw,18rem)',
+                  top: '-0.15em',
+                  left: isArabic ? 'auto' : '-0.05em',
+                  right: isArabic ? '-0.05em' : 'auto',
+                  lineHeight: 0.85,
                 }}
               >
-                {/* Main image container */}
-                <div className={`
-                  relative aspect-[4/3] rounded-lg overflow-hidden
-                  ${isDark ? 'shadow-2xl shadow-white/5' : 'shadow-2xl shadow-black/5'}
-                `}>
-                  <img
-                    src={METHOD_IMAGES[index % METHOD_IMAGES.length]}
-                    alt={step.title}
-                    className="w-full h-full object-cover transform scale-105 group-hover:scale-100 transition-transform duration-700"
-                  />
-                  
-                  {/* Overlay gradient */}
-                  <div className={`
-                    absolute inset-0 bg-gradient-to-t opacity-60
-                    ${isDark ? 'from-black/60 via-transparent to-transparent' : 'from-white/40 via-transparent to-transparent'}
-                  `} />
+                {step.number}
+              </span>
 
-                  {/* Progress indicator overlay */}
-                  <div className={`
-                    absolute top-8 ${isArabic ? 'left-8' : 'right-8'}
-                    transition-transform duration-500
-                    ${isHovered ? 'scale-110' : 'scale-100'}
-                  `}>
-                    <ProgressRing 
-                      progress={progress} 
-                      size={100} 
-                      strokeWidth={1.5}
-                      isDark={isDark}
-                    />
+              <div className="relative z-10">
+
+                {/* Eyebrow */}
+                <TextReveal>
+                  <div className={`flex items-center gap-3 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
+                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                      Step {step.number} of {String(totalSteps).padStart(2, '0')}
+                    </span>
                   </div>
+                </TextReveal>
 
-                  {/* Step number overlay */}
-                  <div className={`
-                    absolute bottom-8 ${isArabic ? 'right-8' : 'left-8'}
-                    text-8xl font-display font-bold
-                    ${isDark ? 'text-white/10' : 'text-black/10'}
-                  `}>
-                    0{index + 1}
+                {/* Title */}
+                <SplitText
+                  text={step.title}
+                  className="text-[clamp(2.8rem,5.5vw,5rem)] font-display font-light leading-[0.96] text-white/92 tracking-[-0.02em] mb-6"
+                  type="words"
+                />
+
+                {/* Copy */}
+                <TextReveal delay={0.08}>
+                  <p className="text-base md:text-lg font-light leading-[1.82] text-white/45 mb-10 max-w-[38ch]">
+                    {step.copy}
+                  </p>
+                </TextReveal>
+
+                {/* Deliverables — pill chips */}
+                <TextReveal delay={0.13}>
+                  <div>
+                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/20 block mb-4">
+                      {step.deliverablesLabel}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {step.deliverables.map((item: string) => (
+                        <span
+                          key={item}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full
+                            border border-white/[0.08] bg-white/[0.03]
+                            text-[10px] font-medium tracking-[0.14em] uppercase text-white/48
+                            hover:border-[#FF3B3B]/25 hover:text-white/70 hover:bg-white/[0.05]
+                            transition-all duration-300 cursor-default"
+                        >
+                          <span className="w-1 h-1 rounded-full bg-[#FF3B3B]/55 shrink-0" aria-hidden="true" />
+                          {item}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </TextReveal>
 
-                {/* Floating deliverables cards */}
-                <div className={`
-                  absolute -bottom-6 ${isArabic ? '-left-6' : '-right-6'}
-                  w-64 p-6 rounded-lg backdrop-blur-md border
-                  ${isDark ? 'bg-black/40 border-white/10' : 'bg-white/60 border-black/10'}
-                  transform transition-all duration-500
-                  ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
-                `}>
-                  <div className={`text-[10px] font-medium tracking-[0.2em] uppercase mb-3 ${isDark ? 'text-white/40' : 'text-black/40'}`}>
-                    Key Deliverable
+                {/* Meta strip */}
+                <TextReveal delay={0.18}>
+                  <div className={`mt-10 pt-8 border-t border-white/[0.07] flex items-center justify-between ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    <div>
+                      <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/20 block mb-2">
+                        {step.metaLabel}
+                      </span>
+                      <span className="text-xl md:text-2xl font-display font-light text-white/70">
+                        {step.metaValue}
+                      </span>
+                    </div>
+                    {/* Faint step number accent */}
+                    <span
+                      aria-hidden="true"
+                      className="font-display font-light tabular-nums"
+                      style={{ fontSize: 'clamp(2.5rem,5vw,4rem)', color: 'rgba(255,59,59,0.12)' }}
+                    >
+                      {step.number}
+                    </span>
                   </div>
-                  <div className={`text-sm font-light ${isDark ? 'text-white/80' : 'text-black/80'}`}>
-                    {step.deliverables[0]}
-                  </div>
-                </div>
+                </TextReveal>
 
-                {/* Decorative frame */}
-                <div className={`
-                  absolute -inset-4 border rounded-lg pointer-events-none transition-colors duration-500
-                  ${isDark ? 'border-white/5 group-hover:border-white/10' : 'border-black/5 group-hover:border-black/10'}
-                `} />
-              </div>
-
-              {/* Progress bar */}
-              <div className="mt-8">
-                <div className={`flex justify-between text-[10px] font-medium tracking-[0.2em] uppercase mb-3 ${isDark ? 'text-white/30' : 'text-black/40'}`}>
-                  <span>Progress</span>
-                  <span>{progress}</span>
-                </div>
-                <div className={`h-1 rounded-full overflow-hidden ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
-                  <div 
-                    className={`h-full rounded-full transition-all duration-1000 ease-out ${isDark ? 'bg-white/60' : 'bg-black/60'}`}
-                    style={{ width: progress }}
-                  />
-                </div>
               </div>
             </div>
+
+            {/* ── Image ── */}
+            <div className={`${isEven ? 'lg:order-2' : 'lg:order-1'}`}>
+              <div className="relative group">
+
+                {/* Image container */}
+                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-white/[0.07]">
+                  <img
+                    src={IMAGES[index % IMAGES.length]}
+                    alt={step.title}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                    loading="lazy"
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/5" />
+
+                  {/* Red tint on hover */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{ background: 'linear-gradient(to top, rgba(255,59,59,0.09) 0%, transparent 55%)' }}
+                  />
+
+                  {/* Bottom sweep line */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute bottom-0 left-0 h-[2px] w-0 group-hover:w-full transition-all duration-700 ease-out rounded-full"
+                    style={{ background: 'linear-gradient(to right, #FF3B3B, rgba(255,59,59,0.2))' }}
+                  />
+
+                  {/* Meta overlay — bottom left */}
+                  <div className={`absolute bottom-6 ${isArabic ? 'right-6 text-right' : 'left-6'}`}>
+                    <span className="text-[8px] font-bold tracking-[0.4em] uppercase text-white/28 block mb-1">
+                      {step.metaLabel}
+                    </span>
+                    <span className="text-base font-display font-light text-white/60">
+                      {step.metaValue}
+                    </span>
+                  </div>
+
+                  {/* Step badge — top right */}
+                  <div className="absolute top-5 right-5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
+                      bg-black/40 backdrop-blur-md border border-white/[0.1]
+                      text-[8px] font-bold tracking-[0.38em] uppercase text-white/42">
+                      <span className="w-1 h-1 rounded-full bg-[#FF3B3B]/65" aria-hidden="true" />
+                      {step.number} / {String(totalSteps).padStart(2, '0')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ambient red glow on hover */}
+                <div
+                  aria-hidden="true"
+                  className="absolute -inset-4 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                  style={{ background: 'radial-gradient(ellipse at 50% 100%, rgba(255,59,59,0.07) 0%, transparent 70%)' }}
+                />
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
-    </section>
+    </LazySection>
   )
 })
+StepCard.displayName = 'StepCard'
 
+// ─── ResultsStrip ─────────────────────────────────────────────────────────────
+// Proof metrics after all step cards
+const ResultsStrip = memo(({ isArabic }: { isArabic: boolean }) => (
+  <LazySection>
+    <div className="border-t border-white/[0.07] bg-[#060606]">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-20 md:py-24">
+
+        {/* Label */}
+        <div className={`flex items-center gap-4 mb-14 ${isArabic ? 'flex-row-reverse' : ''}`}>
+          <span className="w-5 h-px bg-[#FF3B3B]/40 shrink-0" aria-hidden="true" />
+          <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/20">
+            Why it works
+          </span>
+          <span className="flex-1 h-px bg-white/[0.05]" aria-hidden="true" />
+        </div>
+
+        <div className={`grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-0 md:divide-x md:divide-white/[0.07] ${isArabic ? 'text-right' : ''}`}>
+          {RESULTS.map((r, i) => (
+            <div key={i} className={`group ${i > 0 ? 'md:pl-14' : ''} ${i < RESULTS.length - 1 ? 'md:pr-14' : ''}`}>
+              {/* Number */}
+              <div
+                className="font-display font-light leading-none text-white mb-3"
+                style={{
+                  fontSize: 'clamp(3.5rem,6vw,5.5rem)',
+                  filter: 'drop-shadow(0 0 20px rgba(255,59,59,0.2))',
+                  color: '#FF3B3B',
+                }}
+              >
+                {r.value}
+                {r.unit && (
+                  <span className="text-[0.45em] opacity-55 ml-0.5 align-baseline">{r.unit}</span>
+                )}
+              </div>
+              {/* Separator */}
+              <span
+                className="block h-px mb-4 rounded-full"
+                style={{ width: '2.5rem', background: 'linear-gradient(to right, rgba(255,59,59,0.45), transparent)' }}
+                aria-hidden="true"
+              />
+              {/* Label */}
+              <span className="text-[10px] font-medium tracking-[0.22em] uppercase text-white/32 group-hover:text-white/50 transition-colors duration-300">
+                {r.label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  </LazySection>
+))
+ResultsStrip.displayName = 'ResultsStrip'
+
+// ─── Method page ──────────────────────────────────────────────────────────────
 function Method({ themeMode }: MethodProps) {
   const { copy, language } = useLanguage()
-  const heroRef = useRef<HTMLElement | null>(null)
-  const isArabic = useMemo(() => language === 'ar', [language])
-  const isDark = themeMode === 'dark'
+  const heroRef    = useRef<HTMLElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const isArabic   = useMemo(() => language === 'ar', [language])
+  void themeMode // always dark
 
-  const steps = copy.method?.steps || []
+  const steps      = copy.method?.steps || []
   const totalSteps = steps.length
 
   useLayoutEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (prefersReducedMotion) return
-
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const ctx = gsap.context(() => {
-      // Hero animations
-      const heroTl = gsap.timeline({ delay: 0.3 })
-      
-      heroTl.from('.hero-eyebrow', {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: EASE.luxury
-      })
-      .from('.hero-line', {
-        y: '100%',
-        duration: 1.2,
-        stagger: 0.1,
-        ease: EASE.luxury
-      }, '-=0.4')
-      .from('.hero-copy', {
-        y: 40,
-        opacity: 0,
-        duration: 0.8,
-        ease: EASE.smooth
-      }, '-=0.6')
-      .from('.hero-scroll', {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        ease: EASE.luxury
-      }, '-=0.4')
+      gsap.timeline({ delay: 0.15 })
+        .from('.hero-tag',       { y: 16, opacity: 0, duration: 0.7, ease: ANIMATION.ease.smooth })
+        .from('.hero-rule',      { scaleX: 0, opacity: 0, duration: 0.6, ease: ANIMATION.ease.luxury, transformOrigin: isArabic ? 'right center' : 'left center' }, '-=0.3')
+        .from('.hero-line',      { y: 48, opacity: 0, duration: 1.1, stagger: 0.12, ease: 'power4.out' }, '-=0.4')
+        .from('.hero-copy',      { y: 20, opacity: 0, duration: 0.7, ease: ANIMATION.ease.smooth }, '-=0.6')
+        .from('.hero-steps-row', { y: 14, opacity: 0, duration: 0.6, ease: ANIMATION.ease.smooth }, '-=0.4')
 
-      // Parallax on hero symbol
-      gsap.to('.hero-symbol', {
-        yPercent: 30,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: 'bottom top',
-          scrub: 1
-        }
-      })
-
-    }, heroRef)
-
+      if (heroRef.current) {
+        gsap.to('.hero-bg-letter', {
+          yPercent: 18,
+          ease: 'none',
+          scrollTrigger: { trigger: heroRef.current, start: 'top top', end: 'bottom top', scrub: true },
+        })
+      }
+    }, wrapperRef)
     return () => ctx.revert()
-  }, [])
+  }, [isArabic])
 
   return (
-    <main className={`relative transition-colors duration-700 ${isDark ? 'bg-[#050505] text-white' : 'bg-[#fafafa] text-black'}`}>
-      
-      {/* Hero Section */}
-      <section 
+    <div ref={wrapperRef} className="bg-[#090909] text-white min-h-screen">
+
+      {/* ══════════════════════════ HERO ══════════════════════════ */}
+      <section
         ref={heroRef}
-        className="min-h-screen flex flex-col justify-center items-center px-6 md:px-12 lg:px-20 relative overflow-hidden"
+        className="relative min-h-screen flex flex-col justify-center overflow-hidden"
       >
-        {/* Background symbol */}
-        <div className="hero-symbol absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-          <div className={`
-            text-[50vw] font-display font-black leading-none
-            ${isDark ? 'text-white/[0.015]' : 'text-black/[0.015]'}
-          `}>
-            ∴
-          </div>
+        {/* Background letter parallax */}
+        <div
+          aria-hidden="true"
+          className="hero-bg-letter absolute inset-0 flex items-center justify-center pointer-events-none select-none will-change-transform"
+        >
+          <span
+            className="font-display font-bold leading-none text-white/[0.018]"
+            style={{ fontSize: 'clamp(18rem,55vw,80rem)' }}
+          >
+            M
+          </span>
         </div>
 
-        {/* Ambient glow */}
-        <div className={`
-          absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-          w-[800px] h-[800px] rounded-full blur-[200px] pointer-events-none
-          ${isDark ? 'bg-white/[0.02]' : 'bg-black/[0.02]'}
-        `} />
+        {/* Red ambient glow */}
+        <div
+          aria-hidden="true"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at center, rgba(255,59,59,0.045) 0%, transparent 65%)' }}
+        />
 
-        <div className={`text-center relative z-10 max-w-5xl ${isArabic ? 'text-right' : ''}`}>
-          {/* Eyebrow */}
-          <div className="hero-eyebrow overflow-hidden mb-10">
-            <span className={`
-              inline-block text-[11px] font-medium tracking-[0.4em] uppercase
-              ${isDark ? 'text-white/40' : 'text-black/40'}
-            `}>
+        {/* Dot grid */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,59,59,0.035) 1px, transparent 1px)',
+            backgroundSize: '32px 32px',
+            maskImage: 'radial-gradient(ellipse 80% 80% at 50% 40%, black 20%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 80% 80% at 50% 40%, black 20%, transparent 100%)',
+          }}
+        />
+
+        {/* Bottom vignette */}
+        <div
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#090909] to-transparent pointer-events-none z-10"
+        />
+
+        {/* Content */}
+        <div className={`relative z-20 max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-20 py-32 md:py-44 ${isArabic ? 'text-right' : ''}`}>
+
+          {/* Tag pill */}
+          <div className="hero-tag mb-6">
+            <span className="inline-flex items-center gap-2.5 text-[9px] font-bold tracking-[0.44em] uppercase
+              px-4 py-2 rounded-full border border-white/10 text-white/50 bg-white/[0.04]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B] shrink-0" aria-hidden="true" />
               {copy.method?.heroEyebrow || 'Our Process'}
             </span>
           </div>
 
-          {/* Title */}
-          <h1 className="font-display text-6xl md:text-8xl lg:text-[10rem] leading-[0.85] font-light tracking-tight mb-16">
-            {isArabic ? (
-              <div className="hero-line overflow-hidden">
-                <span className="block">{copy.method?.heroTitleLine1}</span>
-              </div>
-            ) : (
-              <>
-                <div className="hero-line overflow-hidden">
-                  <span className="block">{copy.method?.heroTitleLine1 || 'Method'}</span>
-                </div>
-                <div className="hero-line overflow-hidden">
-                  <span className={`block italic ${isDark ? 'text-white/40' : 'text-black/30'}`}>
-                    {copy.method?.heroTitleLine2 || 'ology'}
-                  </span>
-                </div>
-              </>
-            )}
+          {/* Red rule */}
+          <div
+            className={`hero-rule h-px w-16 mb-10 ${isArabic ? 'mr-0 ml-auto' : ''}`}
+            style={{ backgroundColor: 'rgba(255,59,59,0.2)' }}
+            aria-hidden="true"
+          />
+
+          {/* Headline */}
+          <h1 className={`font-display font-light leading-[0.88] tracking-[-0.02em]
+            text-[clamp(3.5rem,10vw,10rem)] mb-8 max-w-5xl`}>
+            <span className="hero-line block text-white/92">
+              {copy.method?.heroTitleLine1 || 'Built to'}
+            </span>
+            <span className="hero-line block italic text-white/38">
+              {copy.method?.heroTitleLine2 || 'Deliver.'}
+            </span>
           </h1>
 
-          {/* Copy */}
-          <div className="hero-copy max-w-3xl mx-auto mb-16">
-            <p className={`
-              text-lg md:text-2xl font-light leading-relaxed
-              ${isDark ? 'text-white/50' : 'text-black/50'}
-            `}>
-              {copy.method?.heroCopy || 'A systematic approach to creating exceptional digital experiences.'}
-            </p>
-          </div>
+          {/* Sub-copy */}
+          <p className={`hero-copy text-base md:text-lg font-light leading-[1.82] text-white/48
+            max-w-[36ch] mb-12`}>
+            {copy.method?.heroCopy || 'A precision system that turns your vision into a scalable growth engine — predictably.'}
+          </p>
 
-          {/* Scroll indicator */}
-          <div className="hero-scroll flex flex-col items-center gap-4">
-            <div className={`flex items-center gap-4 text-[10px] font-medium tracking-[0.3em] uppercase ${isDark ? 'text-white/30' : 'text-black/30'}`}>
-              <div className={`w-12 h-px ${isDark ? 'bg-white/20' : 'bg-black/20'}`} />
-              <span>{copy.ui?.scrollToExplore || 'Scroll to Explore'}</span>
-              <div className={`w-12 h-px ${isDark ? 'bg-white/20' : 'bg-black/20'}`} />
+          {/* Step indicator row */}
+          <div className={`hero-steps-row flex items-center gap-5 ${isArabic ? 'flex-row-reverse' : ''}`}>
+            <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/22">
+              {totalSteps} Steps
+            </span>
+            <div className={`flex gap-2 ${isArabic ? 'flex-row-reverse' : ''}`}>
+              {steps.map((_: unknown, i: number) => (
+                <span
+                  key={i}
+                  className="block h-[2px] w-8 rounded-full transition-colors duration-300"
+                  style={{ backgroundColor: i === 0 ? ACCENT : 'rgba(255,255,255,0.1)' }}
+                />
+              ))}
             </div>
-            <FiChevronDown className={`
-              text-3xl animate-bounce mt-2
-              ${isDark ? 'text-white/20' : 'text-black/20'}
-            `} />
           </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className={`absolute bottom-14 z-20 flex items-center gap-3
+          ${isArabic ? 'right-8 md:right-14' : 'left-8 md:left-14'}`}>
+          <div className="relative w-px h-10 overflow-hidden bg-white/10">
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/50 animate-scroll-pulse" />
+          </div>
+          <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/25">
+            {copy.ui?.scrollToExplore || 'Scroll'}
+          </span>
         </div>
       </section>
 
-      {/* Process Steps */}
-      {steps.map((step, index) => (
+      {/* ══════════════════════════ PROCESS RAIL ══════════════════════════ */}
+      <ProcessRail steps={steps} isArabic={isArabic} />
+
+      {/* ══════════════════════════ STEP CARDS ══════════════════════════ */}
+      {steps.map((step: MethodStep, index: number) => (
         <StepCard
           key={step.number}
           step={step}
           index={index}
           totalSteps={totalSteps}
           isArabic={isArabic}
-          isDark={index % 2 === 1 ? !isDark : isDark} // Alternate sections for visual rhythm
         />
       ))}
 
-      {/* CTA Section */}
-      <section className={`
-        min-h-screen flex flex-col justify-center items-center px-6 md:px-12 lg:px-20 relative overflow-hidden
-        ${isDark ? 'bg-[#050505]' : 'bg-[#fafafa]'}
-      `}>
-        {/* Decorative ring */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className={`
-            w-[600px] h-[600px] rounded-full border-[60px]
-            ${isDark ? 'border-white/[0.02]' : 'border-black/[0.02]'}
-          `} />
-        </div>
+      {/* ══════════════════════════ RESULTS STRIP ══════════════════════════ */}
+      <ResultsStrip isArabic={isArabic} />
 
-        <div className={`text-center max-w-4xl relative z-10 ${isArabic ? 'text-right' : ''}`}>
-          {/* Badge */}
-          <div className="inline-block mb-10">
-            <span className={`
-              px-5 py-2 rounded-full text-[10px] font-medium tracking-[0.2em] uppercase
-              ${isDark ? 'bg-white/5 text-white/50 border border-white/10' : 'bg-black/5 text-black/50 border border-black/10'}
-            `}>
-              {copy.ui?.readyToStart || 'Ready to Start'}
-            </span>
-          </div>
+      {/* ══════════════════════════ CTA ══════════════════════════ */}
+      <LazySection id="cta">
+        <div className="relative bg-[#060606] overflow-hidden">
 
-          {/* Title */}
-          <SplitHeadline 
-            text={`${copy.method?.ctaTitleLine1 || 'Start Your'}\n${copy.method?.ctaTitleLine2 || 'Project'}`}
-            className={`
-              text-5xl md:text-7xl lg:text-8xl font-display font-light leading-[0.9] mb-12
-              ${isDark ? 'text-white/90' : 'text-black/90'}
-            `}
+          <div className="absolute inset-x-0 top-0 h-px bg-white/[0.07]" aria-hidden="true" />
+
+          {/* Dot-grid texture */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.015) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }}
           />
 
-          {/* Copy */}
-          <TextReveal delay={0.2}>
-            <p className={`
-              text-lg md:text-xl max-w-2xl mx-auto mb-16 leading-relaxed font-light
-              ${isDark ? 'text-white/40' : 'text-black/40'}
-            `}>
-              {copy.method?.ctaCopy || 'Let\'s create something extraordinary together.'}
-            </p>
-          </TextReveal>
+          {/* Centered red glow */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[600px] rounded-full"
+            style={{
+              background: 'radial-gradient(ellipse at center, rgba(255,59,59,0.09) 0%, rgba(255,59,59,0.03) 40%, transparent 70%)',
+              filter: 'blur(1px)',
+            }}
+          />
 
-          {/* Buttons */}
-          <div className={`flex flex-col md:flex-row gap-6 justify-center items-center ${isArabic ? 'md:flex-row-reverse' : ''}`}>
-            <MagneticButton 
-              href="mailto:hello@lightlab.dev"
-              variant={isDark ? 'dark' : 'light'}
-              isArabic={isArabic}
-              isDark={isDark}
-            >
-              {copy.method?.ctaPrimary || 'Get in Touch'}
-            </MagneticButton>
-            
-            <MagneticButton 
-              href="/projects"
-              variant="outline"
-              isArabic={isArabic}
-              isDark={isDark}
-            >
-              {copy.method?.ctaSecondary || 'View Work'}
-            </MagneticButton>
+          <div className={`relative max-w-7xl mx-auto px-6 md:px-12 lg:px-20 pt-28 pb-20 md:pt-36 md:pb-28 ${isArabic ? 'text-right' : ''}`}>
+
+            <TextReveal>
+              <div className={`flex items-center gap-3 mb-10 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
+                <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/30">
+                  {copy.ui?.readyToStart || 'Ready to Start'}
+                </span>
+              </div>
+            </TextReveal>
+
+            <SplitText
+              text={`${copy.method?.ctaTitleLine1 || 'Every project starts'} ${copy.method?.ctaTitleLine2 || 'with a conversation.'}`}
+              className="text-[clamp(3rem,7.5vw,8rem)] font-display font-light leading-[0.92] text-white/92 tracking-[-0.02em] mb-10"
+              type="words"
+              delay={0.06}
+            />
+
+            <TextReveal delay={0.12}>
+              <p className="text-base font-light leading-[1.82] text-white/38 max-w-[38ch] mb-10">
+                {copy.method?.ctaCopy || "Book a free diagnostic. We review your systems and show you exactly where the leverage is."}
+              </p>
+            </TextReveal>
+
+            {/* Availability badge */}
+            <TextReveal delay={0.16}>
+              <div className={`inline-flex items-center gap-3 mb-12 px-4 py-2 rounded-full
+                border border-white/[0.07] bg-white/[0.02] ${isArabic ? 'flex-row-reverse' : ''}`}>
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                </span>
+                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/28">
+                  {copy.home.ctaMeta}: {copy.home.ctaMetaValue}
+                </span>
+              </div>
+            </TextReveal>
+
+            {/* Buttons */}
+            <TextReveal delay={0.2}>
+              <div className={`flex flex-col sm:flex-row gap-3 items-start ${isArabic ? 'sm:flex-row-reverse' : ''}`}>
+                <MagneticButton
+                  href="mailto:hello@lightlab.dev"
+                  isDark
+                  variant="primary"
+                  style={{ backgroundColor: ACCENT, color: '#ffffff', borderColor: ACCENT }}
+                  className={`group inline-flex items-center gap-3 px-10 py-5 rounded-full
+                    text-[11px] font-bold tracking-[0.24em] uppercase border
+                    transition-all duration-300 ease-out
+                    hover:shadow-[0_0_32px_rgba(255,59,59,0.28)]
+                    ${isArabic ? 'flex-row-reverse' : ''}`}
+                >
+                  {copy.method?.ctaPrimary || 'Book free diagnostic'}
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true"
+                    className={`transition-transform duration-300 group-hover:translate-x-1 ${isArabic ? 'scale-x-[-1] group-hover:-translate-x-1 group-hover:translate-x-0' : ''}`}>
+                    <path d="M1 4h12M7.5 1l3.5 3-3.5 3" strokeWidth="1.4" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </MagneticButton>
+
+                <MagneticButton
+                  href="/projects"
+                  variant="outline"
+                  isDark
+                  className={`inline-flex items-center gap-3 px-10 py-5 rounded-full
+                    text-[11px] font-bold tracking-[0.24em] uppercase
+                    border-white/[0.10] text-white/40
+                    transition-all duration-300 ease-out
+                    hover:text-white hover:border-white/20 hover:bg-white/[0.04]
+                    ${isArabic ? 'flex-row-reverse' : ''}`}
+                >
+                  {copy.method?.ctaSecondary || 'See our work'}
+                </MagneticButton>
+              </div>
+            </TextReveal>
           </div>
 
-          {/* End marker */}
-          <div className={`flex items-center justify-center gap-4 mt-24 text-[10px] font-medium tracking-[0.3em] uppercase ${isDark ? 'text-white/20' : 'text-black/20'}`}>
-            <div className={`w-8 h-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
-            <span>{copy.ui?.endOfMethod || 'End of Method'}</span>
-            <div className={`w-8 h-px ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+          {/* Bottom social proof strip */}
+          <div className="relative border-t border-white/[0.05]">
+            <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-5 flex justify-center">
+              <p className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/18 text-center">
+                {copy.home.testimonialsTitle} — 40+ brands, consistent results
+              </p>
+            </div>
           </div>
+
+          <div className="absolute inset-x-0 bottom-0 h-px bg-white/[0.07]" aria-hidden="true" />
         </div>
-      </section>
-    </main>
+      </LazySection>
+
+      {/* Keyframes */}
+      <style>{`
+        @keyframes scroll-pulse {
+          0%   { transform: translateY(-100%); opacity: 0; }
+          30%  { opacity: 0.6; }
+          70%  { opacity: 0.6; }
+          100% { transform: translateY(300%); opacity: 0; }
+        }
+        .animate-scroll-pulse { animation: scroll-pulse 2.2s cubic-bezier(0.4,0,0.2,1) infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-scroll-pulse { animation: none; opacity: 0.3; }
+        }
+      `}</style>
+    </div>
   )
 }
 

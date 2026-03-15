@@ -3,6 +3,7 @@ import {
   useRef,
   useCallback,
   memo,
+  useState,
   type ReactNode,
   type MouseEvent,
 } from "react";
@@ -11,7 +12,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Animation configuration
+// ─── Animation config ────────────────────────────────────────────────────────
 export const ANIMATION = {
   duration: { reveal: 1.2, hover: 0.6, stagger: 0.08 },
   ease: {
@@ -21,28 +22,66 @@ export const ANIMATION = {
   },
 };
 
-// Magnetic button with enhanced hover
+// ─── Types ────────────────────────────────────────────────────────────────────
+export type CursorType = "default" | "view" | "play" | "drag";
+
 interface MagneticButtonProps {
   children: ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   href?: string;
   onClick?: () => void;
   variant?: "primary" | "outline";
   isDark?: boolean;
-  type?: "button" | "submit";
+  type?: "button" | "submit" | "reset";
 }
 
+interface TextRevealProps {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  direction?: "up" | "down" | "left" | "right";
+}
+
+interface SplitTextProps {
+  text: string;
+  className?: string;
+  delay?: number;
+  type?: "chars" | "words";
+}
+
+interface CinematicImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  priority?: boolean;
+}
+
+interface CinematicVideoProps {
+  src: string;
+  poster?: string;
+  className?: string;
+}
+
+// ─── useCursor ────────────────────────────────────────────────────────────────
+export function useCursor() {
+  const [type, setType] = useState<CursorType>("default");
+  return { type, setType };
+}
+
+// ─── MagneticButton ──────────────────────────────────────────────────────────
 export const MagneticButton = memo(
   ({
     children,
     className = "",
+    style,
     href,
     onClick,
     variant = "primary",
     isDark = true,
     type = "button",
   }: MagneticButtonProps) => {
-    const buttonRef = useRef<any>(null);
+    const buttonRef = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
 
     const handleMouseMove = useCallback((e: MouseEvent) => {
       if (!buttonRef.current) return;
@@ -80,35 +119,23 @@ export const MagneticButton = memo(
     const commonProps = {
       ref: buttonRef,
       className: `inline-block transition-[background-color,color,border-color,box-shadow] duration-300 ease-out ${baseStyles} ${className}`,
+      style,
       onMouseMove: handleMouseMove,
       onMouseLeave: handleMouseLeave,
       onClick,
     };
 
-    if (href) {
-      return (
-        <a {...commonProps} href={href}>
-          {children}
-        </a>
-      );
-    }
-
+    if (href) return <a {...commonProps} href={href}>{children}</a>;
     return (
       <button {...commonProps} type={type}>
         {children}
       </button>
     );
-  },
+  }
 );
+MagneticButton.displayName = "MagneticButton";
 
-// Text reveal with mask animation
-interface TextRevealProps {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-  direction?: "up" | "down" | "left" | "right";
-}
-
+// ─── TextReveal ───────────────────────────────────────────────────────────────
 export const TextReveal = memo(
   ({
     children,
@@ -121,64 +148,47 @@ export const TextReveal = memo(
     useLayoutEffect(() => {
       const el = ref.current;
       if (!el) return;
-
       const ctx = gsap.context(() => {
         const fromY =
-          direction === "up" ? "100%" : direction === "down" ? "-100%" : "0%";
+          direction === "up" ? 18 : direction === "down" ? -18 : 0;
         const fromX =
-          direction === "left"
-            ? "100%"
-            : direction === "right"
-              ? "-100%"
-              : "0%";
-
+          direction === "left" ? 18 : direction === "right" ? -18 : 0;
         gsap.fromTo(
           el,
           { y: fromY, x: fromX, opacity: 0 },
           {
-            y: "0%",
-            x: "0%",
+            y: 0,
+            x: 0,
             opacity: 1,
             duration: 0.65,
             delay,
             ease: ANIMATION.ease.luxury,
-            scrollTrigger: {
-              trigger: el,
-              start: "top 92%",
-              once: true,
-            },
-          },
+            scrollTrigger: { trigger: el, start: "top 92%", once: true },
+          }
         );
       }, ref);
-
       return () => ctx.revert();
     }, [delay, direction]);
 
     return (
-      <div className={`overflow-hidden ${className}`}>
+      <div className={className}>
         <div ref={ref} className="will-change-transform">
           {children}
         </div>
       </div>
     );
-  },
+  }
 );
+TextReveal.displayName = "TextReveal";
 
-// Split text animation
-interface SplitTextProps {
-  text: string;
-  className?: string;
-  delay?: number;
-  type?: "chars" | "words";
-}
-
+// ─── SplitText ────────────────────────────────────────────────────────────────
 export const SplitText = memo(
   ({ text, className = "", delay = 0, type = "chars" }: SplitTextProps) => {
     const containerRef = useRef<HTMLDivElement | null>(null);
 
     const elements =
       type === "chars"
-        ? text.split("").map((char: string, i: number) => (
+        ? text.split("").map((char, i) => (
             <span
               key={i}
               className="split-char inline-block"
@@ -187,7 +197,7 @@ export const SplitText = memo(
               {char === " " ? "\u00A0" : char}
             </span>
           ))
-        : text.split(" ").map((word: string, i: number) => (
+        : text.split(" ").map((word, i) => (
             <span key={i} className="split-word inline-block mr-[0.25em]">
               {word}
             </span>
@@ -196,10 +206,9 @@ export const SplitText = memo(
     useLayoutEffect(() => {
       const ctx = gsap.context(() => {
         const chars = containerRef.current?.querySelectorAll(
-          ".split-char, .split-word",
+          ".split-char, .split-word"
         );
         if (!chars?.length) return;
-
         gsap.fromTo(
           chars,
           { y: 24, opacity: 0 },
@@ -215,86 +224,67 @@ export const SplitText = memo(
               start: "top 92%",
               once: true,
             },
-          },
+          }
         );
       }, containerRef);
-
       return () => ctx.revert();
     }, [delay, type]);
 
     return (
-      <div
-        ref={containerRef}
-        className={`${className}`}
-        style={{ perspective: "1000px" }}
-      >
+      <div ref={containerRef} className={className} style={{ perspective: "1000px" }}>
         <div className="flex flex-wrap">{elements}</div>
       </div>
     );
-  },
+  }
 );
+SplitText.displayName = "SplitText";
 
-// Cinematic image with reveal
-interface CinematicImageProps {
-  src: string;
-  alt: string;
-  className?: string;
-  priority?: boolean;
-}
-
+// ─── CinematicImage ───────────────────────────────────────────────────────────
 export const CinematicImage = memo(
   ({ src, alt, className = "", priority = false }: CinematicImageProps) => {
-    const containerRef = useRef<HTMLDivElement | null>(null);
-    const imageRef = useRef<HTMLImageElement | null>(null);
-    const overlayRef = useRef<HTMLDivElement | null>(null);
+    const wrapRef = useRef<HTMLDivElement | null>(null);
+    const imgRef = useRef<HTMLImageElement | null>(null);
 
     useLayoutEffect(() => {
-      const container = containerRef.current;
-      const image = imageRef.current;
-      const overlay = overlayRef.current;
-
-      if (!container || !image || !overlay) return;
-
       const ctx = gsap.context(() => {
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger: container,
-            start: "top 88%",
-            once: true,
-          },
-        });
-
-        tl.fromTo(
-          overlay,
-          { scaleX: 1 },
-          {
-            scaleX: 0,
-            duration: 1,
-            ease: ANIMATION.ease.luxury,
-            transformOrigin: "right center",
-          },
-        ).fromTo(
-          image,
-          { scale: 1.1 },
-          { scale: 1, duration: 1.2, ease: ANIMATION.ease.smooth },
-          "-=0.8",
-        );
-      }, containerRef);
-
+        if (wrapRef.current && imgRef.current) {
+          gsap.fromTo(
+            wrapRef.current,
+            { clipPath: "inset(100% 0% 0% 0%)" },
+            {
+              clipPath: "inset(0% 0% 0% 0%)",
+              duration: ANIMATION.duration.reveal,
+              ease: ANIMATION.ease.luxury,
+              scrollTrigger: {
+                trigger: wrapRef.current,
+                start: "top 88%",
+                once: true,
+              },
+            }
+          );
+          gsap.fromTo(
+            imgRef.current,
+            { scale: 1.12 },
+            {
+              scale: 1,
+              duration: ANIMATION.duration.reveal * 1.2,
+              ease: ANIMATION.ease.smooth,
+              scrollTrigger: {
+                trigger: wrapRef.current,
+                start: "top 88%",
+                once: true,
+              },
+            }
+          );
+        }
+      }, wrapRef);
       return () => ctx.revert();
     }, []);
 
     return (
-      <div
-        ref={containerRef}
-        className={`relative overflow-hidden ${className}`}
-      >
-        <div
-          ref={overlayRef}
-          className="absolute inset-0 bg-current z-10 opacity-10"
-        />
+      <div ref={wrapRef} className={`overflow-hidden ${className}`}>
         <img
-          ref={imageRef}
+          ref={imgRef}
           src={src}
           alt={alt}
           className="w-full h-full object-cover will-change-transform"
@@ -302,32 +292,106 @@ export const CinematicImage = memo(
         />
       </div>
     );
-  },
+  }
 );
+CinematicImage.displayName = "CinematicImage";
 
-export const NoiseTexture = () => (
-  <div className="fixed inset-0 pointer-events-none z-50 mix-blend-overlay opacity-[0.03]">
-    <svg className="w-full h-full">
-      <filter id="noiseFilter">
-        <feTurbulence
-          type="fractalNoise"
-          baseFrequency="0.8"
-          numOctaves="4"
-          stitchTiles="stitch"
+// ─── CinematicVideo ───────────────────────────────────────────────────────────
+export const CinematicVideo = memo(
+  ({ src, poster, className = "" }: CinematicVideoProps) => {
+    const wrapRef = useRef<HTMLDivElement | null>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+
+    useLayoutEffect(() => {
+      const ctx = gsap.context(() => {
+        if (wrapRef.current && videoRef.current) {
+          gsap.fromTo(
+            wrapRef.current,
+            { opacity: 0, scale: 1.04 },
+            {
+              opacity: 1,
+              scale: 1,
+              duration: ANIMATION.duration.reveal,
+              ease: ANIMATION.ease.luxury,
+              scrollTrigger: {
+                trigger: wrapRef.current,
+                start: "top 95%",
+                once: true,
+              },
+            }
+          );
+        }
+      }, wrapRef);
+      return () => ctx.revert();
+    }, []);
+
+    return (
+      <div ref={wrapRef} className={`overflow-hidden will-change-transform ${className}`}>
+        <video
+          ref={videoRef}
+          src={src}
+          poster={poster}
+          muted
+          autoPlay
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+          aria-hidden="true"
         />
-      </filter>
-      <rect width="100%" height="100%" filter="url(#noiseFilter)" />
-    </svg>
-  </div>
+        {/* Cinematic overlay — subtle darkening vignette */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 pointer-events-none" />
+      </div>
+    );
+  }
 );
+CinematicVideo.displayName = "CinematicVideo";
 
-export const AmbientGlow = ({ isDark }: { isDark: boolean }) => (
-  <>
+// ─── NoiseTexture ─────────────────────────────────────────────────────────────
+export const NoiseTexture = memo(
+  ({ opacity = 0.03, className = "" }: { opacity?: number; className?: string }) => (
     <div
-      className={`fixed top-0 left-1/4 w-[600px] h-[600px] rounded-full blur-[150px] pointer-events-none transition-colors duration-700 ${isDark ? "bg-white/[0.02]" : "bg-black/[0.02]"}`}
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-0 ${className}`}
+      style={{
+        opacity,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        backgroundSize: "200px 200px",
+      }}
     />
-    <div
-      className={`fixed bottom-0 right-1/4 w-[400px] h-[400px] rounded-full blur-[120px] pointer-events-none transition-colors duration-700 ${isDark ? "bg-white/[0.01]" : "bg-black/[0.01]"}`}
-    />
-  </>
+  )
 );
+NoiseTexture.displayName = "NoiseTexture";
+
+// ─── AmbientGlow ──────────────────────────────────────────────────────────────
+export const AmbientGlow = memo(
+  ({
+    color,
+    size = 600,
+    opacity = 0.04,
+    className = "",
+    isDark,
+  }: {
+    color?: string;
+    size?: number;
+    opacity?: number;
+    className?: string;
+    isDark?: boolean;
+  }) => {
+    const resolvedColor = color ?? (isDark === false ? "black" : "white");
+    return (
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute rounded-full ${className}`}
+        style={{
+          width: size,
+          height: size,
+          background: resolvedColor,
+          opacity,
+          filter: `blur(${size * 0.3}px)`,
+          transform: "translate(-50%, -50%)",
+        }}
+      />
+    );
+  }
+);
+AmbientGlow.displayName = "AmbientGlow";

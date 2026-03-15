@@ -1,652 +1,793 @@
-import {
-  useLayoutEffect,
-  useRef,
-  useMemo,
-  memo,
-  useState,
+import React, { 
+  useLayoutEffect, 
+  useRef, 
+  useMemo, 
+  memo, 
+  useState, 
   useCallback,
-  type ReactNode,
-  type MouseEvent,
+  type ReactNode
 } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLanguage } from "../i18n";
-import {
-  NoiseTexture,
-  AmbientGlow,
-  CinematicImage,
-  TextReveal,
-  SplitText,
-  ANIMATION,
-} from "../components/PremiumUI";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type Theme = "dark" | "light";
+// --- Design Tokens ---
+const TOKENS = {
+  colors: {
+    accent: "#FF3B3B",
+    gold: "#C6A96B",
+    dark: "#050505",
+    darker: "#020202",
+    surface: "#0a0a0a",
+    surfaceElevated: "#111111",
+    text: "#ffffff",
+    textMuted: "rgba(255,255,255,0.4)",
+    textSubtle: "rgba(255,255,255,0.2)",
+    border: "rgba(255,255,255,0.06)",
+  },
+  spacing: {
+    section: "clamp(6rem, 12vw, 12rem)",
+    container: "clamp(1.5rem, 6vw, 6rem)",
+  },
+  easing: {
+    smooth: "cubic-bezier(0.4, 0, 0.2, 1)",
+    bounce: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+    editorial: "cubic-bezier(0.77, 0, 0.175, 1)",
+  }
+} as const;
 
-interface ProjectsProps {
-  themeMode: Theme;
+// --- Types ---
+interface Project {
+  title: string;
+  focus: string;
+  desc?: string;
+  result?: string;
+  year?: string;
+  tags?: string[];
 }
 
-const IMAGES = {
-  hero: "https://images.unsplash.com/photo-1600607686527-6fb886090705?w=1400&q=90",
-  projects: [
-    "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=90",
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=90",
-    "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&q=90",
-    "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=1200&q=90",
-    "https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=1200&q=90",
-  ],
-};
 
-interface MagneticLinkProps {
-  href: string;
-  children: ReactNode;
-  className?: string;
-}
-
-const MagneticLink = memo(({ href, children, className = "" }: MagneticLinkProps) => {
-  const linkRef = useRef<HTMLAnchorElement | null>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouseMove = useCallback((e: MouseEvent<HTMLAnchorElement>) => {
-    if (!linkRef.current) return;
-    const rect = linkRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) * 0.3;
-    const y = (e.clientY - rect.top - rect.height / 2) * 0.3;
-    setPosition({ x, y });
-  }, []);
-
-  const handleMouseLeave = useCallback(() => {
-    setPosition({ x: 0, y: 0 });
-  }, []);
-
-  return (
-    <a
-      ref={linkRef}
-      href={href}
-      className={`inline-block transition-transform duration-300 ease-out ${className}`}
-      style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      {children}
-    </a>
-  );
-});
-
-interface ScrambleTextProps {
-  text: string;
-  className?: string;
-  triggerOnHover?: boolean;
-}
-
-const ScrambleText = memo(({ text, className = "", triggerOnHover = false }: ScrambleTextProps) => {
-  const elementRef = useRef<HTMLSpanElement | null>(null);
-  const [displayText, setDisplayText] = useState(text);
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  const scramble = useCallback(() => {
-    let iteration = 0;
-    const interval = setInterval(() => {
-      setDisplayText(
-        text
-          .split("")
-          .map((_, index: number) => {
-            if (index < iteration) return text[index];
-            return chars[Math.floor(Math.random() * chars.length)];
-          })
-          .join(""),
-      );
-      if (iteration >= text.length) clearInterval(interval);
-      iteration += 1 / 3;
-    }, 30);
-  }, [text]);
-
-  useLayoutEffect(() => {
-    if (!triggerOnHover) {
-      const timer = setTimeout(scramble, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [scramble, triggerOnHover]);
-
-  return (
-    <span
-      ref={elementRef}
-      className={`inline-block ${className}`}
-      onMouseEnter={triggerOnHover ? scramble : undefined}
-    >
-      {displayText}
-    </span>
-  );
-});
-
-type ProjectsItem = ReturnType<typeof useLanguage>["copy"]["projects"]["items"][number];
 
 interface ProjectCardProps {
-  project: ProjectsItem;
+  project: Project;
   index: number;
-  layout?: "standard" | "wide" | "featured";
+  viewLabel: string;
   isArabic: boolean;
-  isDark: boolean;
-  copy: any;
+  featured?: boolean;
+  variant?: "large" | "medium" | "compact";
 }
 
-const ProjectCard = memo(
-  ({
-    project,
-    index,
-    layout = "standard",
-    isArabic,
-    copy,
-  }: ProjectCardProps) => {
-    const cardRef = useRef<HTMLElement | null>(null);
-    const [isHovered, setIsHovered] = useState(false);
-    const [mousePosition, setMousePosition] = useState({ x: 0.5, y: 0.5 });
 
-    const handleMouseMove = useCallback((e: MouseEvent<HTMLElement>) => {
-      if (!cardRef.current) return;
-      const rect = cardRef.current.getBoundingClientRect();
-      setMousePosition({
-        x: (e.clientX - rect.left) / rect.width,
-        y: (e.clientY - rect.top) / rect.height,
-      });
-    }, []);
 
-    const isFeatured = layout === "featured";
-    const isWide = layout === "wide";
+// --- Utilities ---
+const formatIndex = (index: number): string => String(index + 1).padStart(2, "0");
 
-    return (
-      <article
-        ref={cardRef}
-        data-cursor="pointer"
-        className={`
-          group relative overflow-hidden cursor-pointer
-          ${isFeatured ? "col-span-12 lg:col-span-8 row-span-2 h-[70vh] min-h-[600px] rounded-3xl" : ""}
-          ${isWide ? "col-span-12 lg:col-span-6 h-[50vh] min-h-[400px] rounded-3xl" : "col-span-12 md:col-span-6 lg:col-span-4 h-[45vh] min-h-[350px] rounded-3xl"}
-        `}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        {/* Image container with parallax */}
-        <div
-          className="absolute inset-0 transition-transform duration-700 ease-out"
-          style={{
-            transform: isHovered
-              ? `scale(1.05) translate(${(mousePosition.x - 0.5) * -20}px, ${(mousePosition.y - 0.5) * -20}px)`
-              : "scale(1)",
-          }}
-        >
-          <CinematicImage
-            src={IMAGES.projects[index % IMAGES.projects.length]}
-            alt={project.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+const useMagneticEffect = (intensity: number = 0.3) => {
+  const ref = useRef<HTMLDivElement>(null);
+  
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const x = (e.clientX - left - width / 2) / width;
+    const y = (e.clientY - top - height / 2) / height;
+    
+    gsap.to(ref.current, {
+      x: x * intensity * 20,
+      y: y * intensity * 20,
+      duration: 0.3,
+      ease: "power2.out"
+    });
+  }, [intensity]);
 
-        {/* 3-stop gradient overlay */}
-        <div
-          className={`
-            absolute inset-0 transition-all duration-700
-            ${
-              isFeatured
-                ? "bg-gradient-to-t from-black/85 via-black/30 via-[55%] to-transparent group-hover:from-black/92"
-                : "bg-gradient-to-t from-black/75 via-black/20 via-[60%] to-transparent group-hover:from-black/85"
-            }
-          `}
-        />
+  const handleMouseLeave = useCallback(() => {
+    if (!ref.current) return;
+    gsap.to(ref.current, {
+      x: 0,
+      y: 0,
+      duration: 0.5,
+      ease: "elastic.out(1, 0.3)"
+    });
+  }, []);
 
-        {/* Content */}
-        <div
-          className={`
-            absolute inset-0 flex flex-col justify-end
-            ${isFeatured ? "p-10 md:p-14" : "p-7 md:p-10"}
-            transition-transform duration-500
-            ${isArabic ? "text-right items-end" : ""}
-          `}
-        >
-          {/* Category badge */}
-          <div
-            className={`
-              overflow-hidden mb-3.5 transition-all duration-500
-              ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-            `}
-          >
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-bold tracking-[0.22em] uppercase bg-white/[0.12] backdrop-blur-md rounded-full text-white/85 border border-white/[0.15]">
-              <span className="w-1 h-1 rounded-full bg-white/60 inline-block" />
-              {project.focus}
-            </span>
-          </div>
+  return { ref, handleMouseMove, handleMouseLeave };
+};
 
-          {/* Title */}
-          <h3
-            className={`
-              font-display font-light text-white leading-[1.08] mb-3.5
-              transition-all duration-500
-              ${isFeatured ? "text-4xl md:text-6xl lg:text-7xl" : "text-2xl md:text-3xl"}
-              ${isHovered ? "translate-y-0" : "translate-y-2"}
-            `}
-          >
-            <ScrambleText text={project.title} triggerOnHover={true} />
-          </h3>
+// --- Components ---
 
-          {/* Description / Result */}
-          <p
-            className={`
-              text-base text-white/70 max-w-xl font-light leading-relaxed mb-5
-              transition-all duration-500 delay-100
-              ${isFeatured ? "md:text-lg" : "text-sm line-clamp-2"}
-              ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-            `}
-          >
-            <span className="block text-[9px] uppercase tracking-[0.22em] text-white/40 mb-1.5">
-              {copy.ui.impact}
-            </span>
-            {project.result}
-          </p>
 
-          {/* View project link */}
-          <div
-            className={`
-              flex items-center gap-3 text-[10px] font-semibold tracking-[0.22em] uppercase text-white/60
-              transition-all duration-500
-              ${isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
-              ${isArabic ? "flex-row-reverse" : ""}
-            `}
-          >
-            <span>{copy.ui.viewProject}</span>
-            <svg
-              className={`w-4 h-4 transition-transform duration-300 ${isArabic ? "rotate-180" : ""} ${isHovered ? "translate-x-1" : ""}`}
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </div>
-        </div>
 
-        {/* Index number */}
-        <div
-          className={`
-            absolute top-8 ${isArabic ? "right-8" : "left-8"}
-            text-7xl font-display font-bold text-white/[0.03] select-none pointer-events-none
-            transition-all duration-700
-            ${isHovered ? "text-white/[0.08] scale-110" : ""}
-          `}
-        >
-          0{index + 1}
-        </div>
-
-        {/* Inset border — featured gets a slightly brighter glow */}
-        <div
-          className={`
-            absolute inset-0 rounded-3xl transition-all duration-500 pointer-events-none
-            ${isFeatured
-              ? "border border-white/0 group-hover:border-white/[0.14] ring-0 group-hover:ring-1 group-hover:ring-white/[0.06] ring-inset"
-              : "border border-white/0 group-hover:border-white/10"
-            }
-          `}
-        />
-      </article>
-    );
-  },
-);
-
-interface AnimatedDividerProps {
-  isDark: boolean;
-  isArabic: boolean;
+interface ScrollProgressProps {
+  color?: string;
 }
 
-const AnimatedDivider = memo(({ isDark, isArabic }: AnimatedDividerProps) => (
-  <div className={`flex items-center gap-6 py-16 ${isArabic ? "flex-row-reverse" : ""}`}>
-    <div
-      className={`flex-1 h-px ${isDark ? "bg-gradient-to-r from-transparent via-white/20 to-transparent" : "bg-gradient-to-r from-transparent via-black/20 to-transparent"}`}
-    />
-    <div
-      className={`w-2.5 h-2.5 border rotate-45 ${isDark ? "border-white/30" : "border-black/30"}`}
-    />
-    <div
-      className={`flex-1 h-px ${isDark ? "bg-gradient-to-r from-transparent via-white/20 to-transparent" : "bg-gradient-to-r from-transparent via-black/20 to-transparent"}`}
-    />
-  </div>
-));
+const ScrollProgress = memo(({ color = TOKENS.colors.accent }: ScrollProgressProps) => {
+  const progressRef = useRef<HTMLDivElement>(null);
 
-interface StatCounterProps {
-  value: string;
-  label: string;
-  isDark: boolean;
-  isArabic: boolean;
-}
+  useLayoutEffect(() => {
+    const element = progressRef.current;
+    if (!element) return;
 
-const StatCounter = memo(({ value, label, isDark, isArabic }: StatCounterProps) => {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement | null>(null);
+    const trigger = ScrollTrigger.create({
+      start: 0,
+      end: "max",
+      onUpdate: (self) => {
+        element.style.transform = `scaleX(${self.progress})`;
+      }
+    });
+    
+    return () => trigger.kill();
+  }, []);
+
+  return (
+    <div className="fixed top-0 left-0 right-0 h-[1px] bg-white/5 z-50">
+      <div 
+        ref={progressRef}
+        className="h-full origin-left"
+        style={{ 
+          backgroundColor: color,
+          boxShadow: `0 0 20px ${color}`,
+          transform: "scaleX(0)"
+        }}
+      />
+    </div>
+  );
+});
+ScrollProgress.displayName = "ScrollProgress";
+
+const RevealText = memo(({ 
+  children, 
+  delay = 0,
+  className = "" 
+}: { 
+  children: ReactNode; 
+  delay?: number;
+  className?: string;
+}) => {
+  const ref = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     const element = ref.current;
     if (!element) return;
 
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: element,
-        start: "top 85%",
-        once: true,
-        onEnter: () => {
-          gsap.to(
-            { val: 0 },
-            {
-              val: parseInt(value),
-              duration: 2,
-              ease: "power2.out",
-              onUpdate: function () {
-                setCount(Math.floor(this.targets()[0].val));
-              },
-            },
-          );
-        },
-      });
-    }, ref);
+    gsap.fromTo(element, 
+      { y: 60, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        delay,
+        ease: TOKENS.easing.editorial,
+        scrollTrigger: {
+          trigger: element,
+          start: "top 85%",
+          once: true,
+        }
+      }
+    );
+  }, [delay]);
 
-    return () => ctx.revert();
-  }, [value]);
+  return <div ref={ref} className={className} style={{ opacity: 0, transform: "translateY(60px)" }}>{children}</div>;
+});
+RevealText.displayName = "RevealText";
+
+
+const ProjectCard = memo(({ 
+  project, 
+  index, 
+  viewLabel, 
+  isArabic, 
+  featured = false,
+  variant = "medium"
+}: ProjectCardProps) => {
+  const cardRef = useRef<HTMLDivElement>(null);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const { left, top, width, height } = card.getBoundingClientRect();
+    const x = (e.clientX - left - width / 2) / (width / 2);
+    const y = (e.clientY - top - height / 2) / (height / 2);
+
+    gsap.to(card, {
+      rotateY: x * 5,
+      rotateX: -y * 5,
+      scale: 1.02,
+      duration: 0.6,
+      ease: "power2.out",
+    });
+
+    // Parallax image effect
+    if (imageContainerRef.current) {
+      gsap.to(imageContainerRef.current, {
+        x: x * 20,
+        y: y * 20,
+        duration: 0.6,
+        ease: "power2.out"
+      });
+    }
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsHovered(false);
+    const card = cardRef.current;
+    if (!card) return;
+
+    gsap.to(card, {
+      rotateY: 0,
+      rotateX: 0,
+      scale: 1,
+      duration: 0.8,
+      ease: "elastic.out(1, 0.5)",
+    });
+
+    if (imageContainerRef.current) {
+      gsap.to(imageContainerRef.current, {
+        x: 0,
+        y: 0,
+        duration: 0.8,
+        ease: "elastic.out(1, 0.5)"
+      });
+    }
+  }, []);
+
+  const handleMouseEnter = useCallback(() => {
+    setIsHovered(true);
+  }, []);
+
+  const imageUrl = `https://images.unsplash.com/photo-${[
+    "1460925895917-afdab827c52f",
+    "1551434678-e076c223a692",
+    "1519389950473-47ba0277781c",
+    "1618005182384-a83a8bd57fbe",
+    "1497366216548-37526070297c"
+  ][index % 5]}?w=1400&q=90`;
+
+  const directionClass = isArabic ? "flex-row-reverse" : "flex-row";
+  const textAlignment = isArabic ? "text-right" : "text-left";
+  
+  const sizeClasses = {
+    large: "text-4xl md:text-6xl lg:text-7xl",
+    medium: "text-2xl md:text-3xl lg:text-4xl",
+    compact: "text-xl md:text-2xl"
+  };
 
   return (
     <div
-      ref={ref}
-      className={`
-        pt-5 border-t
-        ${isDark ? "border-white/10" : "border-black/10"}
-        ${isArabic ? "text-right" : ""}
-      `}
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      onMouseEnter={handleMouseEnter}
+      className="group relative w-full h-full overflow-hidden rounded-2xl md:rounded-3xl cursor-none bg-neutral-900 will-change-transform"
+      style={{ 
+        perspective: "1500px",
+        transformStyle: "preserve-3d"
+      }}
     >
-      <div
-        className={`text-5xl md:text-6xl font-display font-light mb-1.5 tracking-tight ${isDark ? "text-white/90" : "text-black/90"}`}
+      {/* Image with parallax container */}
+      <div 
+        ref={imageContainerRef}
+        className="absolute inset-[-20px] will-change-transform"
       >
-        {count}+
+        <img
+          src={imageUrl}
+          alt={project.title}
+          loading="lazy"
+          className="w-full h-full object-cover transition-all duration-700 ease-out scale-110 group-hover:scale-100"
+          style={{ filter: isHovered ? "brightness(0.7)" : "brightness(0.9)" }}
+        />
       </div>
+      
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90" />
+      <div className="absolute inset-0 bg-gradient-to-br from-accent/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" 
+        style={{ backgroundColor: isHovered ? `${TOKENS.colors.accent}10` : 'transparent' }}
+      />
+      
+      {/* Content */}
+      <div className={`absolute inset-0 p-8 md:p-10 flex flex-col justify-between z-10 ${textAlignment}`}>
+        {/* Top row */}
+        <div className={`flex justify-between items-start ${directionClass}`}>
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-[10px] tracking-[0.3em] uppercase text-white/40">
+              {formatIndex(index)}
+            </span>
+            {project.year && (
+              <span className="text-[10px] text-white/30 font-light">
+                {project.year}
+              </span>
+            )}
+          </div>
+          
+          {project.result && (
+            <span className="px-4 py-2 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 text-[10px] font-medium tracking-wider uppercase text-white/90">
+              {project.result}
+            </span>
+          )}
+        </div>
+
+        {/* Bottom content */}
+        <div className="space-y-4">
+          <div className="overflow-hidden">
+            <p className="text-[11px] font-mono tracking-[0.2em] uppercase text-white/50 transform translate-y-0 group-hover:translate-y-0 transition-transform duration-500">
+              {project.focus}
+            </p>
+          </div>
+          
+          <h3 className={`font-display font-light text-white leading-[1.1] tracking-tight ${sizeClasses[variant]}`}>
+            {project.title}
+          </h3>
+          
+          {featured && project.desc && (
+            <p className="text-white/40 text-sm font-light max-w-md leading-relaxed opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">
+              {project.desc}
+            </p>
+          )}
+
+          {/* Tags */}
+          {project.tags && (
+            <div className={`flex gap-2 mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-150 ${isArabic ? "justify-end" : "justify-start"}`}>
+              {project.tags.map((tag) => (
+                <span key={tag} className="px-3 py-1 text-[9px] uppercase tracking-wider text-white/40 border border-white/10 rounded-full">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* View Project Link */}
+          <div className={`pt-6 mt-6 border-t border-white/10 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-500 delay-200 ${directionClass}`}>
+            <span className="text-[11px] font-medium tracking-[0.2em] uppercase text-white/60">
+              {viewLabel}
+            </span>
+            <div className="relative w-12 h-12 rounded-full border border-white/20 flex items-center justify-center overflow-hidden group/btn">
+              <div className="absolute inset-0 bg-white transform scale-0 group-hover/btn:scale-100 transition-transform duration-300 rounded-full" />
+              <svg 
+                width="16" 
+                height="16" 
+                viewBox="0 0 16 16" 
+                fill="none" 
+                className={`relative z-10 transform group-hover/btn:translate-x-0.5 transition-transform duration-300 ${isArabic ? "rotate-180" : ""}`}
+              >
+                <path 
+                  d="M3 8h10M10 5l3 3-3 3" 
+                  stroke="currentColor" 
+                  strokeWidth="1.5" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                  className="text-white group-hover/btn:text-black transition-colors duration-300"
+                />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Corner accents */}
+      <div className="absolute top-0 left-0 w-20 h-20 border-l border-t border-white/0 group-hover:border-white/10 transition-colors duration-500 rounded-tl-2xl" />
+      <div className="absolute bottom-0 right-0 w-20 h-20 border-r border-b border-white/0 group-hover:border-white/10 transition-colors duration-500 rounded-br-2xl" />
+    </div>
+  );
+});
+ProjectCard.displayName = "ProjectCard";
+
+const StatCard = memo(({ value, label, index, isArabic }: {
+  value: string;
+  label: string;
+  index: number;
+  isArabic: boolean;
+}) => {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const numRef = useRef<HTMLSpanElement>(null);
+
+  const match = value.match(/^([^0-9]*)([0-9]+(?:\.[0-9]+)?)(.*)$/);
+  const prefix = match?.[1] ?? '';
+  const numericStr = match?.[2] ?? '0';
+  const suffix = match?.[3]?.trim() ?? '';
+  const numeric = parseFloat(numericStr);
+  const isDecimal = numericStr.includes('.');
+
+  useLayoutEffect(() => {
+    const element = wrapRef.current;
+    const numEl = numRef.current;
+    if (!element || !numEl) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(element,
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          delay: index * 0.12,
+          ease: TOKENS.easing.editorial,
+          scrollTrigger: { trigger: element, start: "top 90%" }
+        }
+      );
+
+      const counter = { val: 0 };
+      gsap.to(counter, {
+        val: numeric,
+        duration: 2.2,
+        delay: index * 0.12 + 0.2,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: element, start: 'top 90%', once: true },
+        onUpdate() {
+          if (numEl) numEl.textContent = isDecimal
+            ? counter.val.toFixed(1)
+            : String(Math.round(counter.val));
+        },
+      });
+    }, wrapRef);
+    return () => ctx.revert();
+  }, [index, numeric, isDecimal]);
+
+  return (
+    <div
+      ref={wrapRef}
+      className={`relative p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm group hover:bg-white/[0.04] transition-colors duration-500 ${isArabic ? "text-right" : "text-left"}`}
+      style={{ opacity: 0, transform: "translateY(40px)" }}
+    >
+      {/* Animated number */}
       <div
-        className={`text-[9px] font-bold tracking-[0.32em] uppercase ${isDark ? "text-white/30" : "text-black/30"}`}
+        className="font-display font-light leading-none mb-1 text-white"
+        style={{ fontSize: 'clamp(3rem,5.5vw,4.8rem)', filter: 'drop-shadow(0 0 24px rgba(255,59,59,0.18))' }}
       >
+        {prefix && <span className="opacity-50 text-[0.55em]">{prefix}</span>}
+        <span ref={numRef} className="tabular-nums">0</span>
+        {suffix && <span className="opacity-50 text-[0.5em] ml-0.5">{suffix}</span>}
+      </div>
+
+      {/* Red separator */}
+      <span
+        className="block h-px my-4 rounded-full"
+        style={{ width: '2.5rem', background: 'linear-gradient(to right, rgba(255,59,59,0.55), transparent)' }}
+      />
+
+      <div className="text-[10px] font-medium tracking-[0.2em] uppercase text-white/35 group-hover:text-white/55 transition-colors">
         {label}
+      </div>
+      <div className="absolute top-0 right-0 w-px h-0 bg-gradient-to-b from-[#FF3B3B]/40 to-transparent group-hover:h-full transition-all duration-700" />
+    </div>
+  );
+});
+StatCard.displayName = "StatCard";
+
+const ImpactStat = memo(({ stat, index, isArabic }: { stat: { value: string; label: string }; index: number; isArabic: boolean }) => {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const numRef = useRef<HTMLSpanElement>(null);
+
+  const match = stat.value.match(/^([^0-9]*)([0-9]+(?:\.[0-9]+)?)(.*)$/);
+  const prefix = match?.[1] ?? '';
+  const numericStr = match?.[2] ?? '0';
+  const suffix = match?.[3]?.trim() ?? '';
+  const numeric = parseFloat(numericStr);
+  const isDecimal = numericStr.includes('.');
+
+  useLayoutEffect(() => {
+    const el = wrapRef.current;
+    const numEl = numRef.current;
+    if (!el || !numEl) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(el,
+        { y: 30, opacity: 0 },
+        {
+          y: 0, opacity: 1, duration: 0.9,
+          delay: index * 0.15,
+          ease: TOKENS.easing.editorial,
+          scrollTrigger: { trigger: el, start: 'top 88%' }
+        }
+      );
+
+      const counter = { val: 0 };
+      gsap.to(counter, {
+        val: numeric, duration: 2.4,
+        delay: index * 0.15 + 0.25,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+        onUpdate() {
+          if (numEl) numEl.textContent = isDecimal
+            ? counter.val.toFixed(1)
+            : String(Math.round(counter.val));
+        },
+      });
+    }, wrapRef);
+    return () => ctx.revert();
+  }, [index, numeric, isDecimal]);
+
+  return (
+    <div
+      ref={wrapRef}
+      className={`group ${isArabic ? 'text-right' : 'text-left'}`}
+      style={{ opacity: 0 }}
+    >
+      {/* Red accent line */}
+      <span
+        className="block h-px mb-6 rounded-full"
+        style={{ width: '3rem', background: 'linear-gradient(to right, rgba(255,59,59,0.6), transparent)' }}
+        aria-hidden="true"
+      />
+
+      {/* Number */}
+      <div
+        className="font-display font-light leading-none text-white mb-4"
+        style={{
+          fontSize: 'clamp(4rem,8vw,7rem)',
+          filter: 'drop-shadow(0 0 28px rgba(255,59,59,0.22))',
+        }}
+      >
+        {prefix && <span className="opacity-45 text-[0.52em]">{prefix}</span>}
+        <span ref={numRef} className="tabular-nums text-[#FF3B3B]">0</span>
+        {suffix && <span className="opacity-45 text-[0.52em] ml-0.5">{suffix}</span>}
+      </div>
+
+      <div className="text-[10px] font-medium tracking-[0.25em] uppercase text-white/35 group-hover:text-white/55 transition-colors duration-300">
+        {stat.label}
       </div>
     </div>
   );
 });
+ImpactStat.displayName = "ImpactStat";
 
-function Projects({ themeMode = "dark" }: ProjectsProps) {
-  const isDark = themeMode === "dark";
-  const { copy, language } = useLanguage();
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const headerRef = useRef<HTMLElement | null>(null);
-  const isArabic = useMemo(() => language === "ar", [language]);
-
-  const projects = copy.projects.items || [];
-  const featuredProject = projects[0];
-  const remainingProjects = projects.slice(1);
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      const els = gsap.utils.toArray<HTMLElement>(
-        ".reveal-projects",
-        sectionRef.current,
-      );
-      if (!els.length) return;
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: els[0],
-          start: "top 90%",
-          once: true,
-        },
-      });
-
-      tl.from(els, {
-        y: 60,
-        opacity: 0,
-        duration: 1.2,
-        stagger: 0.1,
-        ease: ANIMATION.ease.luxury,
-      });
-    }, sectionRef);
-
-    return () => ctx.revert();
-  }, []);
+const MagneticButton = memo(({ 
+  children, 
+  href, 
+  isArabic 
+}: { 
+  children: ReactNode; 
+  href: string;
+  isArabic: boolean;
+}) => {
+  // Fix ref type for anchor element
+  const ref = useRef<HTMLAnchorElement>(null);
+  const { handleMouseMove, handleMouseLeave } = useMagneticEffect(0.4);
 
   return (
-    <main
-      ref={sectionRef}
-      className={`relative min-h-screen overflow-x-hidden transition-colors duration-700 ${isDark ? "bg-[#080807] text-white" : "bg-[#eeeae0] text-[#18160f]"}`}
+    <a 
+      ref={ref}
+      href={href}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative inline-flex items-center gap-4 px-10 py-5 rounded-full overflow-hidden group"
     >
-      <NoiseTexture />
-      <AmbientGlow isDark={isDark} />
+      <div className="absolute inset-0 transition-transform duration-500 group-hover:scale-105" style={{ backgroundColor: '#FF3B3B' }} />
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" style={{ background: 'linear-gradient(to right, #FF3B3B, #cc2020)' }} />
+      
+      <span className="relative z-10 text-xs font-bold tracking-[0.2em] uppercase">
+        {children}
+      </span>
+      
+      <svg 
+        width="18" 
+        height="12" 
+        viewBox="0 0 18 12" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2"
+        className={`relative z-10 transform group-hover:translate-x-1 transition-transform duration-300 ${isArabic ? "rotate-180" : ""}`}
+      >
+        <path d="M1 6h16M12 1l5 5-5 5" />
+      </svg>
+    </a>
+  );
+});
+MagneticButton.displayName = "MagneticButton";
 
-      <div className="max-w-[1800px] mx-auto px-6 md:px-12 lg:px-20 relative z-10">
-        {/* Navigation spacer */}
-        <div className="h-32" />
+// --- Main Page ---
 
-        {/* Hero Header */}
-        <header ref={headerRef} className="pt-20 pb-20">
-          {/* Breadcrumb */}
-          <div
-            className={`overflow-hidden mb-10 ${isArabic ? "text-right" : ""}`}
-          >
-            <TextReveal>
-              <div className="flex items-center gap-5">
-                <span
-                  className={`text-[11px] font-bold tracking-[0.5em] uppercase ${isDark ? "opacity-40" : "text-[#8c8780]"}`}
-                >
-                  {copy.nav.projects}
+export default function Projects(_: { themeMode: 'dark' | 'light' }) {
+  const { copy, language } = useLanguage();
+  const headerRef = useRef<HTMLDivElement>(null);
+  
+  const isArabic = useMemo(() => language === "ar", [language]);
+  
+  const projects = useMemo(() => copy.projects?.items ?? [], [copy.projects?.items]);
+  const viewLabel = copy.ui?.viewProject ?? "View Project";
+
+  const stats = useMemo(() => [
+    { value: "48+", label: copy.projects?.stats?.projects ?? "Projects" },
+    { value: "12", label: copy.projects?.stats?.awards ?? "Awards" },
+    { value: "08", label: copy.projects?.stats?.years ?? "Years" }
+  ], [copy.projects?.stats]);
+
+  // Header parallax
+  useLayoutEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    gsap.to(header, {
+      yPercent: 30,
+      ease: "none",
+      scrollTrigger: {
+        trigger: header,
+        start: "top top",
+        end: "bottom top",
+        scrub: true
+      }
+    });
+  }, []);
+
+  if (!projects.length) return null;
+
+  return (
+    <div 
+      className="relative min-h-screen text-white overflow-x-hidden"
+    >
+      <ScrollProgress />
+
+
+
+      {/* Header */}
+      <header 
+        ref={headerRef}
+        className="relative min-h-[90vh] flex flex-col justify-center px-6 md:px-12 lg:px-20 pt-32 pb-20"
+      >
+        <div className="max-w-[1600px] mx-auto w-full">
+          <RevealText delay={0.2}>
+            <div className={`flex items-center gap-6 mb-16 ${isArabic ? "flex-row-reverse" : "flex-row"}`}>
+              <div className="h-px flex-1 max-w-[100px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              <span className="text-[11px] font-mono tracking-[0.4em] uppercase text-white/40">
+                {copy.nav?.projects ?? "Selected Work"}
+              </span>
+              <div className="h-px flex-1 max-w-[100px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+            </div>
+          </RevealText>
+
+          <div className={`${isArabic ? "text-right" : "text-left"}`}>
+            <RevealText delay={0.4}>
+              <h1 className="text-[clamp(3.5rem,12vw,10rem)] font-display font-light leading-[0.9] tracking-tighter mb-8">
+                <span className="block text-white/90">{copy.projects?.titleLine1 ?? "Crafting"}</span>
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/60">
+                  {copy.projects?.titleLine2 ?? "Digital Excellence"}
                 </span>
-                <span
-                  className={`w-14 h-px ${isDark ? "bg-white/20" : "bg-[#d9d5ca]"}`}
-                />
-                <span
-                  className={`text-[10px] font-bold tracking-[0.3em] uppercase px-3.5 py-1 rounded-full border ${isDark ? "border-white/10 opacity-40" : "border-[#d9d5ca] text-[#8c8780]"}`}
-                >
-                  2026 Archive
-                </span>
-              </div>
-            </TextReveal>
-          </div>
+              </h1>
+            </RevealText>
 
-          {/* Main title */}
-          <div className={`mb-20 ${isArabic ? "text-right" : ""}`}>
-            <h1 className="font-display text-[clamp(3.5rem,10vw,12rem)] font-light leading-[0.88] tracking-tighter uppercase">
-              <SplitText text={copy.projects.titleLine1} type="words" />
-              <div className="overflow-hidden">
-                <span className="block italic opacity-40 translate-y-4 translate-x-4">
-                  <SplitText text={copy.projects.titleLine2} type="words" />
-                </span>
-              </div>
-            </h1>
-          </div>
-
-          {/* Subtitle & Stats */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-end">
-            <div
-              className={`col-span-12 lg:col-span-7 overflow-hidden ${isArabic ? "text-right" : ""}`}
-            >
-              <p
-                className={`reveal-projects text-xl md:text-2xl max-w-2xl leading-relaxed font-light italic ${isDark ? "opacity-40" : "text-[#56514a]"}`}
-              >
-                {copy.projects.subtitle}
+            <RevealText delay={0.6}>
+              <p className={`text-lg md:text-xl text-white/40 max-w-2xl font-light leading-relaxed mb-16 ${isArabic ? "ml-auto" : ""}`}>
+                {copy.projects?.subtitle ?? "We transform ambitious visions into award-winning digital experiences that define industries and inspire audiences."}
               </p>
-            </div>
+            </RevealText>
 
-            <div className="col-span-12 lg:col-span-5 stats-container grid grid-cols-3 gap-6">
-              <div className="reveal-projects">
-                <StatCounter
-                  value="48"
-                  label={copy.projects.stats.projects}
-                  isDark={isDark}
-                  isArabic={isArabic}
-                />
+            <RevealText delay={0.8}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
+                {stats.map((stat, index) => (
+                  <StatCard 
+                    key={stat.label}
+                    value={stat.value}
+                    label={stat.label}
+                    index={index}
+                    isArabic={isArabic}
+                  />
+                ))}
               </div>
-              <div className="reveal-projects">
-                <StatCounter
-                  value="12"
-                  label={copy.projects.stats.awards}
-                  isDark={isDark}
-                  isArabic={isArabic}
-                />
-              </div>
-              <div className="reveal-projects">
-                <StatCounter
-                  value="8"
-                  label={copy.projects.stats.years}
-                  isDark={isDark}
-                  isArabic={isArabic}
-                />
-              </div>
-            </div>
+            </RevealText>
           </div>
-        </header>
-
-        {/* Featured Project */}
-        {featuredProject && (
-          <div className="mb-5 reveal-projects">
-            <ProjectCard
-              project={featuredProject}
-              index={0}
-              layout="featured"
-              isArabic={isArabic}
-              isDark={isDark}
-              copy={copy}
-            />
-          </div>
-        )}
-
-        {/* Project Grid */}
-        <div className="grid grid-cols-12 gap-5 reveal-projects">
-          {remainingProjects.map((project, idx) => (
-            <ProjectCard
-              key={project.title}
-              project={project}
-              index={idx + 1}
-              layout={idx === 0 ? "wide" : "standard"}
-              isArabic={isArabic}
-              isDark={isDark}
-              copy={copy}
-            />
-          ))}
         </div>
 
-        <AnimatedDivider isDark={isDark} isArabic={isArabic} />
+        {/* Scroll indicator */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-50">
+          <span className="text-[10px] tracking-[0.3em] uppercase text-white/30">Scroll</span>
+          <div className="w-px h-12 bg-gradient-to-b from-white/30 to-transparent" />
+        </div>
+      </header>
 
-        {/* Focus Areas & CTA */}
-        <div className="pb-40">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Focus Areas */}
-            <div
-              className={`relative p-12 md:p-16 rounded-3xl overflow-hidden reveal-projects shadow-sm group ${isDark ? "bg-white/[0.02] border border-white/10" : "bg-white border border-[#e8e4d9]"}`}
-            >
-              {/* Background watermark */}
-              <div
-                className={`absolute -bottom-12 ${isArabic ? "-left-12" : "-right-12"} text-[25vw] font-display font-bold select-none pointer-events-none group-hover:opacity-[0.06] transition-opacity duration-700 ${isDark ? "text-white/[0.012]" : "text-[#ece8dd]"}`}
-              >
-                01
-              </div>
-
-              <div className={`relative z-10 ${isArabic ? "text-right" : ""}`}>
-                <p
-                  className={`text-[11px] font-bold tracking-[0.5em] uppercase mb-10 ${isDark ? "opacity-30" : "text-[#8c8780]"}`}
-                >
-                  {copy.ui.focusAreas}
-                </p>
-
-                <h2
-                  className={`text-4xl md:text-5xl font-display font-light mb-12 leading-[1.05] tracking-tight uppercase group-hover:italic transition-all duration-500 ${isDark ? "" : "text-[#18160f]"}`}
-                >
-                  {copy.projects.focusTitle}
-                </h2>
-
-                <ul className="space-y-6">
-                  {copy.projects.focusItems?.map(
-                    (item: string, idx: number) => (
-                      <li
-                        key={item}
-                        className={`group/item flex items-center gap-5 cursor-default ${isArabic ? "flex-row-reverse" : ""}`}
-                      >
-                        <span
-                          className={`text-xl font-display font-light tabular-nums transition-all duration-300 group-hover/item:italic ${isDark ? "text-white/10 group-hover/item:text-white/40" : "text-[#d0ccbf] group-hover/item:text-[#8c8780]"}`}
-                        >
-                          0{idx + 1}
-                        </span>
-                        <span
-                          className={`text-base font-light tracking-wide transition-all duration-300 group-hover/item:translate-x-2 ${isDark ? "text-white/40 group-hover/item:text-white" : "text-[#56514a] group-hover/item:text-[#18160f]"}`}
-                        >
-                          {item}
-                        </span>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </div>
-            </div>
-
-            {/* CTA Card */}
-            <div
-              className={`relative p-12 md:p-16 rounded-3xl overflow-hidden flex flex-col justify-between min-h-[500px] reveal-projects group ${isDark ? "bg-white/[0.02] border border-white/10 shadow-2xl backdrop-blur-3xl" : "bg-[#18160f] text-white border border-[#18160f]"}`}
-            >
-              <div
-                className={`absolute top-0 right-0 w-32 h-[1px] bg-gradient-to-l ${isDark ? "from-white/40" : "from-white/30"} to-transparent group-hover:w-full transition-all duration-1000`}
+      {/* Projects Grid */}
+      <main className="relative z-10 px-6 md:px-12 lg:px-20 pb-32">
+        <div className="max-w-[1600px] mx-auto space-y-6">
+          
+          {/* First row: Featured large + 2 stacked */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[85vh]">
+            <div className="lg:col-span-7 h-[60vh] lg:h-full">
+              <ProjectCard 
+                project={projects[0]} 
+                index={0} 
+                featured 
+                variant="large"
+                viewLabel={viewLabel} 
+                isArabic={isArabic} 
               />
-              <div
-                className={`absolute bottom-0 left-0 w-[1px] h-32 bg-gradient-to-t ${isDark ? "from-white/40" : "from-white/30"} to-transparent group-hover:h-full transition-all duration-1000`}
-              />
-
-              <div className={`relative z-10 ${isArabic ? "text-right" : ""}`}>
-                <p className="text-[11px] font-bold tracking-[0.5em] uppercase mb-10 opacity-30 text-white">
-                  {copy.ui.nextBuild}
-                </p>
-                <p className="text-4xl md:text-7xl font-display font-light leading-[1.06] tracking-[-0.02em] uppercase group-hover:italic transition-all duration-700 text-white">
-                  {copy.projects.ctaTitle}
-                </p>
-              </div>
-
-              <div className="relative z-10 mt-16">
-                <MagneticLink
-                  href="/contact"
-                  className="w-full md:w-auto inline-flex items-center justify-between px-16 py-8 rounded-full bg-white text-black text-[11px] font-bold tracking-[0.3em] uppercase transition-all duration-500 hover:scale-[1.02] shadow-[0_20px_60px_-10px_rgba(255,255,255,0.3)]"
-                >
-                  <span>{copy.projects.ctaButton}</span>
-                  <svg
-                    className={`w-5 h-5 transition-transform duration-300 ${isArabic ? "rotate-180" : ""} group-hover:translate-x-3`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </MagneticLink>
-              </div>
+            </div>
+            <div className="lg:col-span-5 grid grid-rows-2 gap-6 h-[80vh] lg:h-full">
+              {projects.slice(1, 3).map((project, i) => (
+                <ProjectCard 
+                  key={project.title} 
+                  project={project} 
+                  index={i + 1}
+                  variant="compact"
+                  viewLabel={viewLabel} 
+                  isArabic={isArabic} 
+                />
+              ))}
             </div>
           </div>
-        </div>
 
-        {/* Footer watermark */}
-        <div className="relative h-[8vw] overflow-hidden flex items-start justify-center pointer-events-none">
-          <div
-            className={`text-[15vw] font-display font-bold text-center whitespace-nowrap leading-none tracking-widest uppercase ${isDark ? "text-white/[0.015]" : "text-[#d0ccbf]"}`}
-          >
-            {copy.nav.projects}
+          {/* Second row: 2 equal */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-auto lg:h-[70vh]">
+            {projects.slice(3, 5).map((project, i) => (
+              <ProjectCard 
+                key={project.title} 
+                project={project} 
+                index={i + 3}
+                variant="medium"
+                viewLabel={viewLabel} 
+                isArabic={isArabic} 
+              />
+            ))}
+          </div>
+
+          {/* Third row: Asymmetric */}
+          {projects.length > 5 && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[50vh]">
+              {projects.slice(5, 8).map((project, i) => (
+                <ProjectCard 
+                  key={project.title} 
+                  project={project} 
+                  index={i + 5}
+                  variant="compact"
+                  viewLabel={viewLabel} 
+                  isArabic={isArabic} 
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Impact Section */}
+      <section className="relative py-32 border-y border-white/5 bg-[#060606]">
+        {/* Ambient red glow */}
+        <div
+          className="absolute top-1/2 left-1/2 pointer-events-none"
+          style={{
+            width: 700, height: 700,
+            background: 'rgba(255,59,59,0.04)',
+            filter: 'blur(180px)',
+            transform: 'translate(-50%, -50%)',
+          }}
+          aria-hidden="true"
+        />
+        <div className="relative max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
+          <div className="grid md:grid-cols-3 gap-12 md:gap-24">
+            {copy.home?.impactStats?.slice(0, 3).map((stat: any, i: number) => (
+              <ImpactStat key={i} stat={stat} index={i} isArabic={isArabic} />
+            ))}
           </div>
         </div>
-      </div>
-    </main>
+      </section>
+
+      {/* CTA Section */}
+      <section className="relative py-40 px-6 md:px-12 lg:px-20 overflow-hidden">
+        
+        <div className="relative max-w-4xl mx-auto text-center">
+          <RevealText>
+            <p className="text-[11px] font-mono tracking-[0.4em] uppercase text-accent mb-8">
+              {copy.projects?.ctaButton ?? "Start a Project"}
+            </p>
+          </RevealText>
+          
+          <RevealText delay={0.2}>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-display font-light mb-12 leading-tight">
+              {copy.projects?.ctaTitle ?? "Ready to create something extraordinary?"}
+            </h2>
+          </RevealText>
+
+          <RevealText delay={0.4}>
+            <MagneticButton href="/contact" isArabic={isArabic}>
+              {copy.projects?.ctaButton ?? "Let's Talk"}
+            </MagneticButton>
+          </RevealText>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-1/2 left-12 w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent hidden lg:block" />
+        <div className="absolute top-1/2 right-12 w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent hidden lg:block" />
+      </section>
+    </div>
   );
 }
-
-export default Projects;

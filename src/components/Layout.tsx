@@ -8,14 +8,8 @@ import { useLanguage } from "../i18n";
 
 gsap.registerPlugin(ScrollTrigger);
 
-type LayoutProps = {
-  themeMode: "light" | "dark";
-  onToggleTheme: () => void;
-};
-
-function Layout({ themeMode, onToggleTheme }: LayoutProps) {
-  const logoSrc =
-    themeMode === "dark" ? "/lightlab-lightlogo.svg" : "/logo.svg";
+function Layout() {
+  const logoSrc = "/lightlab-lightlogo.svg";
   const mainRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const navLogoRef = useRef<HTMLImageElement>(null);
@@ -35,11 +29,12 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
     }
   };
 
+  // Desktop nav link — active underline uses accent red
   const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
-    `relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:bg-current after:origin-left after:transition-transform transition-opacity ${
+    `relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:origin-left after:transition-transform transition-all duration-200 ${
       isActive
-        ? "after:scale-x-100 opacity-100"
-        : "after:scale-x-0 opacity-60 hover:opacity-100 hover:after:scale-x-100"
+        ? "after:scale-x-100 opacity-100 after:bg-[#FF3B3B]"
+        : "after:scale-x-0 opacity-55 hover:opacity-100 hover:after:scale-x-100 hover:after:bg-[#FF3B3B]"
     }`;
 
   useLayoutEffect(() => {
@@ -185,18 +180,11 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
   }, []);
 
   return (
-    <div className={`transition-colors duration-700 ${isRtl ? "rtl-adapt" : ""}`}>
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[300] focus:px-6 focus:py-3 theme-surface font-bold uppercase tracking-widest text-[10px] border border-current shadow-2xl"
-      >
-        Skip to content
-      </a>
-
+    <div dir={isRtl ? "rtl" : "ltr"} className={`transition-colors duration-700`}>
       {showIntro && (
         <div
           ref={introOverlayRef}
-          className="fixed inset-0 z-200 theme-hero-overlay flex items-center justify-center"
+          className="fixed inset-0 z-200 bg-[#090909] flex items-center justify-center"
         >
           <img
             ref={introLogoRef}
@@ -211,7 +199,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
       <nav
         ref={navRef}
         id="main-nav"
-        className={`fixed top-0 w-full z-100 transition-all duration-500 ${isHeroSection ? "nav-over-hero" : ""}`}
+        className={`fixed top-0 w-full z-100 transition-all duration-500 text-white ${isHeroSection ? "nav-over-hero" : ""}`}
       >
         <div className="max-w-360 mx-auto px-6 md:px-16 py-4 sm:py-5 flex justify-between items-center">
           <Link to="/" className="flex items-center group">
@@ -219,7 +207,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
               ref={navLogoRef}
               src={isHeroSection ? "/lightlab-lightlogo.svg" : logoSrc}
               alt="Lightlab"
-              className="h-5 sm:h-6 w-auto transition-all duration-300 group-hover:opacity-70"
+              className="h-14 sm:h-16 w-auto transition-all duration-300 group-hover:opacity-70"
             />
           </Link>
 
@@ -232,23 +220,17 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-3 sm:gap-5">
-            <button
-              type="button"
-              className="theme-toggle"
-              aria-pressed={themeMode === "dark"}
-              onClick={onToggleTheme}
-            >
-              {themeMode === "dark" ? "Light" : "Dark"}
-            </button>
+            {/* CTA button */}
             <Link
               to="/contact"
-              className="hidden lg:block theme-outline px-5 py-2 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all hover:opacity-80"
+              className="hidden lg:block px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-200 bg-[#FF3B3B] text-white border border-[#FF3B3B] hover:bg-[#E02E2E] hover:border-[#E02E2E]"
             >
               {copy.nav.cta}
             </Link>
+            {/* Mobile menu toggle */}
             <button
               type="button"
-              className="lg:hidden inline-flex items-center px-4 justify-center py-2 rounded-none border border-current text-[10px] uppercase tracking-widest transition-opacity hover:opacity-70"
+              className="lg:hidden inline-flex items-center px-4 justify-center py-2 rounded-full border border-white/20 text-white text-[10px] uppercase tracking-widest transition-opacity hover:opacity-70"
               aria-label={menuOpen ? copy.nav.menuClose : copy.nav.menuOpen}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
@@ -279,7 +261,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
                 to={to}
                 className={({ isActive }) =>
                   `text-[clamp(1.75rem,5vw,3rem)] font-bold uppercase tracking-[0.1em] leading-none transition-all duration-200 ${
-                    isActive ? "opacity-100" : "opacity-40 hover:opacity-100"
+                    isActive ? "opacity-100 text-[#FF3B3B]" : "opacity-40 hover:opacity-100"
                   }`
                 }
               >
@@ -290,7 +272,7 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
           <div className={`px-10 pb-12 ${isRtl ? "text-right" : "text-left"}`}>
             <Link
               to="/contact"
-              className="inline-flex theme-outline px-7 py-3 rounded-none text-[10px] font-bold uppercase tracking-widest transition-all hover:opacity-80 w-fit"
+              className="inline-flex px-7 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all hover:bg-[#E02E2E] w-fit bg-[#FF3B3B] text-white border border-[#FF3B3B]"
             >
               {copy.nav.cta}
             </Link>
@@ -298,81 +280,103 @@ function Layout({ themeMode, onToggleTheme }: LayoutProps) {
         </div>
       </div>
 
-      {/* Language selector */}
-      <div className={`fixed bottom-6 z-110 ${isRtl ? "right-6" : "left-6"}`}>
-        <div className="relative">
-          <select
-            aria-label="Select language"
-            value={language}
-            onChange={(event) => handleLanguageChange(event.target.value)}
-            className={`theme-surface backdrop-blur border border-black/10 dark:border-white/12 rounded-full appearance-none text-[11px] font-bold tracking-[0.12em] ${isRtl ? "pl-10 pr-5 text-right" : "pr-10 pl-5 text-left"} py-2.5 transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:border-black/30 dark:focus:border-white/25 cursor-pointer hover:border-black/25 dark:hover:border-white/25`}
-          >
-            <option value="fr">FR · Français</option>
-            <option value="en">EN · English</option>
-            <option value="ar">AR · العربية</option>
-          </select>
-          <span
-            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 text-[10px] opacity-50 ${isRtl ? "left-4" : "right-4"}`}
-            aria-hidden="true"
-          >
-            ▾
-          </span>
+      {/* Bottom-right controls: language + scroll-to-top */}
+      <div className="fixed bottom-6 right-6 z-110 flex flex-col items-end gap-2" dir="ltr">
+        {/* Scroll to top */}
+        {/* Scroll to top */}
+        <button
+          type="button"
+          className={`inline-flex items-center justify-center h-9 w-9 rounded-full
+            bg-white/[0.04] border border-white/[0.08] text-white/50
+            transition-all duration-300 hover:border-[#FF3B3B]/50 hover:text-[#FF3B3B]
+            ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
+          aria-label="Back to top"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <FiArrowUp className="text-sm" />
+        </button>
+
+        {/* Language selector — segmented pill */}
+        <div
+          className="flex items-stretch rounded-full border border-white/[0.08] bg-white/[0.03] overflow-hidden"
+          role="group"
+          aria-label="Select language"
+        >
+          {(["en", "fr", "ar"] as const).map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              onClick={() => handleLanguageChange(lang)}
+              className={`px-3.5 py-2 text-[9px] font-bold tracking-[0.2em] uppercase transition-all duration-200
+                ${language === lang
+                  ? "bg-[#FF3B3B] text-white"
+                  : "text-white/30 hover:text-white/60"
+                }`}
+            >
+              {lang.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
-
-      {/* Scroll to top */}
-      <button
-        type="button"
-        className={`fixed bottom-6 z-110 inline-flex items-center justify-center h-10 w-10 rounded-full theme-surface backdrop-blur border border-black/10 dark:border-white/12 transition-all duration-300 hover:border-black/25 dark:hover:border-white/25 ${isRtl ? "left-6" : "right-6"} ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3 pointer-events-none"}`}
-        aria-label="Back to top"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      >
-        <FiArrowUp className="scroll-top-icon text-base" />
-      </button>
 
       <main id="main-content" ref={mainRef} className="pt-0">
         <Outlet />
       </main>
 
       {/* Footer */}
-      <footer className="py-28 px-8 md:px-16 lg:px-24 border-t border-black/8 dark:border-white/10 bg-white/[0.12] dark:bg-white/[0.01]">
+      <footer className="py-24 px-8 md:px-16 lg:px-24 border-t border-white/[0.07] bg-[#080808] text-white">
         <div className="max-w-360 mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+          <div className={`grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 ${isRtl ? "text-right" : "text-left"}`}>
             <div className="lg:col-span-5">
-              <p className="text-[10px] uppercase tracking-[0.2em] opacity-30 mb-6 font-bold">
+              <p className="text-[10px] uppercase tracking-[0.2em] opacity-25 mb-5 font-bold">
                 Digital Studio
               </p>
-              <div className="mb-8">
-                <img src={logoSrc} alt="Lightlab" className="h-9 sm:h-10 w-auto" />
+              <div className="mb-7">
+                <img src={logoSrc} alt="Lightlab" className={`h-8 sm:h-9 w-auto ${isRtl ? "mr-auto" : ""}`} />
               </div>
-              <p className="text-sm opacity-50 max-w-xs leading-loose">{copy.footer.summary}</p>
+              <p className="text-sm opacity-45 max-w-xs leading-[1.8]">{copy.footer.summary}</p>
             </div>
-            <div className="lg:col-span-3 lg:pt-14">
-              <span className="text-[10px] uppercase tracking-widest opacity-35 block mb-7 font-bold">{copy.footer.servicesTitle}</span>
-              <ul className="space-y-5 text-sm">
+            <div className="lg:col-span-3 lg:pt-12">
+              <span className="text-[10px] uppercase tracking-widest opacity-30 block mb-6 font-bold">{copy.footer.servicesTitle}</span>
+              <ul className="space-y-4 text-sm">
                 {copy.footer.services.map((item) => (
                   <li key={item}>
-                    <Link className="opacity-60 hover:opacity-100 transition-opacity duration-200" to="/services">{item}</Link>
+                    <Link
+                      className="opacity-50 hover:opacity-100 hover:text-[#FF3B3B] transition-all duration-200"
+                      to="/services"
+                    >
+                      {item}
+                    </Link>
                   </li>
                 ))}
               </ul>
             </div>
-            <div className="lg:col-span-4 lg:pt-14">
-              <span className="text-[10px] uppercase tracking-widest opacity-35 block mb-7 font-bold">{copy.footer.contactTitle}</span>
-              <div className="space-y-2 mb-14">
-                <a className="text-xl font-display hover:opacity-60 transition-opacity duration-200 block" href="mailto:hello@lightlab.dev">{copy.footer.email}</a>
-                <p className="text-sm opacity-35">{copy.footer.location}</p>
+            <div className="lg:col-span-4 lg:pt-12">
+              <span className="text-[10px] uppercase tracking-widest opacity-30 block mb-6 font-bold">{copy.footer.contactTitle}</span>
+              <div className="space-y-2 mb-12">
+                <a
+                  className="text-lg font-display hover:opacity-60 hover:text-[#FF3B3B] transition-all duration-200 block"
+                  href="mailto:hello@lightlab.dev"
+                >
+                  {copy.footer.email}
+                </a>
+                <p className="text-sm opacity-30">{copy.footer.location}</p>
               </div>
               <Link
-                className="theme-solid px-8 py-4 rounded-none font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] transition-transform"
+                className="theme-solid px-7 py-3.5 rounded-full font-bold uppercase tracking-widest text-[10px] hover:scale-[1.02] transition-transform inline-block"
                 to="/contact"
               >
                 {copy.footer.cta}
               </Link>
             </div>
           </div>
-          <div className="mt-28 pt-8 border-t border-primary/10 flex justify-between items-center text-[10px] uppercase tracking-widest opacity-25">
-            <span>&copy; 2025 Lightlab Studio</span>
+          <div className={`mt-20 pt-8 border-t border-white/[0.06]
+            flex justify-between items-center text-[10px] uppercase tracking-widest opacity-20
+            ${isRtl ? "flex-row-reverse" : ""}`}>
+            <span>
+              &copy; 2026{" "}
+              <span style={{ color: "var(--color-gold)" }}>Lightlab Studio</span>
+            </span>
             <div className="flex gap-8">
               <a className="hover:opacity-100 transition-opacity duration-200" href="https://www.linkedin.com" target="_blank" rel="noreferrer">Linkedin</a>
               <a className="hover:opacity-100 transition-opacity duration-200" href="https://x.com" target="_blank" rel="noreferrer">X / Twitter</a>

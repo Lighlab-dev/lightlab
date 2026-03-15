@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
@@ -13,32 +13,21 @@ import Projects from './pages/Projects.tsx'
 import Contact from './pages/Contact.tsx'
 import './App.css'
 
-function App() {
-  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
-    const stored = localStorage.getItem('theme')
-    return stored === 'dark' || stored === 'light' ? stored : 'light'
-  })
+const THEME_MODE = 'dark' as const
 
+function App() {
   useEffect(() => {
     const root = document.documentElement
-    root.setAttribute('data-theme', themeMode)
-    root.classList.toggle('dark', themeMode === 'dark')
-    localStorage.setItem('theme', themeMode)
-  }, [themeMode])
-
-  const handleToggleTheme = useCallback(() => {
-    setThemeMode((mode) => (mode === 'dark' ? 'light' : 'dark'))
+    root.setAttribute('data-theme', THEME_MODE)
+    root.classList.add('dark')
+    localStorage.setItem('theme', THEME_MODE)
   }, [])
 
   const muiTheme = useMemo(() => createTheme({
     palette: {
-      mode: themeMode,
-      background: {
-        default: themeMode === 'dark' ? '#070603' : '#f6f4ee',
-      },
-      text: {
-        primary: themeMode === 'dark' ? '#f1efe7' : '#1c1b18',
-      },
+      mode: THEME_MODE,
+      background: { default: '#090909' },
+      text: { primary: '#f1efe7' },
     },
     typography: {
       fontFamily: '"Space Grotesk", sans-serif',
@@ -47,7 +36,7 @@ function App() {
       h3: { fontFamily: '"Playfair Display", serif' },
       h4: { fontFamily: '"Playfair Display", serif' },
     },
-  }), [themeMode])
+  }), [])
 
   return (
     <LanguageProvider>
@@ -55,21 +44,14 @@ function App() {
         <CssBaseline />
         <BrowserRouter>
           <Routes>
-            <Route
-              element={(
-                <Layout
-                  themeMode={themeMode}
-                  onToggleTheme={handleToggleTheme}
-                />
-              )}
-            >
-              <Route path="/" element={<Home themeMode={themeMode} />} />
-              <Route path="/services" element={<Services themeMode={themeMode} />} />
+            <Route element={<Layout />}>
+              <Route path="/" element={<Home themeMode={THEME_MODE} />} />
+              <Route path="/services" element={<Services themeMode={THEME_MODE} />} />
               <Route path="/services/:slug" element={<ServiceDetail />} />
-              <Route path="/method" element={<Method themeMode={themeMode} />} />
-              <Route path="/about" element={<About themeMode={themeMode} />} />
-              <Route path="/projects" element={<Projects themeMode={themeMode} />} />
-              <Route path="/contact" element={<Contact themeMode={themeMode} />} />
+              <Route path="/method" element={<Method themeMode={THEME_MODE} />} />
+              <Route path="/about" element={<About themeMode={THEME_MODE} />} />
+              <Route path="/projects" element={<Projects themeMode={THEME_MODE} />} />
+              <Route path="/contact" element={<Contact themeMode={THEME_MODE} />} />
             </Route>
           </Routes>
         </BrowserRouter>
