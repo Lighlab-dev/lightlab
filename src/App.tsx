@@ -1,8 +1,9 @@
-import { useEffect, useMemo } from 'react'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
+import { useMemo } from 'react'
+import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { LanguageProvider } from './i18n'
+import { ThemeProvider, useTheme } from './theme'
 import Layout from './components/Layout.tsx'
 import Home from './pages/Home.tsx'
 import Services from './pages/Services.tsx'
@@ -13,19 +14,27 @@ import Projects from './pages/Projects.tsx'
 import Contact from './pages/Contact.tsx'
 import './App.css'
 
-const THEME_MODE = 'dark' as const
+function AppRoutes() {
+  const { themeMode } = useTheme()
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<Home themeMode={themeMode} />} />
+        <Route path="/services" element={<Services themeMode={themeMode} />} />
+        <Route path="/services/:slug" element={<ServiceDetail />} />
+        <Route path="/method" element={<Method themeMode={themeMode} />} />
+        <Route path="/about" element={<About themeMode={themeMode} />} />
+        <Route path="/projects" element={<Projects themeMode={themeMode} />} />
+        <Route path="/contact" element={<Contact themeMode={themeMode} />} />
+      </Route>
+    </Routes>
+  )
+}
 
 function App() {
-  useEffect(() => {
-    const root = document.documentElement
-    root.setAttribute('data-theme', THEME_MODE)
-    root.classList.add('dark')
-    localStorage.setItem('theme', THEME_MODE)
-  }, [])
-
   const muiTheme = useMemo(() => createTheme({
     palette: {
-      mode: THEME_MODE,
+      mode: 'dark',
       background: { default: '#090909' },
       text: { primary: '#f1efe7' },
     },
@@ -39,24 +48,16 @@ function App() {
   }), [])
 
   return (
-    <LanguageProvider>
-      <ThemeProvider theme={muiTheme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={<Home themeMode={THEME_MODE} />} />
-              <Route path="/services" element={<Services themeMode={THEME_MODE} />} />
-              <Route path="/services/:slug" element={<ServiceDetail />} />
-              <Route path="/method" element={<Method themeMode={THEME_MODE} />} />
-              <Route path="/about" element={<About themeMode={THEME_MODE} />} />
-              <Route path="/projects" element={<Projects themeMode={THEME_MODE} />} />
-              <Route path="/contact" element={<Contact themeMode={THEME_MODE} />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <MuiThemeProvider theme={muiTheme}>
+          <CssBaseline />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </MuiThemeProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   )
 }
 

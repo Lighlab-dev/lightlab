@@ -125,6 +125,17 @@ img {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 }
 
+[data-theme='light'] .navbar-scrolled {
+  background-color: rgba(237, 232, 223, 0.97);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+[data-theme='light'] body {
+  background-color: #EDE8DF;
+  color: #0F0F0F;
+  color-scheme: light;
+}
+
 /* ── Theme toggle ───────────────────────────────────────────────────────── */
 .theme-toggle {
   font-size: 10px;

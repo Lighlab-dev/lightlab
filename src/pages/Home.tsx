@@ -32,7 +32,15 @@ const DK = {
   cardBg: 'bg-white/[0.04]',
   faint:  'bg-white/[0.02]',
 }
-const P = DK
+const LT = {
+  bg:     'bg-[#EDE8DF]',
+  text:   'text-[#0F0F0F]',
+  stone:  'text-black/55',
+  muted:  'text-black/30',
+  border: 'border-black/[0.07]',
+  cardBg: 'bg-black/[0.03]',
+  faint:  'bg-black/[0.02]',
+}
 const ACCENT = '#FF3B3B'
 const GOLD = '#C6A96B'
 
@@ -272,7 +280,7 @@ const ProjectCard = memo(({ project, index, featured = false, viewLabel = 'View 
 ProjectCard.displayName = 'ProjectCard'
 
 // ─── AnimatedCounter ─────────────────────────────────────────────────────────
-const AnimatedCounter = memo(({ value, label }: {
+const AnimatedCounter = memo(({ value, label, isDark }: {
   value: string; label: string; isDark: boolean
 }) => {
   const numRef = useRef<HTMLSpanElement>(null)
@@ -336,7 +344,7 @@ const AnimatedCounter = memo(({ value, label }: {
       />
 
       {/* Label */}
-      <span className="text-[10px] font-bold tracking-[0.44em] uppercase text-white/40">
+      <span className={`text-[10px] font-bold tracking-[0.44em] uppercase ${isDark ? 'text-white/40' : 'text-black/45'}`}>
         {label}
       </span>
     </div>
@@ -366,7 +374,7 @@ const TrustSignals = memo(({ isArabic, P, dir, copy }: TrustSignalsProps) => (
               {copy.home.trustSignals.label}
             </span>
           </TextReveal>
-          <p className="text-2xl md:text-3xl font-display font-light leading-[1.35] text-white/70 max-w-sm">
+          <p className={`text-2xl md:text-3xl font-display font-light leading-[1.35] ${P.stone} max-w-sm`}>
             Trusted by teams that demand results.
           </p>
         </div>
@@ -423,9 +431,10 @@ interface HowWeWorkProps {
   P: typeof DK
   dir: { text: string; flex: string }
   copy: ReturnType<typeof useLanguage>['copy']
+  isDark: boolean
 }
 
-const HowWeWork = memo(({ isArabic, P, dir, copy }: HowWeWorkProps) => (
+const HowWeWork = memo(({ isArabic, P, dir, copy, isDark }: HowWeWorkProps) => (
   <LazySection id="how-we-work">
     <div className={`border-t ${P.border}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32">
@@ -437,7 +446,7 @@ const HowWeWork = memo(({ isArabic, P, dir, copy }: HowWeWorkProps) => (
           </TextReveal>
           <SplitText
             text={copy.home.howWeWork.headline}
-            className="text-3xl md:text-5xl font-display font-light leading-[1.08] text-white/90"
+            className={`text-3xl md:text-5xl font-display font-light leading-[1.08] ${isDark ? 'text-white/90' : 'text-black/90'}`}
             type="words"
           />
         </div>
@@ -448,30 +457,30 @@ const HowWeWork = memo(({ isArabic, P, dir, copy }: HowWeWorkProps) => (
             <div
               key={step.number}
               className={`relative flex flex-col gap-5 p-8 md:p-10 flex-1
-                border-t border-white/[0.07]
-                ${i < copy.home.howWeWork.steps.length - 1 ? 'md:border-r md:border-white/[0.07]' : ''}`}
+                border-t ${P.border}
+                ${i < copy.home.howWeWork.steps.length - 1 ? `md:border-r ${P.border}` : ''}`}
             >
               {/* Ghost step number */}
               <span
                 aria-hidden="true"
                 className={`absolute top-4 ${isArabic ? 'left-4' : 'right-4'} font-display font-light leading-none select-none pointer-events-none
-                  text-[4rem] text-white opacity-[0.06]`}
+                  text-[4rem] ${isDark ? 'text-white' : 'text-black'} opacity-[0.06]`}
               >
                 {step.number}
               </span>
 
-              <span className="font-mono text-[9px] tracking-[0.44em] uppercase text-white/20">
+              <span className={`font-mono text-[9px] tracking-[0.44em] uppercase ${P.muted}`}>
                 {step.number}
               </span>
-              <span className="h-px w-10 bg-white/10" />
-              <h4 className="text-xl md:text-2xl font-display font-light leading-tight text-white/90 pr-12">
+              <span className={`h-px w-10 ${isDark ? 'bg-white/10' : 'bg-black/10'}`} />
+              <h4 className={`text-xl md:text-2xl font-display font-light leading-tight ${isDark ? 'text-white/90' : 'text-black/90'} pr-12`}>
                 {step.title}
               </h4>
-              <p className="text-sm font-light leading-[1.72] flex-1 text-white/40">
+              <p className={`text-sm font-light leading-[1.72] flex-1 ${isDark ? 'text-white/40' : 'text-black/45'}`}>
                 {step.copy}
               </p>
               {step.number === '04' && (
-                <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-bold tracking-[0.3em] uppercase border border-white/[0.08] text-white/30">
+                <div className={`inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-full text-[9px] font-bold tracking-[0.3em] uppercase border ${isDark ? 'border-white/[0.08] text-white/30' : 'border-black/[0.08] text-black/35'}`}>
                   {isArabic ? step.title + ' ←' : '→ ' + step.title}
                 </div>
               )}
@@ -490,9 +499,10 @@ interface WhyLightlabProps {
   P: typeof DK
   dir: { text: string; flex: string }
   copy: ReturnType<typeof useLanguage>['copy']
+  isDark: boolean
 }
 
-const WhyLightlab = memo(({ isArabic, P, dir, copy }: WhyLightlabProps) => (
+const WhyLightlab = memo(({ isArabic, P, dir, copy, isDark }: WhyLightlabProps) => (
   <LazySection id="why-lightlab">
     <div className={`border-t ${P.border}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32">
@@ -510,39 +520,39 @@ const WhyLightlab = memo(({ isArabic, P, dir, copy }: WhyLightlabProps) => (
             </TextReveal>
             <SplitText
               text={copy.home.whyLightlab.headline}
-              className="text-3xl md:text-5xl font-display font-light leading-[1.08] text-white/90"
+              className={`text-3xl md:text-5xl font-display font-light leading-[1.08] ${isDark ? 'text-white/90' : 'text-black/90'}`}
               type="words"
             />
           </div>
           {/* Count badge */}
-          <span className="hidden md:flex items-center justify-center w-12 h-12 rounded-full border shrink-0
+          <span className={`hidden md:flex items-center justify-center w-12 h-12 rounded-full border shrink-0
             text-[9px] font-bold tracking-[0.3em] tabular-nums
-            border-white/[0.08] text-white/20">
+            ${isDark ? 'border-white/[0.08] text-white/20' : 'border-black/[0.08] text-black/25'}`}>
             0{copy.home.whyLightlab.pillars.length}
           </span>
         </div>
 
         {/* Numbered pillar list */}
-        <div className="divide-y divide-white/[0.06]">
+        <div className={`divide-y ${isDark ? 'divide-white/[0.06]' : 'divide-black/[0.06]'}`}>
           {copy.home.whyLightlab.pillars.map((pillar, i) => (
             <div
               key={i}
               className={`group flex items-start gap-6 md:gap-12 py-8 md:py-10
-                transition-colors duration-300 hover:bg-white/[0.015] -mx-4 px-4 rounded-lg
+                transition-colors duration-300 ${isDark ? 'hover:bg-white/[0.015]' : 'hover:bg-black/[0.015]'} -mx-4 px-4 rounded-lg
                 ${isArabic ? 'flex-row-reverse' : ''}`}
             >
               {/* Number */}
-              <span className="shrink-0 text-[9px] font-bold tracking-[0.4em] tabular-nums mt-1
-                text-white/20 group-hover:text-[#FF3B3B]/60 transition-colors duration-300">
+              <span className={`shrink-0 text-[9px] font-bold tracking-[0.4em] tabular-nums mt-1
+                ${isDark ? 'text-white/20' : 'text-black/25'} group-hover:text-[#FF3B3B]/60 transition-colors duration-300`}>
                 0{i + 1}
               </span>
 
               {/* Content — two-column on md+ */}
               <div className={`flex-1 flex flex-col md:flex-row md:gap-12 gap-3 ${isArabic ? 'md:flex-row-reverse' : ''}`}>
-                <h4 className="md:w-72 shrink-0 text-base md:text-lg font-display font-light leading-tight text-white/85">
+                <h4 className={`md:w-72 shrink-0 text-base md:text-lg font-display font-light leading-tight ${isDark ? 'text-white/85' : 'text-black/85'}`}>
                   {pillar.title}
                 </h4>
-                <p className="flex-1 text-sm font-light leading-[1.76] text-white/40">
+                <p className={`flex-1 text-sm font-light leading-[1.76] ${isDark ? 'text-white/40' : 'text-black/45'}`}>
                   {pillar.copy}
                 </p>
               </div>
@@ -575,11 +585,11 @@ const TICKER_ITEMS = [
   'Automation',
 ]
 
-const TickerMarquee = memo(() => {
+const TickerMarquee = memo(({ isDark }: { isDark: boolean }) => {
   const items = [...TICKER_ITEMS, ...TICKER_ITEMS, ...TICKER_ITEMS]
   return (
     <div
-      className="overflow-hidden border-y border-white/[0.07]"
+      className={`overflow-hidden border-y ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}
       aria-hidden="true"
     >
       <div
@@ -593,13 +603,13 @@ const TickerMarquee = memo(() => {
           <span key={i} className="flex items-center gap-0 shrink-0">
             <span
               className={`text-[9px] font-bold tracking-[0.44em] uppercase px-6
-                text-white/20
+                ${isDark ? 'text-white/20' : 'text-black/25'}
                 ${i % 3 === 2 ? 'text-[#FF3B3B]/30' : ''}`}
             >
               {item}
             </span>
             {/* Separator */}
-            <span className="text-[9px] shrink-0 text-white/10">–</span>
+            <span className={`text-[9px] shrink-0 ${isDark ? 'text-white/10' : 'text-black/15'}`}>–</span>
           </span>
         ))}
       </div>
@@ -610,7 +620,8 @@ TickerMarquee.displayName = 'TickerMarquee'
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 function Home({ themeMode }: HomeProps) {
-  void themeMode
+  const isDark = themeMode === 'dark'
+  const P = isDark ? DK : LT
   const wrapperRef = useRef<HTMLDivElement>(null)
   const heroRef    = useRef<HTMLElement>(null)
   const serviceCardsRef = useRef<HTMLDivElement>(null)
@@ -719,106 +730,131 @@ function Home({ themeMode }: HomeProps) {
             poster={MEDIA.heroPoster}
             className="w-full h-full scale-105"
           />
-          <div className="absolute inset-0 bg-[#090909]/72" />
-
-          {/* Dot-grid background — red-tinted dots */}
+          {/* Base scrim — hero is always dark regardless of site theme */}
+          <div className="absolute inset-0 bg-[#090909]/45" />
+          {/* Left-side directional gradient */}
           <div
-            aria-hidden="true"
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(circle, rgba(255,59,59,0.04) 1px, transparent 1px)',
-              backgroundSize: '32px 32px',
-              maskImage: 'radial-gradient(ellipse 90% 90% at 50% 40%, black 30%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 40%, black 30%, transparent 100%)',
-            }}
+            className="absolute inset-y-0 left-0 w-1/2 pointer-events-none"
+            style={{ background: 'linear-gradient(to right, rgba(9,9,9,0.72) 0%, transparent 100%)' }}
           />
         </div>
 
         {/* Bottom vignette — fades into page bg */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 right-0 h-48 pointer-events-none z-10
-            bg-gradient-to-t from-[#090909] to-transparent"
+          className="absolute bottom-0 left-0 right-0 h-56 pointer-events-none z-10 bg-gradient-to-t from-[#090909] to-transparent"
         />
 
         {/* Content */}
         <div className="relative z-20 max-w-7xl mx-auto w-full px-6 md:px-12 lg:px-20 py-32 md:py-44">
-          {/* Tag — bold pill with red dot */}
-          <div className="hero-tag mb-6">
-            <span className="inline-flex items-center gap-2.5 text-[9px] font-bold tracking-[0.44em] uppercase
-              px-4 py-2 rounded-full border
-              border-white/10 text-white/50 bg-white/[0.04]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B] shrink-0" />
-              {copy.home.heroTag}
-            </span>
-          </div>
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-end">
 
-          {/* Thin rule below tag */}
-          <div className="hero-rule h-px w-16 mb-10 bg-[#FF3B3B]/20" />
-
-          {/* Headline */}
-          <h1 className={`font-display font-light leading-[0.92]
-            text-[clamp(3.5rem,8.5vw,9rem)] mb-8 max-w-5xl text-white ${dir.text}`}>
-            <span className="hero-line block">
-              <span className="block">{copy.home.heroTitle1}</span>
-            </span>
-            <span className="hero-line block italic opacity-70">
-              <span className="block">{copy.home.heroTitle2}</span>
-            </span>
-          </h1>
-
-          {/* Sub-copy */}
-          <p className={`hero-copy text-base md:text-lg font-light leading-[1.76]
-            max-w-[32rem] mb-10 text-white/55 ${dir.text}`}>
-            {copy.home.heroCopy}
-          </p>
-
-          {/* CTAs + proof strip */}
-          <div className={`hero-cta flex flex-wrap gap-4 items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
-            {/* Primary CTA — always red accent */}
-            <MagneticButton
-              href="#contact"
-              variant="primary"
-              isDark
-              style={{ backgroundColor: '#FF3B3B', color: '#ffffff', borderColor: '#FF3B3B' }}
-              className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
-                text-[11px] tracking-[0.28em] uppercase font-bold border
-                hover:bg-[#E02E2E] hover:border-[#E02E2E]
-                ${isArabic ? 'flex-row-reverse' : ''}`}
-            >
-              {copy.home.ctaButtonStart}
-              <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true"
-                className={isArabic ? 'scale-x-[-1]' : ''}>
-                <path d="M1 4h12M7.5 1l3.5 3-3.5 3" strokeWidth="1.4" stroke="currentColor"
-                  strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </MagneticButton>
-            <MagneticButton
-              href="/services"
-              variant="outline"
-              isDark
-              className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
-                text-[11px] tracking-[0.28em] uppercase font-bold
-                border-white/15 text-white/60 hover:text-white
-                ${isArabic ? 'flex-row-reverse' : ''}`}
-            >
-              {copy.home.heroCtaSecondary}
-            </MagneticButton>
-          </div>
-
-          {/* Proof strip — three social-proof stats */}
-          <div className={`hero-cta mt-10 pt-8 border-t border-white/[0.07] flex items-center gap-8 flex-wrap ${isArabic ? 'flex-row-reverse' : ''}`}>
-            {[
-              { n: '40+', label: 'Brands scaled' },
-              { n: '3.8×', label: 'Avg. ROAS' },
-              { n: '97%', label: 'On-time delivery' },
-            ].map((s, i) => (
-              <div key={i} className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
-                {i > 0 && <span className="w-px h-6 bg-white/[0.08]" aria-hidden="true" />}
-                <span className="font-display font-light text-2xl text-white/70">{s.n}</span>
-                <span className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/[0.28]">{s.label}</span>
+            {/* Left column — main content */}
+            <div className="lg:col-span-8">
+              {/* Tag — pill with animated status dot + red dot */}
+              <div className="hero-tag mb-6">
+                <span className={`inline-flex items-center gap-3 text-[9px] font-bold tracking-[0.44em] uppercase
+                  px-4 py-2.5 rounded-full border
+                  border-white/10 text-white/50 bg-white/[0.04]`}>
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                  </span>
+                  {copy.home.heroTag}
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B]/60 shrink-0" />
+                </span>
               </div>
-            ))}
+
+              {/* Thin rule below tag */}
+              <div className="hero-rule h-px w-16 mb-10 bg-[#FF3B3B]/20" />
+
+              {/* Headline */}
+              <h1 className={`font-display font-light leading-[0.92]
+                text-[clamp(3.5rem,8.5vw,9rem)] mb-8 max-w-5xl text-white ${dir.text}`}>
+                <span className="hero-line block">
+                  <span className="block">{copy.home.heroTitle1}</span>
+                </span>
+                <span className="hero-line block italic opacity-90 relative">
+                  <span className="block">{copy.home.heroTitle2}</span>
+                  <span aria-hidden="true" className="absolute -bottom-1 left-0 h-[2px] w-24"
+                    style={{ background: 'linear-gradient(to right, rgba(255,59,59,0.7), transparent)' }} />
+                </span>
+              </h1>
+
+              {/* Sub-copy */}
+              <p className={`hero-copy text-base md:text-lg font-light leading-[1.76]
+                max-w-[32rem] mb-10 pl-4 border-l-2 border-[#FF3B3B]/20
+                text-white/55 ${dir.text}`}>
+                {copy.home.heroCopy}
+              </p>
+
+              {/* CTAs */}
+              <div className={`hero-cta flex flex-wrap gap-4 items-center ${isArabic ? 'flex-row-reverse' : ''}`}>
+                {/* Primary CTA — always red accent */}
+                <MagneticButton
+                  href="#contact"
+                  variant="primary"
+                  isDark
+                  style={{ backgroundColor: '#FF3B3B', color: '#ffffff', borderColor: '#FF3B3B' }}
+                  className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
+                    text-[11px] tracking-[0.28em] uppercase font-bold border
+                    hover:bg-[#E02E2E] hover:border-[#E02E2E]
+                    ${isArabic ? 'flex-row-reverse' : ''}`}
+                >
+                  {copy.home.ctaButtonStart}
+                  <svg width="14" height="8" viewBox="0 0 14 8" fill="none" aria-hidden="true"
+                    className={isArabic ? 'scale-x-[-1]' : ''}>
+                    <path d="M1 4h12M7.5 1l3.5 3-3.5 3" strokeWidth="1.4" stroke="currentColor"
+                      strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </MagneticButton>
+                <MagneticButton
+                  href="/services"
+                  variant="outline"
+                  isDark
+                  className={`inline-flex items-center gap-3 px-8 py-4 rounded-full
+                    text-[11px] tracking-[0.28em] uppercase font-bold
+                    border-white/15 text-white/60 hover:text-white
+                    ${isArabic ? 'flex-row-reverse' : ''}`}
+                >
+                  {copy.home.heroCtaSecondary}
+                </MagneticButton>
+              </div>
+
+              {/* Proof strip — mobile only, desktop defers to side panel */}
+              <div className={`hero-cta mt-10 pt-8 border-t lg:hidden border-white/[0.07] flex items-center gap-8 flex-wrap ${isArabic ? 'flex-row-reverse' : ''}`}>
+                {[
+                  { n: '40+', label: 'Brands scaled' },
+                  { n: '3.8×', label: 'Avg. ROAS' },
+                  { n: '97%', label: 'On-time delivery' },
+                ].map((s, i) => (
+                  <div key={i} className={`flex items-center gap-3 ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    {i > 0 && <span className="w-px h-6 bg-white/[0.08]" aria-hidden="true" />}
+                    <span className="font-display font-light text-2xl text-white/70">{s.n}</span>
+                    <span className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/[0.28]">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right column — side stats panel (desktop only) */}
+            <div className="hidden lg:flex lg:col-span-4 flex-col gap-6 pb-4">
+              {[
+                { n: '40+', label: 'Brands scaled', sub: 'across 12 industries' },
+                { n: '3.8×', label: 'Avg. ROAS', sub: 'paid media clients' },
+                { n: '97%', label: 'On-time delivery', sub: 'last 3 years' },
+              ].map((s, i) => (
+                <div key={i} className="flex items-start gap-4 py-4 border-t border-white/[0.07]">
+                  <span className="w-5 h-px mt-3 shrink-0" style={{ backgroundColor: 'rgba(255,59,59,0.5)' }} />
+                  <div>
+                    <span className="font-display font-light block leading-none mb-1" style={{ fontSize: 'clamp(1.8rem,2.5vw,2.4rem)', color: '#FF3B3B' }}>{s.n}</span>
+                    <span className="text-[9px] font-bold tracking-[0.38em] uppercase block mb-0.5 text-white/55">{s.label}</span>
+                    <span className="text-[9px] font-light tracking-wide text-white/25">{s.sub}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
 
@@ -827,16 +863,22 @@ function Home({ themeMode }: HomeProps) {
           ${isArabic ? 'right-8 md:right-14' : 'left-8 md:left-14'}
           flex items-center gap-3`}>
           <div className="relative w-px h-10 overflow-hidden bg-white/10">
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/50 animate-scroll-pulse" />
+            <div className="absolute top-0 left-0 w-full h-1/2 animate-scroll-pulse bg-white/50" />
           </div>
           <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/25">
             {copy.home.scrollLabel}
           </span>
         </div>
+
+        {/* Page counter — right side, desktop only */}
+        <div className="absolute bottom-14 right-8 md:right-14 z-20 hidden md:flex items-center gap-3">
+          <span className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/18">01 / 06</span>
+          <div className="w-8 h-px bg-white/15" />
+        </div>
       </section>
 
       {/* ══════════════════════════ TICKER ══════════════════════════ */}
-      <TickerMarquee />
+      <TickerMarquee isDark={isDark} />
 
       {/* ══════════════════════════ TRUST SIGNALS ══════════════════════════ */}
       <TrustSignals isArabic={isArabic} P={P} dir={dir} copy={copy} />
@@ -855,14 +897,14 @@ function Home({ themeMode }: HomeProps) {
                 </TextReveal>
                 <SplitText
                   text={`${copy.home.servicesTitleLine1} ${copy.home.servicesTitleLine2}`}
-                  className="text-3xl md:text-5xl font-display font-light leading-[1.08] text-white/90"
+                  className={`text-3xl md:text-5xl font-display font-light leading-[1.08] ${isDark ? 'text-white/90' : 'text-black/90'}`}
                   type="words"
                 />
               </div>
               <TextReveal delay={0.1}>
                 <a href="/services"
                   className={`text-[10px] font-bold tracking-[0.32em] uppercase
-                    flex items-center gap-2 shrink-0 transition-opacity hover:opacity-70 text-white/40
+                    flex items-center gap-2 shrink-0 transition-opacity hover:opacity-70 ${isDark ? 'text-white/40' : 'text-black/40'}
                     ${isArabic ? 'flex-row-reverse' : ''}`}>
                   {copy.home.servicesCta}
                   <svg width="12" height="6" viewBox="0 0 12 6" fill="none" aria-hidden="true"
@@ -881,7 +923,7 @@ function Home({ themeMode }: HomeProps) {
                   key={i}
                   className={`service-card group relative flex flex-col gap-6 p-10 rounded-3xl border min-h-[280px]
                     overflow-hidden transition-all duration-300 cursor-default
-                    ${P.cardBg} ${P.border} hover:bg-white/[0.07]
+                    ${P.cardBg} ${P.border} ${isDark ? 'hover:bg-white/[0.07]' : 'hover:bg-black/[0.05]'}
                     hover:shadow-[0_0_0_1px_rgba(255,59,59,0.3),0_8px_32px_rgba(255,59,59,0.08)]`}
                 >
                   {/* Red top hairline — reveals on hover */}
@@ -899,14 +941,14 @@ function Home({ themeMode }: HomeProps) {
                   </div>
 
                   {/* Index */}
-                  <span className="text-[9px] font-mono tracking-[0.4em] uppercase text-white/20">
+                  <span className={`text-[9px] font-mono tracking-[0.4em] uppercase ${isDark ? 'text-white/20' : 'text-black/25'}`}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
 
-                  <h3 className="text-xl md:text-2xl font-display font-light leading-tight text-white/90">
+                  <h3 className={`text-xl md:text-2xl font-display font-light leading-tight ${isDark ? 'text-white/90' : 'text-black/90'}`}>
                     {track.title}
                   </h3>
-                  <p className="text-sm font-light leading-[1.72] flex-1 text-white/40">
+                  <p className={`text-sm font-light leading-[1.72] flex-1 ${isDark ? 'text-white/40' : 'text-black/45'}`}>
                     {track.copy}
                   </p>
                   {track.result && (
@@ -923,7 +965,7 @@ function Home({ themeMode }: HomeProps) {
       </LazySection>
 
       {/* ══════════════════════════ HOW WE WORK ══════════════════════════ */}
-      <HowWeWork isArabic={isArabic} P={P} dir={dir} copy={copy} />
+      <HowWeWork isArabic={isArabic} P={P} dir={dir} copy={copy} isDark={isDark} />
 
       {/* ══════════════════════════ PROJECTS ══════════════════════════ */}
       <LazySection id="projects">
@@ -947,7 +989,7 @@ function Home({ themeMode }: HomeProps) {
                 </TextReveal>
                 <SplitText
                   text={copy.home.projectsSectionTitle}
-                  className="text-3xl md:text-5xl font-display font-light leading-[1.08] text-white/90"
+                  className={`text-3xl md:text-5xl font-display font-light leading-[1.08] ${isDark ? 'text-white/90' : 'text-black/90'}`}
                   type="words"
                 />
                 <TextReveal delay={0.12}>
@@ -963,7 +1005,7 @@ function Home({ themeMode }: HomeProps) {
                   href="/projects"
                   className={`hidden md:inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border transition-all duration-300 shrink-0
                     text-[9px] font-bold tracking-[0.28em] uppercase
-                    border-white/[0.1] text-white/40 hover:border-[#FF3B3B]/40 hover:text-white/80
+                    ${isDark ? 'border-white/[0.1] text-white/40 hover:text-white/80' : 'border-black/[0.1] text-black/40 hover:text-black/80'} hover:border-[#FF3B3B]/40
                     ${isArabic ? 'flex-row-reverse' : ''}`}
                 >
                   {copy.home.viewAllLabel}
@@ -997,7 +1039,7 @@ function Home({ themeMode }: HomeProps) {
                 href="/projects"
                 className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full border
                   text-[9px] font-bold tracking-[0.28em] uppercase transition-all duration-300
-                  border-white/[0.1] text-white/40 hover:border-[#FF3B3B]/40 hover:text-white/80
+                  ${isDark ? 'border-white/[0.1] text-white/40 hover:text-white/80' : 'border-black/[0.1] text-black/40 hover:text-black/80'} hover:border-[#FF3B3B]/40
                   ${isArabic ? 'flex-row-reverse' : ''}`}
               >
                 {copy.home.viewAllLabel}
@@ -1014,7 +1056,7 @@ function Home({ themeMode }: HomeProps) {
 
       {/* ══════════════════════════ STATS ══════════════════════════ */}
       <LazySection id="stats">
-        <div className="relative bg-[#060606] overflow-hidden">
+        <div className={`relative ${isDark ? 'bg-[#060606]' : 'bg-[#E4DFD5]'} overflow-hidden`}>
           {/* Ambient red glow — center */}
           <div
             aria-hidden="true"
@@ -1035,15 +1077,15 @@ function Home({ themeMode }: HomeProps) {
             {/* Eyebrow row */}
             <div className={`flex items-center gap-5 mb-20 md:mb-28 ${isArabic ? 'flex-row-reverse' : ''}`}>
               <span className="w-5 h-px bg-[#FF3B3B]/40 shrink-0" aria-hidden="true" />
-              <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/[0.18] shrink-0">
+              <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/[0.18]' : 'text-black/[0.25]'} shrink-0`}>
                 By the Numbers
               </span>
-              <span className="flex-1 h-px bg-white/[0.05]" aria-hidden="true" />
+              <span className={`flex-1 h-px ${isDark ? 'bg-white/[0.05]' : 'bg-black/[0.05]'}`} aria-hidden="true" />
             </div>
 
             {/* Counters — vertical dividers on desktop */}
             <div className={`grid grid-cols-1 md:grid-cols-3
-              divide-y md:divide-y-0 md:divide-x divide-white/[0.05]
+              ${isDark ? 'divide-y md:divide-y-0 md:divide-x divide-white/[0.05]' : 'divide-y md:divide-y-0 md:divide-x divide-black/[0.05]'}
               ${isArabic ? 'text-right' : ''}`}>
               {copy.home.impactStats.map((stat, i) => (
                 <div
@@ -1054,7 +1096,7 @@ function Home({ themeMode }: HomeProps) {
                     ${i === 2 ? 'pt-14 md:pt-0 md:pl-20' : ''}
                   `}
                 >
-                  <AnimatedCounter value={stat.value} label={stat.label} isDark={true} />
+                  <AnimatedCounter value={stat.value} label={stat.label} isDark={isDark} />
                 </div>
               ))}
             </div>
@@ -1074,7 +1116,7 @@ function Home({ themeMode }: HomeProps) {
               </TextReveal>
               <SplitText
                 text={copy.home.testimonialsSubtitle ?? 'What clients say'}
-                className="text-3xl md:text-5xl font-display font-light leading-[1.08] max-w-xl text-white/90"
+                className={`text-3xl md:text-5xl font-display font-light leading-[1.08] max-w-xl ${isDark ? 'text-white/90' : 'text-black/90'}`}
                 type="words"
               />
             </div>
@@ -1083,8 +1125,8 @@ function Home({ themeMode }: HomeProps) {
               {copy.home.testimonials.slice(0, 2).map((t, i) => (
                 <div
                   key={i}
-                  className="relative flex flex-col p-10 md:p-12 rounded-3xl border overflow-hidden
-                    bg-gradient-to-b from-white/[0.035] to-transparent border-white/[0.08]"
+                  className={`relative flex flex-col p-10 md:p-12 rounded-3xl border overflow-hidden
+                    ${isDark ? 'bg-gradient-to-b from-white/[0.035] to-transparent border-white/[0.08]' : 'bg-gradient-to-b from-black/[0.03] to-transparent border-black/[0.08]'}`}
                 >
                   {/* Red top accent */}
                   <div
@@ -1113,11 +1155,11 @@ function Home({ themeMode }: HomeProps) {
                     ))}
                   </div>
 
-                  <p className="relative z-10 text-xl md:text-2xl font-display font-light leading-[1.52] italic flex-1 text-white/82">
+                  <p className={`relative z-10 text-xl md:text-2xl font-display font-light leading-[1.52] italic flex-1 ${isDark ? 'text-white/82' : 'text-black/82'}`}>
                     &ldquo;{t.quote}&rdquo;
                   </p>
 
-                  <div className={`flex items-center gap-4 mt-10 pt-6 border-t border-white/[0.06]
+                  <div className={`flex items-center gap-4 mt-10 pt-6 border-t ${isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'}
                     ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0
                       bg-gradient-to-br from-[#FF3B3B]/15 to-[#FF3B3B]/5 text-[#FF3B3B]/70 border border-[#FF3B3B]/15">
@@ -1127,7 +1169,7 @@ function Home({ themeMode }: HomeProps) {
                       <div className="text-sm font-medium" style={{ color: GOLD }}>
                         {t.name}
                       </div>
-                      <div className="text-[10px] tracking-[0.18em] uppercase text-white/25">
+                      <div className={`text-[10px] tracking-[0.18em] uppercase ${isDark ? 'text-white/25' : 'text-black/30'}`}>
                         {t.role}
                       </div>
                     </div>
@@ -1140,15 +1182,15 @@ function Home({ themeMode }: HomeProps) {
       </LazySection>
 
       {/* ══════════════════════════ WHY LIGHTLAB ══════════════════════════ */}
-      <WhyLightlab isArabic={isArabic} P={P} dir={dir} copy={copy} />
+      <WhyLightlab isArabic={isArabic} P={P} dir={dir} copy={copy} isDark={isDark} />
 
       {/* ══════════════════════════ CONTACT CTA ══════════════════════════ */}
       <LazySection id="contact" className="scroll-mt-24">
         {/* Full-bleed dark stage */}
-        <div className="relative bg-[#060606] overflow-hidden">
+        <div className={`relative ${isDark ? 'bg-[#060606]' : 'bg-[#E4DFD5]'} overflow-hidden`}>
 
           {/* Top divider */}
-          <div className="absolute inset-x-0 top-0 h-px bg-white/[0.07]" aria-hidden="true" />
+          <div className={`absolute inset-x-0 top-0 h-px ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
 
           {/* Dot-grid texture */}
           <div
@@ -1187,7 +1229,7 @@ function Home({ themeMode }: HomeProps) {
                 <TextReveal>
                   <div className={`flex items-center gap-3 mb-10 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/30">
+                    <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/30' : 'text-black/35'}`}>
                       {copy.home.ctaLabel}
                     </span>
                   </div>
@@ -1195,14 +1237,14 @@ function Home({ themeMode }: HomeProps) {
 
                 <SplitText
                   text={copy.home.ctaTitle}
-                  className={`text-[clamp(3.8rem,8vw,8.5rem)] font-display font-light leading-[0.86] text-white/92 mb-10
+                  className={`text-[clamp(3.8rem,8vw,8.5rem)] font-display font-light leading-[0.86] ${isDark ? 'text-white/92' : 'text-black/92'} mb-10
                     ${isArabic ? 'text-right' : ''}`}
                   type="words"
                   delay={0.06}
                 />
 
                 <TextReveal delay={0.12}>
-                  <p className="text-base font-light leading-[1.76] mb-10 max-w-sm text-white/38">
+                  <p className={`text-base font-light leading-[1.76] mb-10 max-w-sm ${isDark ? 'text-white/38' : 'text-black/45'}`}>
                     {copy.home.ctaCopy}
                   </p>
                 </TextReveal>
@@ -1210,12 +1252,12 @@ function Home({ themeMode }: HomeProps) {
                 {/* Availability badge */}
                 <TextReveal delay={0.18}>
                   <div className={`inline-flex items-center gap-3 mb-12 px-4 py-2 rounded-full
-                    border border-white/[0.07] bg-white/[0.02] ${isArabic ? 'flex-row-reverse' : ''}`}>
+                    border ${isDark ? 'border-white/[0.07] bg-white/[0.02]' : 'border-black/[0.07] bg-black/[0.02]'} ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span className="relative flex h-2 w-2 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                     </span>
-                    <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/28">
+                    <span className={`text-[9px] font-bold tracking-[0.3em] uppercase ${isDark ? 'text-white/28' : 'text-black/35'}`}>
                       {copy.home.ctaMeta}: {copy.home.ctaMetaValue}
                     </span>
                   </div>
@@ -1249,9 +1291,8 @@ function Home({ themeMode }: HomeProps) {
                       isDark
                       className={`inline-flex items-center gap-3 px-10 py-5 rounded-full
                         text-[11px] font-bold tracking-[0.24em] uppercase
-                        border-white/[0.10] text-white/40
+                        ${isDark ? 'border-white/[0.10] text-white/40 hover:text-white hover:border-white/20 hover:bg-white/[0.04]' : 'border-black/[0.10] text-black/40 hover:text-black hover:border-black/20 hover:bg-black/[0.04]'}
                         transition-all duration-300 ease-out
-                        hover:text-white hover:border-white/20 hover:bg-white/[0.04]
                         ${isArabic ? 'flex-row-reverse' : ''}`}
                     >
                       {copy.home.ctaButton2}
@@ -1262,8 +1303,8 @@ function Home({ themeMode }: HomeProps) {
 
               {/* Right: "What happens next" timeline card */}
               <TextReveal delay={0.1}>
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025]
-                  overflow-hidden relative"
+                <div className={`rounded-2xl border ${isDark ? 'border-white/[0.07] bg-white/[0.025]' : 'border-black/[0.07] bg-black/[0.025]'}
+                  overflow-hidden relative`}
                   style={{ borderTop: '1px solid #FF3B3B' }}>
 
                   {/* Red top glow bleed */}
@@ -1276,7 +1317,7 @@ function Home({ themeMode }: HomeProps) {
                   />
 
                   <div className="relative p-7 md:p-8">
-                    <p className="text-[9px] font-bold tracking-[0.48em] uppercase mb-8 text-white/22">
+                    <p className={`text-[9px] font-bold tracking-[0.48em] uppercase mb-8 ${isDark ? 'text-white/22' : 'text-black/28'}`}>
                       {(h.ctaStepsHeadline as string) ?? 'What happens next'}
                     </p>
 
@@ -1285,7 +1326,7 @@ function Home({ themeMode }: HomeProps) {
                       {/* Connecting line */}
                       <div
                         aria-hidden="true"
-                        className={`absolute top-3 bottom-3 w-px bg-white/[0.06]
+                        className={`absolute top-3 bottom-3 w-px ${isDark ? 'bg-white/[0.06]' : 'bg-black/[0.06]'}
                           ${isArabic ? 'right-3' : 'left-3'}`}
                       />
 
@@ -1296,18 +1337,18 @@ function Home({ themeMode }: HomeProps) {
                             className={`flex gap-5 ${isArabic ? 'flex-row-reverse text-right' : ''}`}
                           >
                             {/* Numbered ring circle */}
-                            <div className="shrink-0 w-6 h-6 rounded-full border border-[#FF3B3B]/35
-                              flex items-center justify-center mt-0.5 bg-[#060606]">
+                            <div className={`shrink-0 w-6 h-6 rounded-full border border-[#FF3B3B]/35
+                              flex items-center justify-center mt-0.5 ${isDark ? 'bg-[#060606]' : 'bg-[#E4DFD5]'}`}>
                               <span className="text-[8px] font-bold tabular-nums text-[#FF3B3B]/55">
                                 {step.num}
                               </span>
                             </div>
 
                             <div className="pb-0">
-                              <p className="text-sm font-medium mb-1 text-white/72">
+                              <p className={`text-sm font-medium mb-1 ${isDark ? 'text-white/72' : 'text-black/72'}`}>
                                 {step.title}
                               </p>
-                              <p className="text-[12px] font-light leading-[1.65] text-white/28">
+                              <p className={`text-[12px] font-light leading-[1.65] ${isDark ? 'text-white/28' : 'text-black/35'}`}>
                                 {step.copy}
                               </p>
                             </div>
@@ -1317,10 +1358,10 @@ function Home({ themeMode }: HomeProps) {
                     </div>
 
                     {/* Bottom note */}
-                    <div className={`mt-8 pt-6 border-t border-white/[0.05] flex items-center gap-3
+                    <div className={`mt-8 pt-6 border-t ${isDark ? 'border-white/[0.05]' : 'border-black/[0.05]'} flex items-center gap-3
                       ${isArabic ? 'flex-row-reverse' : ''}`}>
                       <span className="w-4 h-px bg-[#FF3B3B]/35" aria-hidden="true" />
-                      <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/18">
+                      <span className={`text-[9px] font-bold tracking-[0.3em] uppercase ${isDark ? 'text-white/18' : 'text-black/25'}`}>
                         hello@lightlab.dev
                       </span>
                     </div>
@@ -1332,16 +1373,16 @@ function Home({ themeMode }: HomeProps) {
           </div>
 
           {/* Social proof row */}
-          <div className="relative border-t border-white/[0.05]">
+          <div className={`relative border-t ${isDark ? 'border-white/[0.05]' : 'border-black/[0.05]'}`}>
             <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-5 flex justify-center">
-              <p className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/18 text-center">
+              <p className={`text-[9px] font-bold tracking-[0.38em] uppercase ${isDark ? 'text-white/18' : 'text-black/25'} text-center`}>
                 Trusted by 40+ brands across SaaS, E-Commerce &amp; HealthTech
               </p>
             </div>
           </div>
 
           {/* Bottom divider */}
-          <div className="absolute inset-x-0 bottom-0 h-px bg-white/[0.07]" aria-hidden="true" />
+          <div className={`absolute inset-x-0 bottom-0 h-px ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
         </div>
       </LazySection>
 

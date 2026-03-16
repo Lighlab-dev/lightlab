@@ -3,13 +3,13 @@ import { Outlet, Link, NavLink, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { FiArrowUp } from "react-icons/fi";
+import { FiArrowUp, FiMenu, FiX } from "react-icons/fi";
 import { useLanguage } from "../i18n";
+import { useTheme } from "../theme";
 
 gsap.registerPlugin(ScrollTrigger);
 
 function Layout() {
-  const logoSrc = "/lightlab-lightlogo.svg";
   const mainRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const navLogoRef = useRef<HTMLImageElement>(null);
@@ -20,7 +20,10 @@ function Layout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const location = useLocation();
   const { language, setLanguage, copy } = useLanguage();
+  const { themeMode, toggleTheme } = useTheme();
+  const logoSrc = themeMode === 'dark' ? "/lightlab-lightlogo.svg" : "/logo.svg";
   const isRtl = language === "ar";
+  const isDark = themeMode === "dark";
   const [isHeroSection, setIsHeroSection] = useState(location.pathname === "/");
 
   const handleLanguageChange = (value: string) => {
@@ -29,15 +32,7 @@ function Layout() {
     }
   };
 
-  // Desktop nav link — active underline uses accent red
-  const desktopNavClass = ({ isActive }: { isActive: boolean }) =>
-    `relative after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-full after:origin-left after:transition-transform transition-all duration-200 ${
-      isActive
-        ? "after:scale-x-100 opacity-100 after:bg-[#FF3B3B]"
-        : "after:scale-x-0 opacity-55 hover:opacity-100 hover:after:scale-x-100 hover:after:bg-[#FF3B3B]"
-    }`;
-
-  useLayoutEffect(() => {
+useLayoutEffect(() => {
     const lenis = new Lenis({
       duration: 1.25,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -184,7 +179,7 @@ function Layout() {
       {showIntro && (
         <div
           ref={introOverlayRef}
-          className="fixed inset-0 z-200 bg-[#090909] flex items-center justify-center"
+          className={`fixed inset-0 z-200 flex items-center justify-center ${isDark ? 'bg-[#090909]' : 'bg-[#EDE8DF]'}`}
         >
           <img
             ref={introLogoRef}
@@ -199,43 +194,117 @@ function Layout() {
       <nav
         ref={navRef}
         id="main-nav"
-        className={`fixed top-0 w-full z-100 transition-all duration-500 text-white ${isHeroSection ? "nav-over-hero" : ""}`}
+        className={`fixed top-0 w-full z-100 transition-all duration-500 ${isDark || isHeroSection ? 'text-white' : 'text-[#0F0F0F]'} ${isHeroSection ? "nav-over-hero" : ""}`}
       >
-        <div className="max-w-360 mx-auto px-6 md:px-16 py-4 sm:py-5 flex justify-between items-center">
-          <Link to="/" className="flex items-center group">
+        {/* Hero top scrim — lifts nav text off video */}
+        {isHeroSection && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, transparent 100%)" }}
+            aria-hidden="true"
+          />
+        )}
+
+        <div className="relative max-w-360 mx-auto px-6 md:px-14 lg:px-20 flex justify-between items-center h-[68px] sm:h-[76px]">
+
+          {/* Logo */}
+          <Link to="/" className="flex items-center group shrink-0 z-10" aria-label="Lightlab — home">
             <img
               ref={navLogoRef}
               src={isHeroSection ? "/lightlab-lightlogo.svg" : logoSrc}
               alt="Lightlab"
-              className="h-14 sm:h-16 w-auto transition-all duration-300 group-hover:opacity-70"
+              className="h-[46px] sm:h-[52px] w-auto transition-all duration-300 ease-in-out group-hover:opacity-60"
             />
           </Link>
 
-          <div className="hidden lg:flex items-center gap-10 text-[10px] uppercase tracking-[0.2em] font-bold">
-            <NavLink to="/services" className={desktopNavClass}>{copy.nav.services}</NavLink>
-            <NavLink to="/projects" className={desktopNavClass}>{copy.nav.projects}</NavLink>
-            <NavLink to="/method" className={desktopNavClass}>{copy.nav.method}</NavLink>
-            <NavLink to="/about" className={desktopNavClass}>{copy.nav.about}</NavLink>
-            <NavLink to="/contact" className={desktopNavClass}>{copy.nav.contact}</NavLink>
+          {/* Desktop nav links — floating centered pill */}
+          <div className={`hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-0.5
+            px-1.5 py-1.5 rounded-full backdrop-blur-md
+            ${isDark || isHeroSection
+              ? 'border border-white/[0.10] bg-white/[0.05]'
+              : 'border border-black/[0.08] bg-black/[0.03]'
+            }`}>
+            {[
+              { to: "/services", label: copy.nav.services },
+              { to: "/projects", label: copy.nav.projects },
+              { to: "/method",   label: copy.nav.method   },
+              { to: "/about",    label: copy.nav.about    },
+              { to: "/contact",  label: copy.nav.contact  },
+            ].map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `px-4 py-2 rounded-full text-[9.5px] font-bold uppercase tracking-[0.18em] transition-all duration-200 ${
+                    isActive
+                      ? 'bg-[#FF3B3B] text-white shadow-[0_2px_14px_rgba(255,59,59,0.4)]'
+                      : isDark || isHeroSection
+                        ? 'text-white/50 hover:text-white hover:bg-white/[0.08]'
+                        : 'text-black/45 hover:text-black hover:bg-black/[0.05]'
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-5">
+          {/* Right controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2 z-10">
+
+            {/* Theme toggle */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 focus-visible:outline-none
+                ${isDark || isHeroSection
+                  ? 'text-white/50 hover:text-white hover:bg-white/[0.08] focus-visible:ring-1 focus-visible:ring-white/30'
+                  : 'text-black/40 hover:text-black hover:bg-black/[0.06] focus-visible:ring-1 focus-visible:ring-black/20'
+                }`}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDark ? (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                </svg>
+              ) : (
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+              )}
+            </button>
+
+            {/* Divider — desktop only */}
+            <span className={`hidden lg:block w-px h-4 ${isDark || isHeroSection ? 'bg-white/15' : 'bg-black/12'}`} aria-hidden="true" />
+
             {/* CTA button */}
             <Link
               to="/contact"
-              className="hidden lg:block px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all duration-200 bg-[#FF3B3B] text-white border border-[#FF3B3B] hover:bg-[#E02E2E] hover:border-[#E02E2E]"
+              className="hidden lg:inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[9.5px] font-bold uppercase tracking-[0.18em]
+                bg-[#FF3B3B] text-white border border-[#FF3B3B]
+                transition-all duration-300 ease-out
+                hover:bg-[#E02E2E] hover:border-[#E02E2E] hover:shadow-[0_4px_24px_rgba(255,59,59,0.4)] hover:gap-3
+                active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF3B3B]/50"
             >
               {copy.nav.cta}
+              <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden="true">
+                <path d="M1 8L8 1M8 1H2.5M8 1V6.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </Link>
-            {/* Mobile menu toggle */}
+
+            {/* Mobile menu toggle — icon */}
             <button
               type="button"
-              className="lg:hidden inline-flex items-center px-4 justify-center py-2 rounded-full border border-white/20 text-white text-[10px] uppercase tracking-widest transition-opacity hover:opacity-70"
+              className={`lg:hidden inline-flex items-center justify-center w-9 h-9 rounded-full transition-all duration-200 focus-visible:outline-none
+                ${isDark || isHeroSection
+                  ? 'border border-white/20 text-white/70 hover:text-white hover:border-white/40 hover:bg-white/[0.07]'
+                  : 'border border-black/[0.15] text-black/50 hover:text-black hover:border-black/25 hover:bg-black/[0.04]'
+                }`}
               aria-label={menuOpen ? copy.nav.menuClose : copy.nav.menuOpen}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
             >
-              {menuOpen ? copy.nav.menuClose : copy.nav.menuOpen}
+              {menuOpen ? <FiX size={15} /> : <FiMenu size={15} />}
             </button>
           </div>
         </div>
@@ -283,12 +352,11 @@ function Layout() {
       {/* Bottom-right controls: language + scroll-to-top */}
       <div className="fixed bottom-6 right-6 z-110 flex flex-col items-end gap-2" dir="ltr">
         {/* Scroll to top */}
-        {/* Scroll to top */}
         <button
           type="button"
           className={`inline-flex items-center justify-center h-9 w-9 rounded-full
-            bg-white/[0.04] border border-white/[0.08] text-white/50
             transition-all duration-300 hover:border-[#FF3B3B]/50 hover:text-[#FF3B3B]
+            ${isDark ? 'bg-white/[0.04] border border-white/[0.08] text-white/50' : 'bg-black/[0.04] border border-black/[0.08] text-black/50'}
             ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}
           aria-label="Back to top"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -298,7 +366,7 @@ function Layout() {
 
         {/* Language selector — segmented pill */}
         <div
-          className="flex items-stretch rounded-full border border-white/[0.08] bg-white/[0.03] overflow-hidden"
+          className={`flex items-stretch rounded-full overflow-hidden ${isDark ? 'border border-white/[0.08] bg-white/[0.03]' : 'border border-black/[0.08] bg-black/[0.03]'}`}
           role="group"
           aria-label="Select language"
         >
@@ -310,7 +378,7 @@ function Layout() {
               className={`px-3.5 py-2 text-[9px] font-bold tracking-[0.2em] uppercase transition-all duration-200
                 ${language === lang
                   ? "bg-[#FF3B3B] text-white"
-                  : "text-white/30 hover:text-white/60"
+                  : isDark ? "text-white/30 hover:text-white/60" : "text-black/30 hover:text-black/60"
                 }`}
             >
               {lang.toUpperCase()}
@@ -324,7 +392,7 @@ function Layout() {
       </main>
 
       {/* Footer */}
-      <footer className="py-24 px-8 md:px-16 lg:px-24 border-t border-white/[0.07] bg-[#080808] text-white">
+      <footer className={`py-24 px-8 md:px-16 lg:px-24 border-t ${isDark ? 'border-white/[0.07] bg-[#080808] text-white' : 'border-black/[0.07] bg-[#E4DFD5] text-[#0F0F0F]'}`}>
         <div className="max-w-360 mx-auto">
           <div className={`grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 ${isRtl ? "text-right" : "text-left"}`}>
             <div className="lg:col-span-5">
@@ -370,7 +438,7 @@ function Layout() {
               </Link>
             </div>
           </div>
-          <div className={`mt-20 pt-8 border-t border-white/[0.06]
+          <div className={`mt-20 pt-8 border-t ${isDark ? 'border-white/[0.06]' : 'border-black/[0.06]'}
             flex justify-between items-center text-[10px] uppercase tracking-widest opacity-20
             ${isRtl ? "flex-row-reverse" : ""}`}>
             <span>

@@ -61,17 +61,18 @@ type Track = {
 
 // ─── OutcomeCard ──────────────────────────────────────────────────────────────
 const OutcomeCard = memo(({
-  metric, label, deliverables, index, isArabic
+  metric, label, deliverables, index, isArabic, isDark
 }: {
   metric: string
   label: string
   deliverables: readonly string[]
   index: number
   isArabic: boolean
+  isDark: boolean
 }) => (
-  <div className={`relative rounded-3xl border border-white/[0.07]
-    bg-gradient-to-b from-white/[0.03] to-transparent
-    p-10 md:p-14 overflow-hidden group ${isArabic ? 'text-right' : ''}`}>
+  <div className={`relative rounded-3xl border p-10 md:p-14 overflow-hidden group
+    ${isDark ? 'border-white/[0.07] bg-gradient-to-b from-white/[0.03] to-transparent' : 'border-black/[0.07] bg-gradient-to-b from-black/[0.02] to-transparent'}
+    ${isArabic ? 'text-right' : ''}`}>
 
     {/* Top red hairline */}
     <div
@@ -108,12 +109,12 @@ const OutcomeCard = memo(({
       />
 
       {/* Metric label */}
-      <p className="text-[10px] font-medium tracking-[0.22em] uppercase text-white/35 mb-8 max-w-[18ch]">
+      <p className={`text-[10px] font-medium tracking-[0.22em] uppercase mb-8 max-w-[18ch] ${isDark ? 'text-white/35' : 'text-black/40'}`}>
         {label}
       </p>
 
       {/* Divider */}
-      <div className="border-t border-white/[0.07] mb-8" />
+      <div className={`border-t mb-8 ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`} />
 
       {/* Numbered deliverables */}
       <ol className={`space-y-4 mb-10 ${isArabic ? 'text-right' : ''}`}>
@@ -127,9 +128,9 @@ const OutcomeCard = memo(({
             </span>
             <span
               aria-hidden="true"
-              className="shrink-0 w-px h-3 bg-white/[0.12]"
+              className={`shrink-0 w-px h-3 ${isDark ? 'bg-white/[0.12]' : 'bg-black/[0.12]'}`}
             />
-            <span className="text-sm font-light text-white/55 group-hover/item:text-white/80 transition-colors duration-300">
+            <span className={`text-sm font-light transition-colors duration-300 ${isDark ? 'text-white/55 group-hover/item:text-white/80' : 'text-black/55 group-hover/item:text-black/80'}`}>
               {item}
             </span>
           </li>
@@ -140,7 +141,7 @@ const OutcomeCard = memo(({
       <a
         href="/contact"
         className={`inline-flex items-center gap-2.5 text-[10px] font-bold tracking-[0.22em] uppercase
-          text-white/35 hover:text-white/75 transition-colors duration-300
+          transition-colors duration-300 ${isDark ? 'text-white/35 hover:text-white/75' : 'text-black/40 hover:text-black/75'}
           ${isArabic ? 'flex-row-reverse' : ''}`}
       >
         Start this track
@@ -157,7 +158,7 @@ const OutcomeCard = memo(({
     {/* Index ghost watermark */}
     <span
       aria-hidden="true"
-      className="absolute bottom-4 right-6 font-display font-bold leading-none select-none pointer-events-none text-white/[0.03]"
+      className={`absolute bottom-4 right-6 font-display font-bold leading-none select-none pointer-events-none ${isDark ? 'text-white/[0.03]' : 'text-black/[0.025]'}`}
       style={{ fontSize: 'clamp(3rem,6vw,5rem)' }}
     >
       {`0${index + 1}`}
@@ -167,17 +168,18 @@ const OutcomeCard = memo(({
 OutcomeCard.displayName = 'OutcomeCard'
 
 // ─── TrackCard ────────────────────────────────────────────────────────────────
-const TrackCard = memo(({ track, index, isArabic }: {
+const TrackCard = memo(({ track, index, isArabic, isDark }: {
   track: Track
   index: number
   isArabic: boolean
+  isDark: boolean
 }) => {
   const isEven = index % 2 === 0
   const outcome = TRACK_OUTCOMES[index]
 
   return (
     <LazySection>
-      <div className="border-t border-white/[0.07]">
+      <div className={`border-t ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
         <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
 
@@ -187,7 +189,7 @@ const TrackCard = memo(({ track, index, isArabic }: {
               {/* Giant ghost step number */}
               <span
                 aria-hidden="true"
-                className="absolute select-none pointer-events-none font-display font-bold leading-none text-white/[0.022]"
+                className={`absolute select-none pointer-events-none font-display font-bold leading-none ${isDark ? 'text-white/[0.022]' : 'text-black/[0.018]'}`}
                 style={{
                   fontSize: 'clamp(9rem,20vw,18rem)',
                   top: '-0.15em',
@@ -205,7 +207,7 @@ const TrackCard = memo(({ track, index, isArabic }: {
                 <TextReveal>
                   <div className={`flex items-center gap-3 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                    <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/30'}`}>
                       Track 0{index + 1}
                     </span>
                   </div>
@@ -214,13 +216,13 @@ const TrackCard = memo(({ track, index, isArabic }: {
                 {/* Title */}
                 <SplitText
                   text={track.title}
-                  className="text-[clamp(2.8rem,5.5vw,5rem)] font-display font-light leading-[0.96] text-white/92 tracking-[-0.02em] mb-6"
+                  className={`text-[clamp(2.8rem,5.5vw,5rem)] font-display font-light leading-[0.96] tracking-[-0.02em] mb-6 ${isDark ? 'text-white/92' : 'text-black/92'}`}
                   type="words"
                 />
 
                 {/* Description */}
                 <TextReveal delay={0.08}>
-                  <p className="text-base md:text-lg font-light leading-[1.82] text-white/45 mb-10 max-w-[38ch]">
+                  <p className={`text-base md:text-lg font-light leading-[1.82] mb-10 max-w-[38ch] ${isDark ? 'text-white/45' : 'text-black/55'}`}>
                     {track.description}
                   </p>
                 </TextReveal>
@@ -228,18 +230,19 @@ const TrackCard = memo(({ track, index, isArabic }: {
                 {/* Deliverables */}
                 <TextReveal delay={0.12}>
                   <div className="mb-8">
-                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/20 block mb-4">
+                    <span className={`text-[9px] font-bold tracking-[0.52em] uppercase block mb-4 ${isDark ? 'text-white/20' : 'text-black/25'}`}>
                       Deliverables
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {track.deliverables.map((item) => (
                         <span
                           key={item}
-                          className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                            border border-white/[0.08] bg-white/[0.03]
-                            text-[10px] font-medium tracking-[0.14em] uppercase text-white/48
-                            hover:border-[#FF3B3B]/25 hover:text-white/70 hover:bg-white/[0.05]
-                            transition-all duration-300 cursor-default"
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full
+                            text-[10px] font-medium tracking-[0.14em] uppercase
+                            hover:border-[#FF3B3B]/25 transition-all duration-300 cursor-default
+                            ${isDark
+                              ? 'border border-white/[0.08] bg-white/[0.03] text-white/48 hover:text-white/70 hover:bg-white/[0.05]'
+                              : 'border border-black/[0.08] bg-black/[0.03] text-black/50 hover:text-black/75 hover:bg-black/[0.05]'}`}
                         >
                           <span className="w-1 h-1 rounded-full bg-[#FF3B3B]/55 shrink-0" aria-hidden="true" />
                           {item}
@@ -252,16 +255,18 @@ const TrackCard = memo(({ track, index, isArabic }: {
                 {/* Tech stack */}
                 <TextReveal delay={0.16}>
                   <div>
-                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/20 block mb-4">
+                    <span className={`text-[9px] font-bold tracking-[0.52em] uppercase block mb-4 ${isDark ? 'text-white/20' : 'text-black/25'}`}>
                       Tech Stack
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {track.tech.map((item) => (
                         <span
                           key={item}
-                          className="px-4 py-1.5 rounded-full bg-white/[0.05] border border-white/[0.08]
-                            text-[9px] font-bold tracking-[0.22em] uppercase text-white/40
-                            hover:bg-white hover:text-black transition-all duration-300 cursor-default"
+                          className={`px-4 py-1.5 rounded-full text-[9px] font-bold tracking-[0.22em] uppercase
+                            transition-all duration-300 cursor-default
+                            ${isDark
+                              ? 'bg-white/[0.05] border border-white/[0.08] text-white/40 hover:bg-white hover:text-black'
+                              : 'bg-black/[0.05] border border-black/[0.08] text-black/45 hover:bg-black hover:text-white'}`}
                         >
                           {item}
                         </span>
@@ -281,6 +286,7 @@ const TrackCard = memo(({ track, index, isArabic }: {
                 deliverables={[...track.deliverables]}
                 index={index}
                 isArabic={isArabic}
+                isDark={isDark}
               />
             </div>
 
@@ -295,30 +301,31 @@ TrackCard.displayName = 'TrackCard'
 // ─── ProcessSection ───────────────────────────────────────────────────────────
 type WorkflowStep = { readonly label: string; readonly title: string; readonly copy: string }
 
-const ProcessSection = memo(({ steps, eyebrow, titleLine1, titleLine2, isArabic }: {
+const ProcessSection = memo(({ steps, eyebrow, titleLine1, titleLine2, isArabic, isDark }: {
   steps: readonly WorkflowStep[]
   eyebrow: string
   titleLine1: string
   titleLine2: string
   isArabic: boolean
+  isDark: boolean
 }) => (
   <LazySection>
-    <div className="border-t border-white/[0.07] bg-[#060606]">
+    <div className={`border-t ${isDark ? 'border-white/[0.07] bg-[#060606]' : 'border-black/[0.07] bg-[#E4DFD5]'}`}>
       <div className={`max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32 ${isArabic ? 'text-right' : ''}`}>
 
         {/* Eyebrow row */}
         <div className={`flex items-center gap-4 mb-14 ${isArabic ? 'flex-row-reverse' : ''}`}>
           <span className="w-5 h-px bg-[#FF3B3B]/40 shrink-0" aria-hidden="true" />
-          <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+          <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/30'}`}>
             {eyebrow}
           </span>
-          <span className="flex-1 h-px bg-white/[0.05]" aria-hidden="true" />
+          <span className={`flex-1 h-px ${isDark ? 'bg-white/[0.05]' : 'bg-black/[0.05]'}`} aria-hidden="true" />
         </div>
 
         {/* Headline */}
         <SplitText
           text={`${titleLine1} ${titleLine2}`}
-          className="text-[clamp(2.2rem,4.5vw,5rem)] font-display font-light italic leading-[0.96] text-white/38 tracking-[-0.02em] mb-20"
+          className={`text-[clamp(2.2rem,4.5vw,5rem)] font-display font-light italic leading-[0.96] tracking-[-0.02em] mb-20 ${isDark ? 'text-white/38' : 'text-black/42'}`}
           type="words"
         />
 
@@ -328,7 +335,7 @@ const ProcessSection = memo(({ steps, eyebrow, titleLine1, titleLine2, isArabic 
             <div
               key={i}
               className={`relative group py-10
-                ${i < steps.length - 1 ? 'pr-6 md:pr-10 border-r border-white/[0.07]' : ''}
+                ${i < steps.length - 1 ? `pr-6 md:pr-10 border-r ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}` : ''}
                 ${i > 0 ? 'pl-6 md:pl-10' : ''}`}
             >
               {/* Red step number */}
@@ -340,12 +347,12 @@ const ProcessSection = memo(({ steps, eyebrow, titleLine1, titleLine2, isArabic 
               </span>
 
               {/* Step title */}
-              <span className="block font-display font-light text-xl text-white/75 group-hover:text-white transition-colors duration-300 mb-3">
+              <span className={`block font-display font-light text-xl transition-colors duration-300 mb-3 ${isDark ? 'text-white/75 group-hover:text-white' : 'text-black/75 group-hover:text-black'}`}>
                 {step.title}
               </span>
 
               {/* Step copy */}
-              <p className="text-sm font-light leading-[1.72] text-white/35 group-hover:text-white/50 transition-colors duration-300">
+              <p className={`text-sm font-light leading-[1.72] transition-colors duration-300 ${isDark ? 'text-white/35 group-hover:text-white/50' : 'text-black/40 group-hover:text-black/60'}`}>
                 {step.copy}
               </p>
 
@@ -370,7 +377,7 @@ type Theme = 'dark' | 'light'
 interface ServicesProps { themeMode?: Theme }
 
 function Services({ themeMode }: ServicesProps) {
-  void themeMode // always dark
+  const isDark = (themeMode ?? 'dark') === 'dark'
   const { copy, language } = useLanguage()
   const heroRef    = useRef<HTMLElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -406,7 +413,7 @@ function Services({ themeMode }: ServicesProps) {
   }, [isArabic])
 
   return (
-    <div ref={wrapperRef} className="bg-[#090909] text-white min-h-screen">
+    <div ref={wrapperRef} className={`${isDark ? 'bg-[#090909] text-white' : 'bg-[#EDE8DF] text-[#0F0F0F]'} min-h-screen`}>
 
       {/* ══════════════════════════ HERO ══════════════════════════ */}
       <section
@@ -419,7 +426,7 @@ function Services({ themeMode }: ServicesProps) {
           className="hero-bg-letter absolute inset-0 flex items-center justify-center pointer-events-none select-none will-change-transform"
         >
           <span
-            className="font-display font-bold leading-none text-white/[0.018]"
+            className={`font-display font-bold leading-none ${isDark ? 'text-white/[0.018]' : 'text-black/[0.015]'}`}
             style={{ fontSize: 'clamp(18rem,55vw,80rem)' }}
           >
             S
@@ -448,7 +455,7 @@ function Services({ themeMode }: ServicesProps) {
         {/* Bottom vignette */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#090909] to-transparent pointer-events-none z-10"
+          className={`absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t ${isDark ? 'from-[#090909]' : 'from-[#EDE8DF]'} to-transparent pointer-events-none z-10`}
         />
 
         {/* Content */}
@@ -456,8 +463,8 @@ function Services({ themeMode }: ServicesProps) {
 
           {/* Tag pill */}
           <div className="hero-tag mb-6">
-            <span className="inline-flex items-center gap-2.5 text-[9px] font-bold tracking-[0.44em] uppercase
-              px-4 py-2 rounded-full border border-white/10 text-white/50 bg-white/[0.04]">
+            <span className={`inline-flex items-center gap-2.5 text-[9px] font-bold tracking-[0.44em] uppercase
+              px-4 py-2 rounded-full border ${isDark ? 'border-white/10 text-white/50 bg-white/[0.04]' : 'border-black/10 text-black/50 bg-black/[0.04]'}`}>
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B] shrink-0" aria-hidden="true" />
               {overview.heroEyebrow}
             </span>
@@ -473,16 +480,16 @@ function Services({ themeMode }: ServicesProps) {
           {/* Headline */}
           <h1 className="font-display font-light leading-[0.88] tracking-[-0.02em]
             text-[clamp(3.5rem,10vw,10rem)] mb-8 max-w-5xl">
-            <span className="hero-line block text-white/92">
+            <span className={`hero-line block ${isDark ? 'text-white/92' : 'text-black/92'}`}>
               {overview.heroTitleLine1}
             </span>
-            <span className="hero-line block italic text-white/38">
+            <span className={`hero-line block italic ${isDark ? 'text-white/38' : 'text-black/38'}`}>
               {overview.heroTitleLine2}
             </span>
           </h1>
 
           {/* Sub-copy */}
-          <p className={`hero-copy text-base md:text-lg font-light leading-[1.82] text-white/48 max-w-[36ch] mb-12`}>
+          <p className={`hero-copy text-base md:text-lg font-light leading-[1.82] ${isDark ? 'text-white/48' : 'text-black/55'} max-w-[36ch] mb-12`}>
             {overview.heroSubtitle}
           </p>
 
@@ -491,10 +498,10 @@ function Services({ themeMode }: ServicesProps) {
             {tracks.map((track) => (
               <span
                 key={track.title}
-                className="hero-chips px-5 py-2 rounded-full border border-white/[0.08] bg-white/[0.03]
-                  text-[10px] font-bold tracking-[0.18em] uppercase text-white/45
-                  hover:border-[#FF3B3B]/25 hover:text-white/65 hover:bg-white/[0.05]
-                  transition-all duration-300 cursor-default"
+                className={`hero-chips px-5 py-2 rounded-full border ${isDark ? 'border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/65 hover:bg-white/[0.05]' : 'border-black/[0.08] bg-black/[0.03] text-black/45 hover:text-black/65 hover:bg-black/[0.05]'}
+                  text-[10px] font-bold tracking-[0.18em] uppercase
+                  hover:border-[#FF3B3B]/25
+                  transition-all duration-300 cursor-default`}
               >
                 {track.title}
               </span>
@@ -505,10 +512,10 @@ function Services({ themeMode }: ServicesProps) {
 
         {/* Scroll indicator */}
         <div className={`absolute bottom-14 z-20 flex items-center gap-3 ${isArabic ? 'right-8 md:right-14' : 'left-8 md:left-14'}`}>
-          <div className="relative w-px h-10 overflow-hidden bg-white/10">
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/50 animate-scroll-pulse" />
+          <div className={`relative w-px h-10 overflow-hidden ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
+            <div className={`absolute top-0 left-0 w-full h-1/2 animate-scroll-pulse ${isDark ? 'bg-white/50' : 'bg-black/50'}`} />
           </div>
-          <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/25">
+          <span className={`text-[9px] font-bold tracking-[0.44em] uppercase ${isDark ? 'text-white/25' : 'text-black/30'}`}>
             {copy.ui?.scrollToExplore || 'Scroll'}
           </span>
         </div>
@@ -521,6 +528,7 @@ function Services({ themeMode }: ServicesProps) {
           track={track}
           index={index}
           isArabic={isArabic}
+          isDark={isDark}
         />
       ))}
 
@@ -531,14 +539,15 @@ function Services({ themeMode }: ServicesProps) {
         titleLine1={overview.workflowTitleLine1}
         titleLine2={overview.workflowTitleLine2}
         isArabic={isArabic}
+        isDark={isDark}
       />
 
       {/* ══════════════════════════ CTA ══════════════════════════ */}
       <LazySection id="cta">
-        <div className="relative bg-[#060606] overflow-hidden">
+        <div className={`relative ${isDark ? 'bg-[#060606]' : 'bg-[#E4DFD5]'} overflow-hidden`}>
 
           {/* Top hairline */}
-          <div className="absolute inset-x-0 top-0 h-px bg-white/[0.07]" aria-hidden="true" />
+          <div className={`absolute inset-x-0 top-0 h-px ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
 
           {/* Dot-grid texture */}
           <div
@@ -566,7 +575,7 @@ function Services({ themeMode }: ServicesProps) {
             <TextReveal>
               <div className={`flex items-center gap-3 mb-10 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/30">
+                <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/30' : 'text-black/35'}`}>
                   {overview.ctaEyebrow}
                 </span>
               </div>
@@ -575,14 +584,14 @@ function Services({ themeMode }: ServicesProps) {
             {/* Headline */}
             <SplitText
               text={`${overview.ctaTitle} ${overview.ctaTitleEmphasis}`}
-              className="text-[clamp(3rem,7.5vw,8rem)] font-display font-light leading-[0.92] text-white/92 tracking-[-0.02em] mb-10"
+              className={`text-[clamp(3rem,7.5vw,8rem)] font-display font-light leading-[0.92] ${isDark ? 'text-white/92' : 'text-black/92'} tracking-[-0.02em] mb-10`}
               type="words"
               delay={0.06}
             />
 
             {/* Body copy */}
             <TextReveal delay={0.12}>
-              <p className="text-base font-light leading-[1.82] text-white/38 max-w-[38ch] mb-10">
+              <p className={`text-base font-light leading-[1.82] ${isDark ? 'text-white/38' : 'text-black/45'} max-w-[38ch] mb-10`}>
                 {overview.ctaCopy}
               </p>
             </TextReveal>
@@ -590,12 +599,12 @@ function Services({ themeMode }: ServicesProps) {
             {/* Availability badge */}
             <TextReveal delay={0.16}>
               <div className={`inline-flex items-center gap-3 mb-12 px-4 py-2 rounded-full
-                border border-white/[0.07] bg-white/[0.02] ${isArabic ? 'flex-row-reverse' : ''}`}>
+                border ${isDark ? 'border-white/[0.07] bg-white/[0.02]' : 'border-black/[0.07] bg-black/[0.02]'} ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                 </span>
-                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/28">
+                <span className={`text-[9px] font-bold tracking-[0.3em] uppercase ${isDark ? 'text-white/28' : 'text-black/35'}`}>
                   {overview.ctaMetaLabel}: {overview.ctaMetaValue}
                 </span>
               </div>
@@ -629,9 +638,8 @@ function Services({ themeMode }: ServicesProps) {
                   isDark
                   className={`inline-flex items-center gap-3 px-10 py-5 rounded-full
                     text-[11px] font-bold tracking-[0.24em] uppercase
-                    border-white/[0.10] text-white/40
+                    ${isDark ? 'border-white/[0.10] text-white/40 hover:text-white hover:border-white/20 hover:bg-white/[0.04]' : 'border-black/[0.10] text-black/40 hover:text-black hover:border-black/20 hover:bg-black/[0.04]'}
                     transition-all duration-300 ease-out
-                    hover:text-white hover:border-white/20 hover:bg-white/[0.04]
                     ${isArabic ? 'flex-row-reverse' : ''}`}
                 >
                   See the method
@@ -642,15 +650,15 @@ function Services({ themeMode }: ServicesProps) {
           </div>
 
           {/* Bottom social proof strip */}
-          <div className="relative border-t border-white/[0.05]">
+          <div className={`relative border-t ${isDark ? 'border-white/[0.05]' : 'border-black/[0.05]'}`}>
             <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-5 flex justify-center">
-              <p className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/18 text-center">
+              <p className={`text-[9px] font-bold tracking-[0.38em] uppercase ${isDark ? 'text-white/18' : 'text-black/25'} text-center`}>
                 {copy.home.testimonialsTitle} — trusted by 40+ brands
               </p>
             </div>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 h-px bg-white/[0.07]" aria-hidden="true" />
+          <div className={`absolute inset-x-0 bottom-0 h-px ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
         </div>
       </LazySection>
 

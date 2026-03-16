@@ -121,7 +121,7 @@ const ScrollProgress = memo(({ color = TOKENS.colors.accent }: ScrollProgressPro
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[1px] bg-white/5 z-50">
+    <div className="fixed top-0 left-0 right-0 h-[1px] bg-black/5 z-50">
       <div 
         ref={progressRef}
         className="h-full origin-left"
@@ -375,11 +375,12 @@ const ProjectCard = memo(({
 });
 ProjectCard.displayName = "ProjectCard";
 
-const StatCard = memo(({ value, label, index, isArabic }: {
+const StatCard = memo(({ value, label, index, isArabic, isDark }: {
   value: string;
   label: string;
   index: number;
   isArabic: boolean;
+  isDark: boolean;
 }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const numRef = useRef<HTMLSpanElement>(null);
@@ -429,12 +430,14 @@ const StatCard = memo(({ value, label, index, isArabic }: {
   return (
     <div
       ref={wrapRef}
-      className={`relative p-8 rounded-2xl bg-white/[0.02] border border-white/5 backdrop-blur-sm group hover:bg-white/[0.04] transition-colors duration-500 ${isArabic ? "text-right" : "text-left"}`}
+      className={`relative p-8 rounded-2xl border backdrop-blur-sm group transition-colors duration-500
+        ${isDark ? 'bg-white/[0.02] border-white/5 hover:bg-white/[0.04]' : 'bg-black/[0.02] border-black/5 hover:bg-black/[0.04]'}
+        ${isArabic ? "text-right" : "text-left"}`}
       style={{ opacity: 0, transform: "translateY(40px)" }}
     >
       {/* Animated number */}
       <div
-        className="font-display font-light leading-none mb-1 text-white"
+        className={`font-display font-light leading-none mb-1 ${isDark ? 'text-white' : 'text-[#0F0F0F]'}`}
         style={{ fontSize: 'clamp(3rem,5.5vw,4.8rem)', filter: 'drop-shadow(0 0 24px rgba(255,59,59,0.18))' }}
       >
         {prefix && <span className="opacity-50 text-[0.55em]">{prefix}</span>}
@@ -448,7 +451,8 @@ const StatCard = memo(({ value, label, index, isArabic }: {
         style={{ width: '2.5rem', background: 'linear-gradient(to right, rgba(255,59,59,0.55), transparent)' }}
       />
 
-      <div className="text-[10px] font-medium tracking-[0.2em] uppercase text-white/35 group-hover:text-white/55 transition-colors">
+      <div className={`text-[10px] font-medium tracking-[0.2em] uppercase transition-colors
+        ${isDark ? 'text-white/35 group-hover:text-white/55' : 'text-black/40 group-hover:text-black/60'}`}>
         {label}
       </div>
       <div className="absolute top-0 right-0 w-px h-0 bg-gradient-to-b from-[#FF3B3B]/40 to-transparent group-hover:h-full transition-all duration-700" />
@@ -457,7 +461,7 @@ const StatCard = memo(({ value, label, index, isArabic }: {
 });
 StatCard.displayName = "StatCard";
 
-const ImpactStat = memo(({ stat, index, isArabic }: { stat: { value: string; label: string }; index: number; isArabic: boolean }) => {
+const ImpactStat = memo(({ stat, index, isArabic, isDark }: { stat: { value: string; label: string }; index: number; isArabic: boolean; isDark: boolean }) => {
   const wrapRef = useRef<HTMLDivElement>(null);
   const numRef = useRef<HTMLSpanElement>(null);
 
@@ -515,7 +519,7 @@ const ImpactStat = memo(({ stat, index, isArabic }: { stat: { value: string; lab
 
       {/* Number */}
       <div
-        className="font-display font-light leading-none text-white mb-4"
+        className={`font-display font-light leading-none mb-4 ${isDark ? 'text-white' : 'text-[#0F0F0F]'}`}
         style={{
           fontSize: 'clamp(4rem,8vw,7rem)',
           filter: 'drop-shadow(0 0 28px rgba(255,59,59,0.22))',
@@ -526,7 +530,8 @@ const ImpactStat = memo(({ stat, index, isArabic }: { stat: { value: string; lab
         {suffix && <span className="opacity-45 text-[0.52em] ml-0.5">{suffix}</span>}
       </div>
 
-      <div className="text-[10px] font-medium tracking-[0.25em] uppercase text-white/35 group-hover:text-white/55 transition-colors duration-300">
+      <div className={`text-[10px] font-medium tracking-[0.25em] uppercase transition-colors duration-300
+        ${isDark ? 'text-white/35 group-hover:text-white/55' : 'text-black/40 group-hover:text-black/60'}`}>
         {stat.label}
       </div>
     </div>
@@ -580,7 +585,8 @@ MagneticButton.displayName = "MagneticButton";
 
 // --- Main Page ---
 
-export default function Projects(_: { themeMode: 'dark' | 'light' }) {
+export default function Projects({ themeMode }: { themeMode: 'dark' | 'light' }) {
+  const isDark = themeMode === 'dark';
   const { copy, language } = useLanguage();
   const headerRef = useRef<HTMLDivElement>(null);
   
@@ -615,8 +621,8 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
   if (!projects.length) return null;
 
   return (
-    <div 
-      className="relative min-h-screen text-white overflow-x-hidden"
+    <div
+      className={`relative min-h-screen overflow-x-hidden ${isDark ? 'bg-[#090909] text-white' : 'bg-[#EDE8DF] text-[#0F0F0F]'}`}
     >
       <ScrollProgress />
 
@@ -630,26 +636,26 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
         <div className="max-w-[1600px] mx-auto w-full">
           <RevealText delay={0.2}>
             <div className={`flex items-center gap-6 mb-16 ${isArabic ? "flex-row-reverse" : "flex-row"}`}>
-              <div className="h-px flex-1 max-w-[100px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-              <span className="text-[11px] font-mono tracking-[0.4em] uppercase text-white/40">
+              <div className={`h-px flex-1 max-w-[100px] ${isDark ? 'bg-gradient-to-r from-transparent via-white/30 to-transparent' : 'bg-gradient-to-r from-transparent via-black/30 to-transparent'}`} />
+              <span className={`text-[11px] font-mono tracking-[0.4em] uppercase ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                 {copy.nav?.projects ?? "Selected Work"}
               </span>
-              <div className="h-px flex-1 max-w-[100px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+              <div className={`h-px flex-1 max-w-[100px] ${isDark ? 'bg-gradient-to-r from-transparent via-white/30 to-transparent' : 'bg-gradient-to-r from-transparent via-black/30 to-transparent'}`} />
             </div>
           </RevealText>
 
           <div className={`${isArabic ? "text-right" : "text-left"}`}>
             <RevealText delay={0.4}>
               <h1 className="text-[clamp(3.5rem,12vw,10rem)] font-display font-light leading-[0.9] tracking-tighter mb-8">
-                <span className="block text-white/90">{copy.projects?.titleLine1 ?? "Crafting"}</span>
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/60">
+                <span className={`block ${isDark ? 'text-white/90' : 'text-black/90'}`}>{copy.projects?.titleLine1 ?? "Crafting"}</span>
+                <span className={`block ${isDark ? 'text-white/55' : 'text-black/55'}`}>
                   {copy.projects?.titleLine2 ?? "Digital Excellence"}
                 </span>
               </h1>
             </RevealText>
 
             <RevealText delay={0.6}>
-              <p className={`text-lg md:text-xl text-white/40 max-w-2xl font-light leading-relaxed mb-16 ${isArabic ? "ml-auto" : ""}`}>
+              <p className={`text-lg md:text-xl max-w-2xl font-light leading-relaxed mb-16 ${isArabic ? "ml-auto" : ""} ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                 {copy.projects?.subtitle ?? "We transform ambitious visions into award-winning digital experiences that define industries and inspire audiences."}
               </p>
             </RevealText>
@@ -657,12 +663,13 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
             <RevealText delay={0.8}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl">
                 {stats.map((stat, index) => (
-                  <StatCard 
+                  <StatCard
                     key={stat.label}
                     value={stat.value}
                     label={stat.label}
                     index={index}
                     isArabic={isArabic}
+                    isDark={isDark}
                   />
                 ))}
               </div>
@@ -672,8 +679,8 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
 
         {/* Scroll indicator */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 opacity-50">
-          <span className="text-[10px] tracking-[0.3em] uppercase text-white/30">Scroll</span>
-          <div className="w-px h-12 bg-gradient-to-b from-white/30 to-transparent" />
+          <span className={`text-[10px] tracking-[0.3em] uppercase ${isDark ? 'text-white/30' : 'text-black/30'}`}>Scroll</span>
+          <div className={`w-px h-12 ${isDark ? 'bg-gradient-to-b from-white/30 to-transparent' : 'bg-gradient-to-b from-black/30 to-transparent'}`} />
         </div>
       </header>
 
@@ -740,7 +747,7 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
       </main>
 
       {/* Impact Section */}
-      <section className="relative py-32 border-y border-white/5 bg-[#060606]">
+      <section className={`relative py-32 ${isDark ? 'border-y border-white/5 bg-[#060606]' : 'border-y border-black/5 bg-[#E5DFD5]'}`}>
         {/* Ambient red glow */}
         <div
           className="absolute top-1/2 left-1/2 pointer-events-none"
@@ -755,7 +762,7 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
         <div className="relative max-w-[1600px] mx-auto px-6 md:px-12 lg:px-20">
           <div className="grid md:grid-cols-3 gap-12 md:gap-24">
             {copy.home?.impactStats?.slice(0, 3).map((stat: any, i: number) => (
-              <ImpactStat key={i} stat={stat} index={i} isArabic={isArabic} />
+              <ImpactStat key={i} stat={stat} index={i} isArabic={isArabic} isDark={isDark} />
             ))}
           </div>
         </div>
@@ -763,16 +770,16 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
 
       {/* CTA Section */}
       <section className="relative py-40 px-6 md:px-12 lg:px-20 overflow-hidden">
-        
+
         <div className="relative max-w-4xl mx-auto text-center">
           <RevealText>
-            <p className="text-[11px] font-mono tracking-[0.4em] uppercase text-accent mb-8">
+            <p className="text-[11px] font-mono tracking-[0.4em] uppercase mb-8" style={{ color: '#FF3B3B' }}>
               {copy.projects?.ctaButton ?? "Start a Project"}
             </p>
           </RevealText>
-          
+
           <RevealText delay={0.2}>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-display font-light mb-12 leading-tight">
+            <h2 className={`text-4xl md:text-6xl lg:text-7xl font-display font-light mb-12 leading-tight ${isDark ? 'text-white/90' : 'text-black/90'}`}>
               {copy.projects?.ctaTitle ?? "Ready to create something extraordinary?"}
             </h2>
           </RevealText>
@@ -785,8 +792,8 @@ export default function Projects(_: { themeMode: 'dark' | 'light' }) {
         </div>
 
         {/* Decorative elements */}
-        <div className="absolute top-1/2 left-12 w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent hidden lg:block" />
-        <div className="absolute top-1/2 right-12 w-px h-32 bg-gradient-to-b from-transparent via-white/10 to-transparent hidden lg:block" />
+        <div className={`absolute top-1/2 left-12 w-px h-32 hidden lg:block ${isDark ? 'bg-gradient-to-b from-transparent via-white/10 to-transparent' : 'bg-gradient-to-b from-transparent via-black/10 to-transparent'}`} />
+        <div className={`absolute top-1/2 right-12 w-px h-32 hidden lg:block ${isDark ? 'bg-gradient-to-b from-transparent via-white/10 to-transparent' : 'bg-gradient-to-b from-transparent via-black/10 to-transparent'}`} />
       </section>
     </div>
   );

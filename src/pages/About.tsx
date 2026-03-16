@@ -69,12 +69,15 @@ const LazySection = memo(({ children, className = '', id }: {
 LazySection.displayName = 'LazySection'
 
 // ─── PrincipleCard ────────────────────────────────────────────────────────────
-const PrincipleCard = memo(({ principle, index }: {
+const PrincipleCard = memo(({ principle, index, isDark }: {
   principle: Principle
   index: number
+  isDark: boolean
 }) => (
-  <div className="relative rounded-3xl border border-white/[0.07] bg-gradient-to-b from-white/[0.03] to-transparent
-    p-10 md:p-12 group hover:border-white/[0.12] transition-colors duration-300 overflow-hidden">
+  <div className={`relative rounded-3xl border p-10 md:p-12 group transition-colors duration-300 overflow-hidden
+    ${isDark
+      ? 'border-white/[0.07] bg-gradient-to-b from-white/[0.03] to-transparent hover:border-white/[0.12]'
+      : 'border-black/[0.07] bg-gradient-to-b from-black/[0.02] to-transparent hover:border-black/[0.12]'}`}>
 
     {/* Top red hairline */}
     <div
@@ -92,21 +95,22 @@ const PrincipleCard = memo(({ principle, index }: {
     </span>
 
     {/* Title */}
-    <h3 className="text-2xl md:text-3xl font-display font-light text-white/85 mb-4
-      group-hover:italic transition-all duration-300">
+    <h3 className={`text-2xl md:text-3xl font-display font-light mb-4 group-hover:italic transition-all duration-300
+      ${isDark ? 'text-white/85' : 'text-black/85'}`}>
       {principle.title}
     </h3>
 
     {/* Copy */}
-    <p className="text-sm font-light leading-[1.76] text-white/42
-      group-hover:text-white/58 transition-colors duration-300">
+    <p className={`text-sm font-light leading-[1.76] transition-colors duration-300
+      ${isDark ? 'text-white/42 group-hover:text-white/58' : 'text-black/42 group-hover:text-black/58'}`}>
       {principle.copy}
     </p>
 
     {/* Ghost index */}
     <span
       aria-hidden="true"
-      className="absolute bottom-4 right-6 font-display font-bold leading-none select-none pointer-events-none text-white/[0.025]"
+      className={`absolute bottom-4 right-6 font-display font-bold leading-none select-none pointer-events-none
+        ${isDark ? 'text-white/[0.025]' : 'text-black/[0.025]'}`}
       style={{ fontSize: 'clamp(3rem,6vw,5rem)' }}
     >
       0{index + 1}
@@ -116,11 +120,12 @@ const PrincipleCard = memo(({ principle, index }: {
 PrincipleCard.displayName = 'PrincipleCard'
 
 // ─── TeamCard ─────────────────────────────────────────────────────────────────
-const TeamCard = memo(({ member }: { member: TeamMember }) => (
+const TeamCard = memo(({ member, isDark }: { member: TeamMember; isDark: boolean }) => (
   <div className="team-card-inner group cursor-crosshair">
 
     {/* Image container */}
-    <div className="relative aspect-[3/4] overflow-hidden rounded-3xl mb-8 border border-white/[0.07]">
+    <div className={`relative aspect-[3/4] overflow-hidden rounded-3xl mb-8 border
+      ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
       <img
         src={member.image}
         alt={member.name}
@@ -135,22 +140,23 @@ const TeamCard = memo(({ member }: { member: TeamMember }) => (
         opacity-0 group-hover:opacity-100 transition-opacity" />
 
       {/* Role badge */}
-      <div className={`absolute bottom-4 left-4 px-3 py-1.5 rounded-full
+      <div className="absolute bottom-4 left-4 px-3 py-1.5 rounded-full
         bg-black/50 backdrop-blur-md border border-white/[0.1]
         text-[8px] font-bold tracking-[0.3em] uppercase text-white/55
-        opacity-0 group-hover:opacity-100 transition-opacity duration-300`}>
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         {member.role}
       </div>
     </div>
 
     {/* Name */}
-    <h4 className="text-xl md:text-2xl font-display font-light text-white/85
-      group-hover:italic transition-all duration-300">
+    <h4 className={`text-xl md:text-2xl font-display font-light group-hover:italic transition-all duration-300
+      ${isDark ? 'text-white/85' : 'text-black/85'}`}>
       {member.name}
     </h4>
 
     {/* Role */}
-    <p className="text-[10px] font-bold tracking-[0.3em] uppercase text-white/28 mt-1">
+    <p className={`text-[10px] font-bold tracking-[0.3em] uppercase mt-1
+      ${isDark ? 'text-white/28' : 'text-black/28'}`}>
       {member.role}
     </p>
   </div>
@@ -161,7 +167,7 @@ TeamCard.displayName = 'TeamCard'
 interface AboutProps { themeMode: 'dark' | 'light' }
 
 function About({ themeMode }: AboutProps) {
-  void themeMode // always dark
+  const isDark = themeMode === 'dark'
   const { copy, language } = useLanguage()
   const isArabic  = useMemo(() => language === 'ar', [language])
   const heroRef   = useRef<HTMLElement>(null)
@@ -239,7 +245,7 @@ function About({ themeMode }: AboutProps) {
   }, [isArabic])
 
   return (
-    <div ref={wrapperRef} className="bg-[#090909] text-white min-h-screen">
+    <div ref={wrapperRef} className={`${isDark ? 'bg-[#090909] text-white' : 'bg-[#EDE8DF] text-[#0F0F0F]'} min-h-screen`}>
 
       {/* ══════════════════════════ HERO ══════════════════════════ */}
       <section
@@ -252,7 +258,7 @@ function About({ themeMode }: AboutProps) {
           className="hero-bg-letter absolute inset-0 flex items-center justify-center pointer-events-none select-none will-change-transform"
         >
           <span
-            className="font-display font-bold leading-none text-white/[0.018]"
+            className={`font-display font-bold leading-none ${isDark ? 'text-white/[0.018]' : 'text-black/[0.015]'}`}
             style={{ fontSize: 'clamp(18rem,55vw,80rem)' }}
           >
             A
@@ -281,7 +287,8 @@ function About({ themeMode }: AboutProps) {
         {/* Bottom vignette */}
         <div
           aria-hidden="true"
-          className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-[#090909] to-transparent pointer-events-none z-10"
+          className={`absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t to-transparent pointer-events-none z-10
+            ${isDark ? 'from-[#090909]' : 'from-[#EDE8DF]'}`}
         />
 
         {/* Content */}
@@ -289,8 +296,9 @@ function About({ themeMode }: AboutProps) {
 
           {/* Tag pill */}
           <div className="hero-tag mb-6">
-            <span className="inline-flex items-center gap-2.5 text-[9px] font-bold tracking-[0.44em] uppercase
-              px-4 py-2 rounded-full border border-white/10 text-white/50 bg-white/[0.04]">
+            <span className={`inline-flex items-center gap-2.5 text-[9px] font-bold tracking-[0.44em] uppercase
+              px-4 py-2 rounded-full border
+              ${isDark ? 'border-white/10 text-white/50 bg-white/[0.04]' : 'border-black/10 text-black/50 bg-black/[0.04]'}`}>
               <span className="w-1.5 h-1.5 rounded-full bg-[#FF3B3B] shrink-0" aria-hidden="true" />
               {overview.heroEyebrow}
             </span>
@@ -306,16 +314,17 @@ function About({ themeMode }: AboutProps) {
           {/* Headline */}
           <h1 className="font-display font-light leading-[0.88] tracking-[-0.02em]
             text-[clamp(3.5rem,10vw,10rem)] mb-8 max-w-5xl">
-            <span className="hero-line block text-white/92">
+            <span className={`hero-line block ${isDark ? 'text-white/92' : 'text-black/92'}`}>
               {overview.heroTitleLine1}
             </span>
-            <span className="hero-line block italic text-white/38">
+            <span className={`hero-line block italic ${isDark ? 'text-white/38' : 'text-black/38'}`}>
               {overview.heroTitleLine2}
             </span>
           </h1>
 
           {/* Sub-copy */}
-          <p className={`hero-copy text-base md:text-lg font-light leading-[1.82] text-white/48 max-w-[36ch] mb-16`}>
+          <p className={`hero-copy text-base md:text-lg font-light leading-[1.82] max-w-[36ch] mb-16
+            ${isDark ? 'text-white/48' : 'text-black/48'}`}>
             {copy.about.subtitle}
           </p>
 
@@ -328,7 +337,7 @@ function About({ themeMode }: AboutProps) {
             ].map((stat, i) => (
               <div key={stat.label} className={`hero-stats flex items-center gap-8 md:gap-12 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 {i > 0 && (
-                  <span className="w-px h-10 bg-white/[0.07] shrink-0" aria-hidden="true" />
+                  <span className={`w-px h-10 shrink-0 ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
                 )}
                 <div className="flex flex-col">
                   <span
@@ -337,7 +346,7 @@ function About({ themeMode }: AboutProps) {
                   >
                     {stat.value}
                   </span>
-                  <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/30">
+                  <span className={`text-[9px] font-bold tracking-[0.44em] uppercase ${isDark ? 'text-white/30' : 'text-black/30'}`}>
                     {stat.label}
                   </span>
                 </div>
@@ -349,10 +358,10 @@ function About({ themeMode }: AboutProps) {
         {/* Scroll indicator */}
         <div className={`absolute bottom-14 z-20 flex items-center gap-3
           ${isArabic ? 'right-8 md:right-14' : 'left-8 md:left-14'}`}>
-          <div className="relative w-px h-10 overflow-hidden bg-white/10">
-            <div className="absolute top-0 left-0 w-full h-1/2 bg-white/50 animate-scroll-pulse" />
+          <div className={`relative w-px h-10 overflow-hidden ${isDark ? 'bg-white/10' : 'bg-black/10'}`}>
+            <div className={`absolute top-0 left-0 w-full h-1/2 animate-scroll-pulse ${isDark ? 'bg-white/50' : 'bg-black/50'}`} />
           </div>
-          <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/25">
+          <span className={`text-[9px] font-bold tracking-[0.44em] uppercase ${isDark ? 'text-white/25' : 'text-black/25'}`}>
             {copy.ui?.scrollToExplore || 'Scroll'}
           </span>
         </div>
@@ -360,14 +369,16 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ MANIFESTO ══════════════════════════ */}
       <LazySection>
-        <div className="border-t border-white/[0.07]">
+        <div className={`border-t ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
           <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32">
             <div className="grid md:grid-cols-12 gap-8 items-stretch">
 
               {/* Left column — manifesto card */}
-              <div className={`md:col-span-7 relative rounded-3xl border border-white/[0.07]
-                bg-gradient-to-b from-white/[0.03] to-transparent
-                p-12 md:p-20 overflow-hidden ${isArabic ? 'text-right' : ''}`}>
+              <div className={`md:col-span-7 relative rounded-3xl border p-12 md:p-20 overflow-hidden
+                ${isDark
+                  ? 'border-white/[0.07] bg-gradient-to-b from-white/[0.03] to-transparent'
+                  : 'border-black/[0.07] bg-gradient-to-b from-black/[0.02] to-transparent'}
+                ${isArabic ? 'text-right' : ''}`}>
 
                 {/* Top red hairline */}
                 <div
@@ -379,7 +390,8 @@ function About({ themeMode }: AboutProps) {
                 {/* Ghost quote mark */}
                 <span
                   aria-hidden="true"
-                  className="absolute top-6 right-10 font-display font-bold select-none pointer-events-none leading-none text-white/[0.025]"
+                  className={`absolute top-6 right-10 font-display font-bold select-none pointer-events-none leading-none
+                    ${isDark ? 'text-white/[0.025]' : 'text-black/[0.025]'}`}
                   style={{ fontSize: 'clamp(10rem,20vw,18rem)' }}
                 >
                   "
@@ -390,7 +402,7 @@ function About({ themeMode }: AboutProps) {
                   <TextReveal>
                     <div className={`flex items-center gap-3 mb-10 ${isArabic ? 'flex-row-reverse' : ''}`}>
                       <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                      <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                      <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/25'}`}>
                         {overview.manifestoLabel}
                       </span>
                     </div>
@@ -398,27 +410,30 @@ function About({ themeMode }: AboutProps) {
 
                   {/* Lead text */}
                   <p
-                    className="font-display font-light leading-[1.25] text-white/88 tracking-[-0.01em] mb-8"
+                    className={`font-display font-light leading-[1.25] tracking-[-0.01em] mb-8
+                      ${isDark ? 'text-white/88' : 'text-black/88'}`}
                     style={{ fontSize: 'clamp(1.8rem,3.5vw,3.2rem)' }}
                   >
                     {overview.manifestoLead}
                   </p>
 
                   {/* Body copy */}
-                  <p className="text-base md:text-lg font-light leading-[1.82] text-white/45 max-w-[48ch] mb-12">
+                  <p className={`text-base md:text-lg font-light leading-[1.82] max-w-[48ch] mb-12
+                    ${isDark ? 'text-white/45' : 'text-black/45'}`}>
                     {overview.manifestoCopy}
                   </p>
 
                   {/* Bottom row */}
-                  <div className={`flex items-center gap-6 pt-10 border-t border-white/[0.07] ${isArabic ? 'flex-row-reverse' : ''}`}>
-                    <div className="w-12 h-px bg-white/20" aria-hidden="true" />
-                    <span className="text-[10px] uppercase tracking-[0.3em] font-bold italic text-white/30">
+                  <div className={`flex items-center gap-6 pt-10 border-t ${isArabic ? 'flex-row-reverse' : ''}
+                    ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
+                    <div className={`w-12 h-px ${isDark ? 'bg-white/20' : 'bg-black/20'}`} aria-hidden="true" />
+                    <span className={`text-[10px] uppercase tracking-[0.3em] font-bold italic ${isDark ? 'text-white/30' : 'text-black/30'}`}>
                       {overview.sinceLabel}
                     </span>
                     {copy.about.values[0] && (
                       <>
-                        <span className="w-px h-4 bg-white/[0.1]" aria-hidden="true" />
-                        <span className="text-[10px] font-light italic text-white/22 max-w-[32ch]">
+                        <span className={`w-px h-4 ${isDark ? 'bg-white/[0.1]' : 'bg-black/[0.1]'}`} aria-hidden="true" />
+                        <span className={`text-[10px] font-light italic max-w-[32ch] ${isDark ? 'text-white/22' : 'text-black/22'}`}>
                           {copy.about.values[0]}
                         </span>
                       </>
@@ -452,14 +467,14 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ PRINCIPLES ══════════════════════════ */}
       <LazySection>
-        <div className="border-t border-white/[0.07]">
+        <div className={`border-t ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
           <div className={`max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32 ${isArabic ? 'text-right' : ''}`}>
 
             {/* Eyebrow */}
             <TextReveal>
               <div className={`flex items-center gap-3 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/25'}`}>
                   {copy.about.principlesTitle}
                 </span>
               </div>
@@ -468,14 +483,15 @@ function About({ themeMode }: AboutProps) {
             {/* Heading */}
             <SplitText
               text={copy.about.principlesTitle}
-              className="text-[clamp(2.2rem,4.5vw,5rem)] font-display font-light italic leading-[0.96] text-white/38 tracking-[-0.02em] mb-16"
+              className={`text-[clamp(2.2rem,4.5vw,5rem)] font-display font-light italic leading-[0.96] tracking-[-0.02em] mb-16
+                ${isDark ? 'text-white/38' : 'text-black/38'}`}
               type="words"
             />
 
             {/* Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {copy.about.principles.map((principle, idx) => (
-                <PrincipleCard key={idx} principle={principle} index={idx} />
+                <PrincipleCard key={idx} principle={principle} index={idx} isDark={isDark} />
               ))}
             </div>
 
@@ -485,7 +501,7 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ STUDIO GALLERY ══════════════════════════ */}
       <LazySection>
-        <div className="border-t border-white/[0.07]">
+        <div className={`border-t ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
           <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-16">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
@@ -513,24 +529,25 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ PILLARS ══════════════════════════ */}
       <LazySection>
-        <div className="border-t border-white/[0.07] bg-[#060606]">
+        <div className={`border-t ${isDark ? 'border-white/[0.07] bg-[#060606]' : 'border-black/[0.07] bg-[#E5DFD5]'}`}>
           <div className={`max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32 ${isArabic ? 'text-right' : ''}`}>
 
             {/* Eyebrow */}
             <TextReveal>
               <div className={`flex items-center gap-3 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="w-5 h-px bg-[#FF3B3B]/40 shrink-0" aria-hidden="true" />
-                <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/25'}`}>
                   Our Beliefs
                 </span>
-                <span className="flex-1 h-px bg-white/[0.05]" aria-hidden="true" />
+                <span className={`flex-1 h-px ${isDark ? 'bg-white/[0.05]' : 'bg-black/[0.05]'}`} aria-hidden="true" />
               </div>
             </TextReveal>
 
             {/* Large italic label */}
             <SplitText
               text="Our Beliefs."
-              className="text-[clamp(2rem,4vw,4.5rem)] font-display font-light italic leading-[0.96] text-white/35 tracking-[-0.02em] mb-16"
+              className={`text-[clamp(2rem,4vw,4.5rem)] font-display font-light italic leading-[0.96] tracking-[-0.02em] mb-16
+                ${isDark ? 'text-white/35' : 'text-black/35'}`}
               type="words"
             />
 
@@ -547,7 +564,7 @@ function About({ themeMode }: AboutProps) {
                 <div
                   key={idx}
                   className={`group py-8 md:py-10 flex items-start gap-8 md:gap-16
-                    ${idx > 0 ? 'border-t border-white/[0.07]' : ''}
+                    ${idx > 0 ? `border-t ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}` : ''}
                     ${isArabic ? 'flex-row-reverse' : ''}`}
                 >
                   {/* Giant index number */}
@@ -563,14 +580,14 @@ function About({ themeMode }: AboutProps) {
 
                   {/* Middle content */}
                   <div className="flex-1 min-w-0">
-                    <span className="block text-[9px] font-bold tracking-[0.44em] uppercase text-white/22 mb-2">
+                    <span className={`block text-[9px] font-bold tracking-[0.44em] uppercase mb-2 ${isDark ? 'text-white/22' : 'text-black/22'}`}>
                       {pillar.label}
                     </span>
-                    <h3 className="text-xl md:text-2xl font-display font-light text-white/78 mb-2
-                      group-hover:italic transition-all duration-300">
+                    <h3 className={`text-xl md:text-2xl font-display font-light mb-2 group-hover:italic transition-all duration-300
+                      ${isDark ? 'text-white/78' : 'text-black/78'}`}>
                       {pillar.title}
                     </h3>
-                    <p className="text-sm font-light text-white/38 max-w-[46ch] leading-[1.72]">
+                    <p className={`text-sm font-light max-w-[46ch] leading-[1.72] ${isDark ? 'text-white/38' : 'text-black/38'}`}>
                       {pillar.copy}
                     </p>
                   </div>
@@ -607,7 +624,7 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ TEAM ══════════════════════════ */}
       <LazySection>
-        <div className="border-t border-white/[0.07]">
+        <div className={`border-t ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
           <div className={`max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32 ${isArabic ? 'text-right' : ''}`}>
 
             {/* Header row */}
@@ -617,7 +634,7 @@ function About({ themeMode }: AboutProps) {
                 <TextReveal>
                   <div className={`flex items-center gap-3 mb-6 ${isArabic ? 'flex-row-reverse' : ''}`}>
                     <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                    <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                    <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/25'}`}>
                       {copy.about.teamTitle}
                     </span>
                   </div>
@@ -626,7 +643,8 @@ function About({ themeMode }: AboutProps) {
                 {/* Heading */}
                 <SplitText
                   text={copy.about.teamSubtitle}
-                  className="text-[clamp(2.5rem,5vw,5rem)] font-display font-light text-white/85 tracking-[-0.01em]"
+                  className={`text-[clamp(2.5rem,5vw,5rem)] font-display font-light tracking-[-0.01em]
+                    ${isDark ? 'text-white/85' : 'text-black/85'}`}
                   type="words"
                 />
               </div>
@@ -636,8 +654,8 @@ function About({ themeMode }: AboutProps) {
                 {copy.about.teamStack.map((item, idx) => (
                   <span
                     key={idx}
-                    className="px-4 py-2 rounded-full border border-white/[0.08] bg-white/[0.03]
-                      text-[9px] font-bold tracking-[0.18em] uppercase text-white/40 whitespace-nowrap"
+                    className={`px-4 py-2 rounded-full border text-[9px] font-bold tracking-[0.18em] uppercase whitespace-nowrap
+                      ${isDark ? 'border-white/[0.08] bg-white/[0.03] text-white/40' : 'border-black/[0.08] bg-black/[0.03] text-black/40'}`}
                   >
                     {item}
                   </span>
@@ -649,7 +667,7 @@ function About({ themeMode }: AboutProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
               {(overview.team as readonly TeamMember[]).map((member, idx) => (
                 <div key={idx} className={member.offset}>
-                  <TeamCard member={member} />
+                  <TeamCard member={member} isDark={isDark} />
                 </div>
               ))}
             </div>
@@ -660,14 +678,14 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ TIMELINE ══════════════════════════ */}
       <LazySection>
-        <div className="border-t border-white/[0.07] overflow-visible">
+        <div className={`border-t overflow-visible ${isDark ? 'border-white/[0.07]' : 'border-black/[0.07]'}`}>
           <div className={`max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-24 md:py-32 ${isArabic ? 'text-right' : ''}`}>
 
             {/* Eyebrow */}
             <TextReveal>
               <div className={`flex items-center gap-3 mb-8 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/25">
+                <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/25' : 'text-black/25'}`}>
                   {overview.journeyEyebrow}
                 </span>
               </div>
@@ -676,7 +694,8 @@ function About({ themeMode }: AboutProps) {
             {/* Giant heading */}
             <SplitText
               text={overview.journeyTitle}
-              className="text-[clamp(3rem,8vw,9rem)] font-display font-light italic text-white/35 tracking-[-0.02em] mb-24 md:mb-40"
+              className={`text-[clamp(3rem,8vw,9rem)] font-display font-light italic tracking-[-0.02em] mb-24 md:mb-40
+                ${isDark ? 'text-white/35' : 'text-black/35'}`}
               type="words"
             />
 
@@ -684,7 +703,7 @@ function About({ themeMode }: AboutProps) {
             <div ref={timelineRef} className="relative max-w-6xl mx-auto">
 
               {/* Vertical center line */}
-              <div className="absolute left-1/2 -translate-x-1/2 h-full w-px bg-white/[0.07] hidden md:block">
+              <div className={`absolute left-1/2 -translate-x-1/2 h-full w-px hidden md:block ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`}>
                 <div
                   ref={progressLineRef}
                   className="w-full h-full bg-gradient-to-b from-[#FF3B3B] via-[#FF3B3B]/40 to-transparent origin-top"
@@ -701,14 +720,14 @@ function About({ themeMode }: AboutProps) {
                     {/* Left side */}
                     <div className={`md:w-1/2 ${milestone.align === 'left' ? 'md:pr-20 md:text-right' : 'md:opacity-0 pointer-events-none hidden md:block'}`}>
                       <div className="group">
-                        <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/22 block mb-4">
+                        <span className={`text-[9px] font-bold tracking-[0.44em] uppercase block mb-4 ${isDark ? 'text-white/22' : 'text-black/22'}`}>
                           {milestone.date}
                         </span>
-                        <h4 className="text-3xl md:text-5xl font-display font-light text-white/85
-                          group-hover:italic transition-all duration-300 leading-tight mb-4">
+                        <h4 className={`text-3xl md:text-5xl font-display font-light group-hover:italic transition-all duration-300 leading-tight mb-4
+                          ${isDark ? 'text-white/85' : 'text-black/85'}`}>
                           {milestone.title}
                         </h4>
-                        <p className="text-sm font-light text-white/40 max-w-xs ml-auto leading-relaxed">
+                        <p className={`text-sm font-light max-w-xs ml-auto leading-relaxed ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                           {milestone.copy}
                         </p>
                       </div>
@@ -716,22 +735,22 @@ function About({ themeMode }: AboutProps) {
 
                     {/* Center dot */}
                     <div
-                      className="z-10 w-3 h-3 rounded-full bg-[#FF3B3B] border-2 border-[#090909]
-                        absolute left-1/2 -translate-x-1/2 hidden md:block"
+                      className={`z-10 w-3 h-3 rounded-full bg-[#FF3B3B] border-2 absolute left-1/2 -translate-x-1/2 hidden md:block
+                        ${isDark ? 'border-[#090909]' : 'border-[#EDE8DF]'}`}
                       style={{ boxShadow: '0 0 16px rgba(255,59,59,0.5)' }}
                     />
 
                     {/* Right side */}
                     <div className={`md:w-1/2 ${milestone.align === 'right' ? 'md:pl-20 text-left' : 'md:opacity-0 pointer-events-none hidden md:block'}`}>
                       <div className="group">
-                        <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/22 block mb-4">
+                        <span className={`text-[9px] font-bold tracking-[0.44em] uppercase block mb-4 ${isDark ? 'text-white/22' : 'text-black/22'}`}>
                           {milestone.date}
                         </span>
-                        <h4 className="text-3xl md:text-5xl font-display font-light text-white/85
-                          group-hover:italic transition-all duration-300 leading-tight mb-4">
+                        <h4 className={`text-3xl md:text-5xl font-display font-light group-hover:italic transition-all duration-300 leading-tight mb-4
+                          ${isDark ? 'text-white/85' : 'text-black/85'}`}>
                           {milestone.title}
                         </h4>
-                        <p className="text-sm font-light text-white/40 max-w-xs leading-relaxed">
+                        <p className={`text-sm font-light max-w-xs leading-relaxed ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                           {milestone.copy}
                         </p>
                       </div>
@@ -739,13 +758,13 @@ function About({ themeMode }: AboutProps) {
 
                     {/* Mobile version */}
                     <div className="md:hidden text-center">
-                      <span className="text-[9px] font-bold tracking-[0.44em] uppercase text-white/22 block mb-3">
+                      <span className={`text-[9px] font-bold tracking-[0.44em] uppercase block mb-3 ${isDark ? 'text-white/22' : 'text-black/22'}`}>
                         {milestone.date}
                       </span>
-                      <h4 className="text-3xl font-display font-light text-white/85 mb-4 leading-tight">
+                      <h4 className={`text-3xl font-display font-light mb-4 leading-tight ${isDark ? 'text-white/85' : 'text-black/85'}`}>
                         {milestone.title}
                       </h4>
-                      <p className="text-sm font-light text-white/40 leading-relaxed max-w-sm mx-auto">
+                      <p className={`text-sm font-light leading-relaxed max-w-sm mx-auto ${isDark ? 'text-white/40' : 'text-black/40'}`}>
                         {milestone.copy}
                       </p>
                     </div>
@@ -760,10 +779,10 @@ function About({ themeMode }: AboutProps) {
 
       {/* ══════════════════════════ CTA ══════════════════════════ */}
       <LazySection id="cta">
-        <div className="relative bg-[#060606] overflow-hidden">
+        <div className={`relative overflow-hidden ${isDark ? 'bg-[#060606]' : 'bg-[#E5DFD5]'}`}>
 
           {/* Top hairline */}
-          <div className="absolute inset-x-0 top-0 h-px bg-white/[0.07]" aria-hidden="true" />
+          <div className={`absolute inset-x-0 top-0 h-px ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
 
           {/* Dot-grid texture */}
           <div
@@ -791,7 +810,7 @@ function About({ themeMode }: AboutProps) {
             <TextReveal>
               <div className={`flex items-center gap-3 mb-10 ${isArabic ? 'flex-row-reverse' : ''}`}>
                 <span className="w-5 h-px bg-[#FF3B3B]/50" aria-hidden="true" />
-                <span className="text-[9px] font-bold tracking-[0.52em] uppercase text-white/30">
+                <span className={`text-[9px] font-bold tracking-[0.52em] uppercase ${isDark ? 'text-white/30' : 'text-black/30'}`}>
                   {overview.ctaEyebrow}
                 </span>
               </div>
@@ -800,27 +819,28 @@ function About({ themeMode }: AboutProps) {
             {/* Headline */}
             <SplitText
               text={`${overview.ctaTitle} ${(overview as typeof overview & { ctaTitleEmphasis: string }).ctaTitleEmphasis}`}
-              className="text-[clamp(3rem,7.5vw,8rem)] font-display font-light leading-[0.92] text-white/92 tracking-[-0.02em] mb-10"
+              className={`text-[clamp(3rem,7.5vw,8rem)] font-display font-light leading-[0.92] tracking-[-0.02em] mb-10
+                ${isDark ? 'text-white/92' : 'text-black/92'}`}
               type="words"
               delay={0.06}
             />
 
             {/* Body copy */}
             <TextReveal delay={0.12}>
-              <p className="text-base font-light leading-[1.82] text-white/38 max-w-[38ch] mb-10">
+              <p className={`text-base font-light leading-[1.82] max-w-[38ch] mb-10 ${isDark ? 'text-white/38' : 'text-black/38'}`}>
                 {overview.ctaCopy}
               </p>
             </TextReveal>
 
             {/* Availability badge */}
             <TextReveal delay={0.16}>
-              <div className={`inline-flex items-center gap-3 mb-12 px-4 py-2 rounded-full
-                border border-white/[0.07] bg-white/[0.02] ${isArabic ? 'flex-row-reverse' : ''}`}>
+              <div className={`inline-flex items-center gap-3 mb-12 px-4 py-2 rounded-full border ${isArabic ? 'flex-row-reverse' : ''}
+                ${isDark ? 'border-white/[0.07] bg-white/[0.02]' : 'border-black/[0.07] bg-black/[0.02]'}`}>
                 <span className="relative flex h-2 w-2 shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
                 </span>
-                <span className="text-[9px] font-bold tracking-[0.3em] uppercase text-white/28">
+                <span className={`text-[9px] font-bold tracking-[0.3em] uppercase ${isDark ? 'text-white/28' : 'text-black/28'}`}>
                   {overview.ctaMetaLabel}: {overview.ctaMetaValue}
                 </span>
               </div>
@@ -831,7 +851,7 @@ function About({ themeMode }: AboutProps) {
               <div className={`flex flex-col sm:flex-row gap-3 items-start ${isArabic ? 'sm:flex-row-reverse' : ''}`}>
                 <MagneticButton
                   href="/contact"
-                  isDark
+                  isDark={isDark}
                   variant="primary"
                   style={{ backgroundColor: ACCENT, color: '#ffffff', borderColor: ACCENT }}
                   className={`group inline-flex items-center gap-3 px-10 py-5 rounded-full
@@ -851,12 +871,12 @@ function About({ themeMode }: AboutProps) {
                 <MagneticButton
                   href="/projects"
                   variant="outline"
-                  isDark
+                  isDark={isDark}
                   className={`inline-flex items-center gap-3 px-10 py-5 rounded-full
-                    text-[11px] font-bold tracking-[0.24em] uppercase
-                    border-white/[0.10] text-white/40
-                    transition-all duration-300 ease-out
-                    hover:text-white hover:border-white/20 hover:bg-white/[0.04]
+                    text-[11px] font-bold tracking-[0.24em] uppercase transition-all duration-300 ease-out
+                    ${isDark
+                      ? 'border-white/[0.10] text-white/40 hover:text-white hover:border-white/20 hover:bg-white/[0.04]'
+                      : 'border-black/[0.10] text-black/40 hover:text-black hover:border-black/20 hover:bg-black/[0.04]'}
                     ${isArabic ? 'flex-row-reverse' : ''}`}
                 >
                   See our work
@@ -867,15 +887,15 @@ function About({ themeMode }: AboutProps) {
           </div>
 
           {/* Bottom social proof strip */}
-          <div className="relative border-t border-white/[0.05]">
+          <div className={`relative border-t ${isDark ? 'border-white/[0.05]' : 'border-black/[0.05]'}`}>
             <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20 py-5 flex justify-center">
-              <p className="text-[9px] font-bold tracking-[0.38em] uppercase text-white/18 text-center">
+              <p className={`text-[9px] font-bold tracking-[0.38em] uppercase text-center ${isDark ? 'text-white/18' : 'text-black/18'}`}>
                 trusted by 40+ brands worldwide
               </p>
             </div>
           </div>
 
-          <div className="absolute inset-x-0 bottom-0 h-px bg-white/[0.07]" aria-hidden="true" />
+          <div className={`absolute inset-x-0 bottom-0 h-px ${isDark ? 'bg-white/[0.07]' : 'bg-black/[0.07]'}`} aria-hidden="true" />
         </div>
       </LazySection>
 
